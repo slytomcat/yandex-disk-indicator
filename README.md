@@ -1,2 +1,2 @@
 # yandex-disk-indicator
-Panel indicator for YandexDisk CLI client for Linux
+Desktop panel indicator for YandexDisk CLI client for Linux
