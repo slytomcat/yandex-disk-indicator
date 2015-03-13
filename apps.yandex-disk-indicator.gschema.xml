@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="apps.yandex-disk-indicator" path="/apps/yandex-disk-indicator/">
+    <key type="b" name="autostart">
+      <default>true</default>
+      <summary>Autostart at Startup</summary>
+      <description>Launch Yandex.Disk indicator at start-up.</description>
+    </key>
+    <key type="b" name="startonstart">
+      <default>true</default>
+      <summary>Start Yandex.Disk daemon on indicator start</summary>
+      <description>Launch Yandex.Disk daemon when indicator Yandex.Disk indicator is starting.</description>
+    </key>
+    <key type="b" name="theme">
+      <default>false</default>
+      <summary>Light Icon Theme</summary>
+      <description>Switch to light icon theme.</description>
+    </key>
+    <key type="b" name="notifications">
+      <default>true</default>
+      <summary>Desktop Notifications</summary>
+      <description>Show desktop notifications.</description>
+    </key>
+    <key type="b" name="fmextensions">
+      <default>true</default>
+      <summary>Activate file-manager extensions</summary>
+      <description>Activate file manager extensions for file/folder Internet sharing/unsharing via Yandex.Disk.</description>
+    </key>
+    <key type="b" name="autostartdaemon">
+      <default>true</default>
+      <summary>Autostart daemon at Start-up</summary>
+      <description>Automatically launch Yandex.Disk daemon at start-up.</description>
+    </key>
+    <key type="b" name="optionreadonly">
+      <default>false</default>
+      <summary>Do not upload locally changed files to Yandex.Disk</summary>
+      <description>Do not upload locally changed files to Yandex.Disk. Changed files will be renamed.</description>
+    </key>
+    <key type="b" name="optionoverwrite">
+      <default>false</default>
+      <summary>In read-only mode: overwrite locally changed files</summary>
+      <description>Force the Yandex.Disk to overwrite any locally changed files in read-only mode.</description>
+    </key>
+    <key type="b" name="stoponexit">
+      <default>false</default>
+      <summary>Stop Yandex.Disk daemon on exit</summary>
+      <description>Force the Yandex.Disk daemon to stop when the indicator application is closing.</description>
+    </key>
+    <key type="b" name="debug">
+      <default>false</default>
+      <summary>Debug Mode</summary>
+      <description>Show or Hide all debug messages.</description>
+    </key>
+  </schema>
+</schemalist>
+
