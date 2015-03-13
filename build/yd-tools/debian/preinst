@@ -1,0 +1,23 @@
+#! /bin/bash -e
+#DEBHELPER#
+userName=$(eval echo $SUDO_USER) 
+userHome=$(eval echo ~${SUDO_USER})
+
+if [ -f /tmp/yandex-disk-indicator.lock ]
+then
+   # Check if indicator is running 
+   checkFlock=$(cat /tmp/yandex-disk-indicator.lock)
+
+   if [ ! "$checkFlock" = "" ] 
+   then
+     kill $checkFlock 2>/dev/null || true
+     rm /tmp/yandex-disk-indicator.lock
+   fi
+fi
+
+if ! [ -e "/usr/bin/yandex-disk" ]
+then
+    zenity  --error --width=350 --height=150 --ok-label="Выход" --title "Yandex.Disk" --text="Клиент Яндекс.Диск не установлен! \nПосетите сайт www.yandex.ru, загрузите и установите клиента Yandex.Disk\n После этого, повторите установку пакета yd-tools."
+    exit 1
+fi
+exit 0

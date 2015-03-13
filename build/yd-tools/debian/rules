@@ -1,0 +1,9 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+
+%:
+	dh $@ 
+
+override_dh_auto_build:
+
+override_dh_auto_install:
