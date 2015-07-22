@@ -1,15 +1,13 @@
+Package: yd-tools
 Source: yd-tools
 Section: net
 Priority: optional
+Architecture: all
 Maintainer: Sly_tom_cat <slytomcat@mail.ru>
 Build-Depends: debhelper (>= 9)
 Standards-Version: 3.9.4
 Homepage: http://forum.ubuntu.ru/index.php?topic=241992.0
-
-Architecture: all
 Depends: ${misc:Depends}, ${python:Depends}, python-pyinotify, python-appindicator, python-gconf, python-gi, libgtk-3-0, libglib2.0-0, gir1.2-appindicator3-0.1, gir1.2-gdkpixbuf-2.0, gir1.2-notify-0.7, xclip, zenity
 Description: Yandex.Disk indicator for Ubuntu desktop panel.
  The application indicator is displayed within the indicator plugin. 
  It uses Yandex.Disk CLI synchronization utility and shows current status and notifications when status changes.
-Package: yd-tools 
-

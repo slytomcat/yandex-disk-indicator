@@ -1,0 +1,42 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Format: 1.8
+Date: sun, 14 Dec 2014 23:16:14 +0300
+Source: yd-tools
+Binary: yd-tools
+Architecture: source
+Version: 1.2.2
+Distribution: precise
+Urgency: medium
+Maintainer: Sly_tom_cat <slytomcat@mail.ru>
+Changed-By: Sly_tom_cat <slytomcat@mail.ru>
+Description: 
+ yd-tools   - Yandex.Disk indicator for Ubuntu desktop panel.
+Changes: 
+ yd-tools (1.2.2) precise; urgency=medium
+ .
+   * Changes:
+    -- Greek translation added.
+    -- Some minor code optimization
+Checksums-Sha1: 
+ 8f7aca8b12faa6e003956b9164ebb37c6736d82e 1074 yd-tools_1.2.2.dsc
+ 86cbbd7541b0be2520c71f14ce75170573c7af96 130214 yd-tools_1.2.2.tar.gz
+Checksums-Sha256: 
+ 350880563ca64b3336a549123e3c359efcc24ca376efdfb271f72fedb29e7724 1074 yd-tools_1.2.2.dsc
+ 2232f11d2f64384b34354326939905f74693926ed908b7c51e06eaaefc93fb95 130214 yd-tools_1.2.2.tar.gz
+Files: 
+ 11f0f697a879bdc8ae61343ff2d7173c 1074 net optional yd-tools_1.2.2.dsc
+ eb7c549db346aa27840c726f6f9ef680 130214 net optional yd-tools_1.2.2.tar.gz
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQEcBAEBAgAGBQJVAuGgAAoJEO/UtzIl2tA/L6oIAILZJDYly4QY1a6a7g1nl2ci
+noUFxmOWs1jsuOQ03mj6ZIJrUxgiD6zdK6J1EPdjWxufyTuywiTCfCq4sMZusHHT
+GwcfrmR5PZpWc+IPu5vVW6mz10L/NDo8el3UneJ3CUC+z1XgN4KHd62xbYSDU+bn
+fXQsUsEnd6JMHOZ9JizpxXYYXyhybUVmD/dR/8vxW+Vk54UVnpxizqZ/6xP65emg
+zt2wx2sEhIfxkQaUM+CjVy0NupwoJyP61EEqipqwfCOCX+22Jenx8jcXFLCjBC19
+JaW7yYJhNtKzRr67VkAef8guEPak2z2I/JqY4ySQlea2nZO2oF4CldwPWNjqkt4=
+=9t10
+-----END PGP SIGNATURE-----

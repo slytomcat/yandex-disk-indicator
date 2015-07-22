@@ -16,4 +16,4 @@ chmod a+x usr/bin/*
 chmod a+x usr/share/applications/*
 debuild -S -k0x25DAD03F
 cd ..
-echo "Next run: dput ppa:<username>/ppa <source.changes>"
+echo "Next run: dput ppa:slytomcat/ppa <source.changes>"

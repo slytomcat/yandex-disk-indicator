@@ -1,0 +1,13 @@
+ dpkg-buildpackage -rfakeroot -D -us -uc
+dpkg-buildpackage: source package yd-tools
+dpkg-buildpackage: source version 1.2.6
+dpkg-buildpackage: source distribution precise
+dpkg-buildpackage: source changed by Sly_tom_cat <slytomcat@mail.ru>
+ dpkg-source --before-build yd-tools
+dpkg-buildpackage: host architecture amd64
+dpkg-source: warning: unknown information field 'Package' in input data in general section of control info file
+dpkg-source: warning: unknown information field 'Architecture' in input data in general section of control info file
+dpkg-source: warning: unknown information field 'Depends' in input data in general section of control info file
+dpkg-source: warning: unknown information field 'Description' in input data in general section of control info file
+dpkg-source: error: yd-tools/debian/control doesn't list any binary package
+dpkg-buildpackage: error: dpkg-source --before-build yd-tools gave error exit status 255

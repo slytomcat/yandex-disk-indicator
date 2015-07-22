@@ -1,7 +1,7 @@
-yd-tools (1.2.2) precise; urgency=medium
+yd-tools (1.2.6) precise; urgency=medium
 
   * Changes:
-   -- Greek translation added.
-   -- Some minor code optimization
+   -- Fix issue with Debian installation of file utils for Nautilus.
+   -- Icon resized to 24x24 size (128x128 are available in _128 catalogs)
 
- -- Sly_tom_cat <slytomcat@mail.ru>  sun, 14 Dec 2014 23:16:14 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  thu, 11 Jun 2015 12:12:46 +0300
