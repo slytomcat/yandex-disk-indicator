@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#  Yandex.Disk indicator v.1.2.3
+#  Yandex.Disk indicator v.1.3.0
 #
 #  Copyright 2014 Sly_tom_cat <slytomcat@mail.ru>
 #  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
@@ -636,13 +636,11 @@ def updateIconTheme(): # Update paths to icons according to current theme
   global icon_idle
   global icon_pause
   global icon_error
+  
   try:          # Read defaults from dconf Settings
-    if settings.get_boolean("theme"):
-      themeStyle = 'light'
-    else:
-      themeStyle = 'dark'
+    themeStyle = 'light' if settings.get_boolean("theme") else 'dark'
   except:
-      themeStyle = 'dark'
+    themeStyle = 'dark'
   # --- Set appropriate paths to icons ---
   iconThemePath = os.path.join(installDir, 'icons', themeStyle )
   icon_busy =  os.path.join(iconThemePath, 'yd-busy1.png')
@@ -663,7 +661,7 @@ def updateIcon(): # Change indicator icon according to the current status
 
   if newStatus == 'busy' and lastStatus != 'busy': # Just entered into 'busy' status
     ind.set_icon(icon_busy)         # Start icon animation
-    seqNum = 1                      # Start animation from first icon
+    seqNum = 2                      # Start animation from next icon
     iconAnimationTimer = GLib.timeout_add(777, iconAnimation, 'iconAnimation') # Create animation sequence timer
     return                          # there is nothing to do any more here
   if newStatus != 'busy' and iconAnimationTimer > 0:  # Not 'busy' and animation is running
@@ -682,10 +680,8 @@ def iconAnimation(widget): # Changes busy icon by loop (triggered by iconAnimati
   global iconThemePath
   seqFile = 'yd-busy'+str(seqNum)+'.png'
   ind.set_icon(os.path.join(iconThemePath, seqFile))
-  if seqNum < 5:         # 5 icons in loop (1-2-3-4-5-1-2-3...)
-    seqNum += 1
-  else:
-    seqNum = 1
+  # calculate next icon number
+  seqNum = seqNum%5+1    # 5 icons in loop (1-2-3-4-5-1-2-3...)
   return True            # True required to continue triggering by timer
 
 def activateActions(): # Install/deinstall file extensions
@@ -714,8 +710,8 @@ def activateActions(): # Install/deinstall file extensions
   debugPrint("Nemo installed: %s"%str(ret == 0))
   if ret == 0:
     if activate:  # Install actions for Nemo
-      copyFile(os.path.join(installDir,"fm-actions/Nautilus_Nemo/publish"), os.path.join(userHome,".gnome2/nemo-scripts","Опубликовать через Yandex.Disk"))
-      copyFile(os.path.join(installDir,"fm-actions/Nautilus_Nemo/unpublish"), os.path.join(userHome,".gnome2/nemo-scripts","Убрать из публикации через Yandex.disk"))
+      copyFile(os.path.join(installDir,"fm-actions/Nautilus_Nemo/publish"), os.path.join(userHome,".local/share/nemo/scripts","Опубликовать через Yandex.Disk"))
+      copyFile(os.path.join(installDir,"fm-actions/Nautilus_Nemo/unpublish"), os.path.join(userHome,".local/share/nemo/scripts","Убрать из публикации через Yandex.disk"))
     else:         # Remove actions for Nemo
       deleteFile(os.path.join(userHome,".gnome2/nemo-scripts", "Опубликовать через Yandex.Disk"))
       deleteFile(os.path.join(userHome,".gnome2/nemo-scripts", "Убрать из публикации через Yandex.disk"))
@@ -798,7 +794,8 @@ def readConfig(): # Update settings according to daemon config file and get yand
           yandexDiskFolder = line[pos: line.find('"',pos)]
         else:
           yandexDiskFolder = line[pos: line.find('/n',pos)]
-        yandexDiskFolder = yandexDiskFolder.decode('utf-8')  # Decode required for python 2.7 and not required for python 3.0 and above
+        if not PY3:    # Decode required for python 2.7 and not required for python 3.0 and above
+          yandexDiskFolder = yandexDiskFolder.decode('utf-8')  
         debugPrint('Config: yandexDiskFolder = %s'%yandexDiskFolder)
     cfgFile.close()
     settings.set_boolean('optionreadonly', roVal)
@@ -808,17 +805,20 @@ def readConfig(): # Update settings according to daemon config file and get yand
 def getDaemonOutput():
   global daemonOutput
   try:
-    daemonOutput = subprocess.check_output(['yandex-disk', 'status'],universal_newlines=True)
+    daemonOutput = subprocess.check_output(['yandex-disk', 'status'], universal_newlines=True)
   except:
     daemonOutput = ''
-  daemonOutput = daemonOutput.decode('utf-8') # Decode required for python 2.7 and not required for python 3.0 and above
+  if not PY3:    # Decode required for python 2.7 and not required for python 3.0 and above
+    daemonOutput = daemonOutput.decode('utf-8') 
   #debugPrint('output = %s'%daemonOutput)
   return (daemonOutput != '')
 
 ###################### MAIN LOOP #########################
 if __name__ == '__main__':
+  ### Running environment detection
+  PY3 = sys.version_info[0] == 3
   ### Application variables and settings ###
-  appVersion = '1.2.3'
+  appVersion = '1.3.0_Py' + ('3' if PY3 else '2')
   appName = 'yandex-disk-indicator'
   installDir = os.path.dirname(os.path.realpath(__file__))
   userHome = os.getenv("HOME")
@@ -855,8 +855,10 @@ if __name__ == '__main__':
   ### Localization ###
   debugPrint("Current Locale : %s" % str(locale.getlocale()))
   try:            # Try to load translation
-    appTranslate = gettext.translation(appName, '/usr/share/locale', fallback = True)
-    _ = appTranslate.ugettext   #ugettext for python2.7 and gettext for python3
+    if PY3:       # gettext for python3
+      _ = gettext.translation(appName, '/usr/share/locale', fallback = True).gettext
+    else:         # ugettext for python2.7 
+      _ = gettext.translation(appName, '/usr/share/locale', fallback = True).ugettext   
   except:
     _ = str
   ### Activate FM actions according to settings if lock file not exists (probably it is a first run)
