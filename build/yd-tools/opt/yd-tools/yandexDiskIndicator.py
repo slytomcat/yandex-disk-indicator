@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#  Yandex.Disk indicator v.1.2.3
+#  Yandex.Disk indicator v.1.3.0
 #
 #  Copyright 2014 Sly_tom_cat <slytomcat@mail.ru>
 #  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
@@ -92,7 +92,7 @@ def quitApplication(widget):
     stopYDdaemon()    # Stop daemon
     debugPrint('Daemon is stopped')
   # --- Stop all timers ---
-  stopTimer(iconAnimationTimer)
+  # stopTimer(iconAnimationTimer)
   stopTimer(iNotifierTimer)
   stopTimer(watchTimer)
   debugPrint("Timers are closed")
@@ -125,16 +125,22 @@ def iNotifyHandler(): # iNotify working routine (called by timer)
 
 def daemonErrorDialog(err): # Show error messages according to the error
   if err == 'NOCONFIG':
-    dialog = Gtk.MessageDialog(None, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK_CANCEL, _('Yandex.Disk Indicator: daemon start failed'))
-    dialog.format_secondary_text(_('Yandex.Disk daemon failed to start because it is not configured properly\n  To configure it up: press OK button.\n  Press Cancel to exit.'))
+    dialog = Gtk.MessageDialog(None, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK_CANCEL, \
+                               _('Yandex.Disk Indicator: daemon start failed'))
+    dialog.format_secondary_text(_('Yandex.Disk daemon failed to start because it is not'+ \
+      ' configured properly\n  To configure it up: press OK button.\n  Press Cancel to exit.'))
   else:
-    dialog = Gtk.MessageDialog(None, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, _('Yandex.Disk Indicator: daemon start failed'))
+    dialog = Gtk.MessageDialog(None, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, \
+                               _('Yandex.Disk Indicator: daemon start failed'))
     if err == 'NONET':
-      dialog.format_secondary_text(_('Yandex.Disk daemon failed to start due to network connection issue. \n  Check the Internet connection and try to start daemon again.'))
+      dialog.format_secondary_text(_('Yandex.Disk daemon failed to start due to network'+ \
+        ' connection issue. \n  Check the Internet connection and try to start daemon again.'))
     elif err == 'NOTINSTALLED':
-      dialog.format_secondary_text(_('Yandex.Disk utility is not installed.\n Visit www.yandex.ru, download and install Yandex.Disk daemon.'))
+      dialog.format_secondary_text(_('Yandex.Disk utility is not installed.\n '+ \
+        'Visit www.yandex.ru, download and install Yandex.Disk daemon.'))
     else:
-      dialog.format_secondary_text(_('Yandex.Disk daemon failed to start due to some unrecognised error.'))
+      dialog.format_secondary_text(_('Yandex.Disk daemon failed to start due to some '+ \
+                                     'unrecognised error.'))
   dialog.set_default_size(400, 250)
   response = dialog.run()
   dialog.destroy()
@@ -218,7 +224,7 @@ def onCheckButtonToggled(widget, button, key): # Handle clicks on check-buttons
 def openPreferences(menu_widget): # Preferences Window
   global settings
   global overwrite_check_button
-  menu_widget.set_sensitive(False)  # Disable menu item to avoid multiple preferences windows creation
+  menu_widget.set_sensitive(False)  # Disable menu item to avoid multiple preferences windows
   preferencesWindow = Gtk.Dialog()  # Create Preferences window
   preferencesWindow.set_title(_('Yandex.Disk-indicator and Yandex.Disk preferences'))
   preferencesWindow.set_icon(GdkPixbuf.Pixbuf.new_from_file(yandexDiskIcon))
@@ -229,7 +235,8 @@ def openPreferences(menu_widget): # Preferences Window
   # --- Indicator preferences tab ---
   preferencesBox = Gtk.Box.new(Gtk.Orientation.VERTICAL,5)
   key = 'autostart'                 # Auto-start indicator on system start-up
-  autostart_check_button = Gtk.CheckButton(_('Start Yandex.Disk indicator when you start your computer'))
+  autostart_check_button = Gtk.CheckButton( \
+                           _('Start Yandex.Disk indicator when you start your computer'))
   autostart_check_button.set_active(settings.get_boolean(key))
   autostart_check_button.connect("toggled", onCheckButtonToggled, autostart_check_button, key)
   settings.bind(key, autostart_check_button, 'active', Gio.SettingsBindFlags.GET)
@@ -250,7 +257,8 @@ def openPreferences(menu_widget): # Preferences Window
   key = 'notifications'             # Notifications
   notifications_check_button = Gtk.CheckButton(_('Show on-screen notifications'))
   notifications_check_button.set_active(settings.get_boolean(key))
-  notifications_check_button.connect("toggled", onCheckButtonToggled, notifications_check_button, key)
+  notifications_check_button.connect("toggled", onCheckButtonToggled, \
+                                     notifications_check_button, key)
   settings.bind(key, notifications_check_button, 'active', Gio.SettingsBindFlags.GET)
   preferencesBox.add(notifications_check_button)
   key = 'theme'                     # Theme
@@ -270,21 +278,28 @@ def openPreferences(menu_widget): # Preferences Window
   # --- Daemon start options tab ---
   optionsBox = Gtk.Box.new(Gtk.Orientation.VERTICAL,5)
   key = 'autostartdaemon'           # Auto-start daemon on system start-up
-  autostart_d_check_button = Gtk.CheckButton(_('Start Yandex.Disk daemon when you start your computer'))
+  autostart_d_check_button = Gtk.CheckButton( \
+                               _('Start Yandex.Disk daemon when you start your computer'))
   autostart_d_check_button.set_active(settings.get_boolean(key))
   autostart_d_check_button.connect("toggled", onCheckButtonToggled, autostart_d_check_button, key)
   settings.bind(key, autostart_d_check_button, 'active', Gio.SettingsBindFlags.GET)
   optionsBox.add(autostart_d_check_button)
   key = 'optionreadonly'            # Option Read-Only
-  readOnly_check_button = Gtk.CheckButton(_('Read-Only: Do not upload locally changed files to Yandex.Disk'))
-  readOnly_check_button.set_tooltip_text(_("Locally changed files will be renamed if a newer version of this file appear in Yandex.Disk. \n NOTE! You have to reload daemon to activate this setting"))
+  readOnly_check_button = Gtk.CheckButton( \
+                            _('Read-Only: Do not upload locally changed files to Yandex.Disk'))
+  readOnly_check_button.set_tooltip_text( \
+    _("Locally changed files will be renamed if a newer version of this file appear in "+ \
+      "Yandex.Disk. \n NOTE! You have to reload daemon to activate this setting"))
   readOnly_check_button.set_active(settings.get_boolean(key))
   readOnly_check_button.connect("toggled", onCheckButtonToggled, readOnly_check_button, key)
   settings.bind(key, readOnly_check_button, 'active', Gio.SettingsBindFlags.GET)
   optionsBox.add(readOnly_check_button)
   key = 'optionoverwrite'           # Option Overwrite
-  overwrite_check_button = Gtk.CheckButton(_('Overwrite locally changed files by files from Yandex.Disk (in read-only mode)'))
-  overwrite_check_button.set_tooltip_text(_("Locally changed files will be overwritten if a newer version of this file appear in Yandex.Disk. \n NOTE! You have to reload daemon to activate this setting"))
+  overwrite_check_button = Gtk.CheckButton(_('Overwrite locally changed files by files'+ \
+                                             ' from Yandex.Disk (in read-only mode)'))
+  overwrite_check_button.set_tooltip_text( \
+    _("Locally changed files will be overwritten if a newer version of this file appear "+ \
+      "in Yandex.Disk. \n NOTE! You have to reload daemon to activate this setting"))
   overwrite_check_button.set_active(settings.get_boolean(key))
   overwrite_check_button.set_sensitive(settings.get_boolean('optionreadonly'))
   overwrite_check_button.connect("toggled", onCheckButtonToggled, overwrite_check_button, key)
@@ -413,23 +428,24 @@ def stopDaemon(widget):
   updateStartStop(False)
 
 def checkDaemon(): # Checks that daemon process is running.
-  # It should provide a correct response. Kills the daemon when it is running but not responding (HARON_CASE).
+  # It should provide correct response.
+  # Kills the daemon when it is running but not responding (HARON_CASE).
   global currentStatus
   currentStatus = 'none'
   try:
-    msg = subprocess.check_output(['pgrep', '-x', 'yandex-disk'],universal_newlines=True)[ :-1]
+    msg = subprocess.check_output(['pgrep', '-x', 'yandex-disk'], universal_newlines=True)[ :-1]
   except:
     debugPrint("yandex-disk daemon is not running")
     return False
   debugPrint('yandex-disk daemon PID is: %s'%msg)
   if getDaemonOutput():  # Check for correct daemon response
     debugPrint('yandex-disk daemon is responding correctly.')
-    parseDaemonOutput()  # Parse response to update currentStatus
+    parseDaemonOutput()  # Parse response to get real currentStatus
     return True
   debugPrint('yandex-disk daemon is NOT responding!')
   try:                   # As it is not responding - try to kill all instances of daemon
     subprocess.check_call(['killall', 'yandex-disk'])
-    debugPrint('yandex-disk daemon killed')
+    debugPrint('yandex-disk daemon(s) killed')
   except:
     debugPrint('yandex-disk daemon kill error')
   return False
@@ -443,6 +459,7 @@ def parseDaemonOutput(): # Parse the daemon output
   global syncProgress
   global lastItems
   global daemonOutput
+  global YD_STATUS
   # Look for synchronization progress
   lastPos = 0
   startPos = daemonOutput.find('ync progress: ')
@@ -457,6 +474,8 @@ def parseDaemonOutput(): # Parse the daemon output
     startPos = daemonOutput.find('core status: ',lastPos)+13  # 13 is len('core status: ')
     lastPos = daemonOutput.find('\n',startPos)
     currentStatus = daemonOutput[startPos: lastPos]
+    if currentStatus == 'index':   # Don't handle index status
+      currentStatus = 'busy'
   else:
     currentStatus = 'none'
   # Look for total Yandex.Disk size
@@ -493,14 +512,7 @@ def parseDaemonOutput(): # Parse the daemon output
   else:
     lastItems = ''
   # Prepare and format information for menu
-  yandexDiskStatus = _('Status: ') + (\
-  _('Synchronized')         if currentStatus == 'idle' else \
-  _('Sync.: ')+syncProgress if currentStatus == 'busy' else \
-  _('Indexing')             if currentStatus == 'index' else \
-  _('Paused')               if currentStatus == 'paused' else \
-  _('Daemon stopped')       if currentStatus == 'none' else \
-  _('Not connected')        if currentStatus == 'no internet access' else \
-  _('Error')             ) #if currentStatus == 'error' or any other errors
+  yandexDiskStatus = _('Status: ')+YD_STATUS.get(currentStatus, _('Error'))+syncProgress
   yandexDiskSpace1 = _('Used: ')+sUsed+'/'+sTotal
   yandexDiskSpace2 = _('Free: ')+sAvailable+_(', trash: ')+sTrash
 
@@ -589,13 +601,12 @@ def handleEvent(triggeredBy_iNotifier): # Main working routine: event handler fu
   getDaemonOutput()     # Get the latest status data from daemon
   parseDaemonOutput()   # Parse it
   # Convert status to the internal presentation ['busy','idle','paused','none','error']
-  if currentStatus == 'index':     # Don't handle 'index' status
-    newStatus = lastStatus         # Assume that status is not changed
-  elif currentStatus in ['busy','idle','paused','none']:
+  if currentStatus in ['busy','idle','paused','none']:
     newStatus = currentStatus
-  else:  # Status in ['error', 'no internet access','failed to connect to daemon process','access error'...]
+  else:  # Status in ['error', 'no internet access','failed to connect to daemon process'...]
     newStatus = 'error'
-  debugPrint('Event triggered by %s      status: %s -> %s'%('inotify' if triggeredBy_iNotifier else 'timer  ',lastStatus, newStatus))
+  debugPrint('Event triggered by %s      status: %s -> %s'%('inotify' if triggeredBy_iNotifier \
+                                                            else 'timer  ',lastStatus, newStatus))
   updateMenuInfo()                  # Update information in menu
   if lastStatus != newStatus:       # Handle status change
     updateIcon()                    # Update icon
@@ -619,7 +630,7 @@ def handleEvent(triggeredBy_iNotifier): # Main working routine: event handler fu
   # --- Handle timer delays ---
   if triggeredBy_iNotifier:         # True means that it is called by iNonifier
     stopTimer(watchTimer)           # Recreate timer.
-    watchTimer = GLib.timeout_add_seconds(2, handleEvent, False) # Set delay at 2 sec after last call from iNotifier.
+    watchTimer = GLib.timeout_add_seconds(2, handleEvent, False) # Set delay at 2 sec.
     timerTriggeredCount = 0         # reset counter as it was triggered not by time watcher
   else:
     if newStatus != 'busy':         # in 'busy' keep last update interval (2 sec.)
@@ -636,13 +647,11 @@ def updateIconTheme(): # Update paths to icons according to current theme
   global icon_idle
   global icon_pause
   global icon_error
+  
   try:          # Read defaults from dconf Settings
-    if settings.get_boolean("theme"):
-      themeStyle = 'light'
-    else:
-      themeStyle = 'dark'
+    themeStyle = 'light' if settings.get_boolean("theme") else 'dark'
   except:
-      themeStyle = 'dark'
+    themeStyle = 'dark'
   # --- Set appropriate paths to icons ---
   iconThemePath = os.path.join(installDir, 'icons', themeStyle )
   icon_busy =  os.path.join(iconThemePath, 'yd-busy1.png')
@@ -663,8 +672,9 @@ def updateIcon(): # Change indicator icon according to the current status
 
   if newStatus == 'busy' and lastStatus != 'busy': # Just entered into 'busy' status
     ind.set_icon(icon_busy)         # Start icon animation
-    seqNum = 1                      # Start animation from first icon
-    iconAnimationTimer = GLib.timeout_add(777, iconAnimation, 'iconAnimation') # Create animation sequence timer
+    seqNum = 2                      # Start animation from next icon
+    # Create animation timer
+    iconAnimationTimer = GLib.timeout_add(777, iconAnimation, 'iconAnimation') 
     return                          # there is nothing to do any more here
   if newStatus != 'busy' and iconAnimationTimer > 0:  # Not 'busy' and animation is running
     stopTimer(iconAnimationTimer)   # Stop icon animation
@@ -682,10 +692,8 @@ def iconAnimation(widget): # Changes busy icon by loop (triggered by iconAnimati
   global iconThemePath
   seqFile = 'yd-busy'+str(seqNum)+'.png'
   ind.set_icon(os.path.join(iconThemePath, seqFile))
-  if seqNum < 5:         # 5 icons in loop (1-2-3-4-5-1-2-3...)
-    seqNum += 1
-  else:
-    seqNum = 1
+  # calculate next icon number
+  seqNum = seqNum%5+1    # 5 icons in loop (1-2-3-4-5-1-2-3...)
   return True            # True required to continue triggering by timer
 
 def activateActions(): # Install/deinstall file extensions
@@ -704,40 +712,78 @@ def activateActions(): # Install/deinstall file extensions
       nautilusPath = ".local/share/nautilus/scripts"
     debugPrint(nautilusPath)
     if activate:  # Install actions for Nautilus
-      copyFile(os.path.join(installDir,"fm-actions/Nautilus_Nemo/publish"), os.path.join(userHome,nautilusPath,"Опубликовать через Yandex.Disk"))
-      copyFile(os.path.join(installDir,"fm-actions/Nautilus_Nemo/unpublish"), os.path.join(userHome,nautilusPath,"Убрать из публикации через Yandex.disk"))
+      copyFile(os.path.join(installDir,"fm-actions/Nautilus_Nemo/publish"), \
+               os.path.join(userHome,nautilusPath,_("Publish via Yandex.Disk")))
+      copyFile(os.path.join(installDir,"fm-actions/Nautilus_Nemo/unpublish"), \
+               os.path.join(userHome,nautilusPath,_("Unpublish from Yandex.disk")))
     else:         # Remove actions for Nautilus
-      deleteFile(os.path.join(userHome,nautilusPath,"Опубликовать через Yandex.Disk"))
-      deleteFile(os.path.join(userHome,nautilusPath,"Убрать из публикации через Yandex.disk"))
+      deleteFile(os.path.join(userHome,nautilusPath,_("Publish via Yandex.Disk")))
+      deleteFile(os.path.join(userHome,nautilusPath,_("Unpublish from Yandex.disk")))
   # --- Actions for Nemo ---
   ret = subprocess.call(["dpkg -s nemo>/dev/null 2>&1"], shell = True)
   debugPrint("Nemo installed: %s"%str(ret == 0))
   if ret == 0:
     if activate:  # Install actions for Nemo
-      copyFile(os.path.join(installDir,"fm-actions/Nautilus_Nemo/publish"), os.path.join(userHome,".gnome2/nemo-scripts","Опубликовать через Yandex.Disk"))
-      copyFile(os.path.join(installDir,"fm-actions/Nautilus_Nemo/unpublish"), os.path.join(userHome,".gnome2/nemo-scripts","Убрать из публикации через Yandex.disk"))
+      copyFile(os.path.join(installDir,"fm-actions/Nautilus_Nemo/publish"), \
+               os.path.join(userHome,".local/share/nemo/scripts", \
+                            _("Publish via Yandex.Disk")))
+      copyFile(os.path.join(installDir,"fm-actions/Nautilus_Nemo/unpublish"), \
+               os.path.join(userHome,".local/share/nemo/scripts", \
+                            _("Unpublish from Yandex.disk")))
     else:         # Remove actions for Nemo
-      deleteFile(os.path.join(userHome,".gnome2/nemo-scripts", "Опубликовать через Yandex.Disk"))
-      deleteFile(os.path.join(userHome,".gnome2/nemo-scripts", "Убрать из публикации через Yandex.disk"))
+      deleteFile(os.path.join(userHome,".gnome2/nemo-scripts", \
+                              _("Publish via Yandex.Disk")))
+      deleteFile(os.path.join(userHome,".gnome2/nemo-scripts", \
+                              _("Unpublish from Yandex.disk")))
   # --- Actions for Thunar ---
   ret = subprocess.call(["dpkg -s thunar>/dev/null 2>&1"], shell = True)
   debugPrint("Thunar installed: %s"%str(ret == 0))
   if ret == 0:
     if activate:  # Install actions for Thunar
-      if subprocess.call(["grep 'yandex-disk publish' "+os.path.join(userHome,".config/Thunar/uca.xml")+">/dev/null 2>&1"], shell=True) != 0:
-        subprocess.call(["sed", "-i", 's/<\/actions>/<action><icon>folder-publicshare<\/icon><name>Публикация через Yandex.Disk<\/name><command>yandex-disk publish %f | xclip -filter -selection clipboard; zenity --info --window-icon=\/opt\/yd-tools\/icons\/yd-128.png --title="Yandex.Disk" --ok-label="Закрыть" --text="Ссылка на файл: %f скопирована в буфер обмена."<\/command><description><\/description><patterns>*<\/patterns><directories\/><audio-files\/><image-files\/><other-files\/><text-files\/><video-files\/><\/action><\/actions>/g', os.path.join(userHome,".config/Thunar/uca.xml") ])
-      if subprocess.call(["grep 'yandex-disk unpublish' "+os.path.join(userHome,".config/Thunar/uca.xml")+">/dev/null 2>&1"], shell=True) != 0:
-        subprocess.call(["sed", "-i", 's/<\/actions>/<action><icon>folder<\/icon><name>Убрать из публикации через Yandex.disk<\/name><command>zenity --info --window-icon=\/opt\/yd-tools\/icons\/yd-128_g.png --ok-label="Закрыть" --title="Yandex.Disk" --text="Убрать из публикации через Yandex.disk: \`yandex-disk unpublish %f\`"<\/command><description><\/description><patterns>*<\/patterns><directories\/><audio-files\/><image-files\/><other-files\/><text-files\/><video-files\/><\/action><\/actions>/g', os.path.join(userHome,".config/Thunar/uca.xml")])
+      if subprocess.call(["grep '"+ _("Publish via Yandex.Disk") + "' " + \
+                          os.path.join(userHome,".config/Thunar/uca.xml")+" >/dev/null 2>&1"], \
+                         shell=True) != 0:
+        subprocess.call(["sed", "-i", "s/<\/actions>/<action><icon>folder-publicshare<\/icon>"+\
+                         '<name>"' + _("Publish via Yandex.Disk")+\
+                         '"<\/name><command>yandex-disk publish %f | xclip -filter -selection'+ \
+                         ' clipboard; zenity --info '+ \
+                         '--window-icon=\/opt\/yd-tools\/icons\/yd-128.png --title="Yandex.Disk"'+ \
+                         ' --ok-label="'+_('Close')+'" --text="'+ \
+                         _('URL to file: %f has copied into clipboard.')+ \
+                         '"<\/command><description><\/description><patterns>*<\/patterns>'+ \
+                         '<directories\/><audio-files\/><image-files\/><other-files\/>'+ \
+                         "<text-files\/><video-files\/><\/action><\/actions>/g", \
+                        os.path.join(userHome,".config/Thunar/uca.xml") ])
+      if subprocess.call(["grep '" +_("Unpublish from Yandex.disk") + "' "+ \
+                          os.path.join(userHome,".config/Thunar/uca.xml")+" >/dev/null 2>&1"], \
+                          shell=True) != 0:
+        subprocess.call(["sed", "-i", "s/<\/actions>/<action><icon>folder<\/icon><name>\""+ \
+                         _("Unpublish from Yandex.disk")+ \
+                         '"<\/name><command>zenity --info '+ \
+                         '--window-icon=\/opt\/yd-tools\/icons\/yd-128_g.png --ok-label="'+ \
+                         _('Close') + '" --title="Yandex.Disk" --text="'+ \
+                         _("Unpublish from Yandex.disk") + \
+                         ': \`yandex-disk unpublish %f\`"<\/command>' + \
+                         '<description><\/description><patterns>*<\/patterns>'+ \
+                         '<directories\/><audio-files\/><image-files\/><other-files\/>'+ \
+                         "<text-files\/><video-files\/><\/action><\/actions>/g", \
+                        os.path.join(userHome,".config/Thunar/uca.xml")])
     else:         # Remove actions for Thunar
-      subprocess.call(["sed", "-i", "s/<action><icon>.*<\/icon><name>Публикация через Yandex.Disk.*<\/action>//", os.path.join(userHome,".config/Thunar/uca.xml") ])
-      subprocess.call(["sed", "-i", "s/<action><icon>.*<\/icon><name>Убрать из публикации через Yandex.disk.*<\/action>//", os.path.join(userHome,".config/Thunar/uca.xml") ])
+      subprocess.call(["sed", "-i", "s/<action><icon>.*<\/icon><name>\""+ \
+                       _("Publish via Yandex.Disk") + "\".*<\/action>//", 
+                      os.path.join(userHome,".config/Thunar/uca.xml") ])
+      subprocess.call(["sed", "-i", "s/<action><icon>.*<\/icon><name>\""+ \
+                       _("Unpublish from Yandex.disk") + "\".*<\/action>//", \
+                      os.path.join(userHome,".config/Thunar/uca.xml") ])
   # Actions for Dolphin
   ret = subprocess.call(["dpkg -s dolphin>/dev/null 2>&1"], shell = True)
   debugPrint("Dolphin installed: %s"%str(ret == 0))
   if ret == 0:
     if activate:  # Install actions for Dolphin
-      copyFile(os.path.join(installDir,"fm-actions/Dolphin/publish.desktop"), os.path.join(userHome,".kde/share/kde4/services/publish.desktop"))
-      copyFile(os.path.join(installDir,"fm-actions/Dolphin/unpublish.desktop"), os.path.join(userHome,".kde/share/kde4/services/unpublish.desktop"))
+      copyFile(os.path.join(installDir,"fm-actions/Dolphin/publish.desktop"), \
+               os.path.join(userHome,".kde/share/kde4/services/publish.desktop"))
+      copyFile(os.path.join(installDir,"fm-actions/Dolphin/unpublish.desktop"), \
+               os.path.join(userHome,".kde/share/kde4/services/unpublish.desktop"))
     else:         # Remove actions for Dolphin
       deleteFile(os.path.join(userHome,".kde/share/kde4/services/publish.desktop"))
       deleteFile(os.path.join(userHome,".kde/share/kde4/services/unpublish.desktop"))
@@ -773,7 +819,7 @@ def optionsSave(): # Update daemon config file according to the configuration se
     deleteFile(daemonConfig)
     copyFile(newFile.name, daemonConfig)
 
-def readConfig(): # Update settings according to daemon config file and get yandex.disk folder path.
+def readConfig(): # Update settings according to daemon config file and get yandex.disk folder path
   global daemonConfig
   global yandexDiskFolder
   roVal = False
@@ -798,7 +844,8 @@ def readConfig(): # Update settings according to daemon config file and get yand
           yandexDiskFolder = line[pos: line.find('"',pos)]
         else:
           yandexDiskFolder = line[pos: line.find('/n',pos)]
-        yandexDiskFolder = yandexDiskFolder.decode('utf-8')  # Decode required for python 2.7 and not required for python 3.0 and above
+        if not PY3:    # Decode required for python 2.7 and not required for Python3
+          yandexDiskFolder = yandexDiskFolder.decode('utf-8')  
         debugPrint('Config: yandexDiskFolder = %s'%yandexDiskFolder)
     cfgFile.close()
     settings.set_boolean('optionreadonly', roVal)
@@ -808,23 +855,27 @@ def readConfig(): # Update settings according to daemon config file and get yand
 def getDaemonOutput():
   global daemonOutput
   try:
-    daemonOutput = subprocess.check_output(['yandex-disk', 'status'],universal_newlines=True)
+    daemonOutput = subprocess.check_output(['yandex-disk', 'status'], universal_newlines=True)
   except:
     daemonOutput = ''
-  daemonOutput = daemonOutput.decode('utf-8') # Decode required for python 2.7 and not required for python 3.0 and above
+  if not PY3:    # Decode required for python 2.7 and not required for Python3
+    daemonOutput = daemonOutput.decode('utf-8') 
   #debugPrint('output = %s'%daemonOutput)
   return (daemonOutput != '')
 
 ###################### MAIN LOOP #########################
 if __name__ == '__main__':
+  ### Running environment detection
+  PY3 = sys.version_info[0] == 3
   ### Application variables and settings ###
-  appVersion = '1.2.3'
+  appVersion = '1.3.0_Py' + ('3' if PY3 else '2')
   appName = 'yandex-disk-indicator'
   installDir = os.path.dirname(os.path.realpath(__file__))
   userHome = os.getenv("HOME")
   # Define .desktop files locations for auto-start facility
   autoStartSource = os.path.join(installDir,'Yandex.Disk-indicator.desktop')
-  autoStartDestination = os.path.join(userHome, '.config', 'autostart', 'Yandex.Disk-indicator.desktop')
+  autoStartDestination = os.path.join(userHome, '.config', 'autostart', \
+                                      'Yandex.Disk-indicator.desktop')
   autoStartSource1 = os.path.join(installDir,'Yandex.Disk.desktop')
   autoStartDestination1 = os.path.join(userHome, '.config', 'autostart', 'Yandex.Disk.desktop')
   # Yandex.Disk configuration file path
@@ -855,8 +906,10 @@ if __name__ == '__main__':
   ### Localization ###
   debugPrint("Current Locale : %s" % str(locale.getlocale()))
   try:            # Try to load translation
-    appTranslate = gettext.translation(appName, '/usr/share/locale', fallback = True)
-    _ = appTranslate.ugettext   #ugettext for python2.7 and gettext for python3
+    if PY3:       # gettext for python3
+      _ = gettext.translation(appName, '/usr/share/locale', fallback = True).gettext
+    else:         # ugettext for python2.7 
+      _ = gettext.translation(appName, '/usr/share/locale', fallback = True).ugettext   
   except:
     _ = str
   ### Activate FM actions according to settings if lock file not exists (probably it is a first run)
@@ -868,13 +921,14 @@ if __name__ == '__main__':
     lockFile = open(lockFileName,'w')                       # Open lock file for write
     fcntl.flock(lockFile, fcntl.LOCK_EX|fcntl.LOCK_NB)      # Try to acquire exclusive lock
   except: # File is already locked
-    sys.exit(_('Yandex.Disk Indicator instance already running\n(file /tmp/%s.lock is locked by another process)')%appName)
+    sys.exit(_('Yandex.Disk Indicator instance already running\n'+\
+               '(file /tmp/%s.lock is locked by another process)')%appName)
   lockFile.write('%d\n'%os.getpid())
   lockFile.flush()
   ### Yandex.Disk daemon ###
-  if checkDaemon():             # Daemon is running now ?
-    readConfig()                # Read Yandex.Disk config file
-  else:                         # Daemon is not running now
+  YD_STATUS = {'idle':_('Synchronized'), 'busy':_('Sync.: '), 'none':_('Not started'), \
+               'paused':_('Paused'), 'no internet access':_('Not connected')}
+  if not checkDaemon():         # Daemon is not running now ?
     if not os.path.exists('/usr/bin/yandex-disk'):
       daemonErrorDialog('NOTINSTALLED')
       appExit()               # Daemon is not installed. Exit right now.
@@ -886,8 +940,9 @@ if __name__ == '__main__':
         if err != '':
           if daemonErrorDialog(err) != 0:
             appExit()         # Something wrong. It's no way to continue. Exit right now.
-  lastStatus = currentStatus  # set initial stored status
-  newStatus = currentStatus   # set initial current status
+  readConfig()                # Read Yandex.Disk config file
+  ### Set initial statuses
+  newStatus = lastStatus = currentStatus
   ### On-screen notifications ###
   Notify.init(appName)        # Initialize notification engine
   notifier = Notify.Notification()
@@ -897,7 +952,8 @@ if __name__ == '__main__':
   updateIconTheme()           # Define the rest icons paths
   iconAnimationTimer = 0      # Define the icon animation timer variable
   ## Indicator creation ##
-  ind = appindicator.Indicator.new("yandex-disk", icon_pause, appindicator.IndicatorCategory.APPLICATION_STATUS)
+  ind = appindicator.Indicator.new("yandex-disk", icon_pause, \
+                                   appindicator.IndicatorCategory.APPLICATION_STATUS)
   ind.set_status (appindicator.IndicatorStatus.ACTIVE)
   ind.set_menu(renderMenu())  # Prepare and attach menu to indicator
   updateIcon()                # Update icon according to current status
@@ -913,6 +969,7 @@ if __name__ == '__main__':
       handleEvent(True)       # True means that handler called by iNotifier
   watchManager = pyinotify.WatchManager()       # Create watch manager
   iNotifier = pyinotify.Notifier(watchManager, EventHandler(), timeout=0.5) # Create PyiNotifier
-  watchManager.add_watch(os.path.join(yandexDiskFolder,'.sync/cli.log'), pyinotify.IN_MODIFY, rec = False)  # Add watch
-  iNotifierTimer = GLib.timeout_add(700, iNotifyHandler)  # Call iNotifier handler every 0.7 seconds.
+  watchManager.add_watch(os.path.join(yandexDiskFolder,'.sync/cli.log'), pyinotify.IN_MODIFY, \
+                         rec = False)  # Add watch
+  iNotifierTimer = GLib.timeout_add(700, iNotifyHandler)  # Call iNotifier handler every .7 seconds
   Gtk.main()                  # Start GTK Main loop
