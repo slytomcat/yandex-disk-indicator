@@ -1,0 +1,9 @@
+#!/bin/bash
+cd yd-tools/
+rm opt/yd-tools/yandexDiskIndicator.py
+rm opt/yd-tools/ya-setup
+rm usr/share/locale/ru/LC_MESSAGES/yandex-disk-indicator.mo
+rm usr/share/locale/el/LC_MESSAGES/yandex-disk-indicator.mo
+rm usr/share/glib-2.0/schemas/apps.yandex-disk-indicator.gschema.xml
+rm debian/yd-tools
+cd ..

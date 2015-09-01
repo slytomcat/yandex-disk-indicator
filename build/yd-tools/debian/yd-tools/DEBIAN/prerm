@@ -1,5 +1,8 @@
 #! /bin/bash -e
-#DEBHELPER#
+
+# Set English as Shell output language
+LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
 userName=$(eval echo $SUDO_USER) 
 userHome=$(eval echo ~${SUDO_USER})
 
@@ -14,10 +17,9 @@ then
      rm /tmp/yandex-disk-indicator.lock
    fi
 fi
-
-if ! [ -e "/usr/bin/yandex-disk" ]
-then
-    zenity  --error --width=350 --height=150 --ok-label="Выход" --title "Yandex.Disk" --text="Yandex.disk CLI utility is not installed! \nVisit www.yandex.ru, download and install Yandex.Disk CLI Utility\n After that repeeat yd-tools installation."
-    exit 1
+if [ "$1" = "remove" ]; then
+  if [ -f  "$userHome/.config/autostart/Yandex.Disk-indicator.desktop" ]
+  then 
+    rm  "$userHome/.config/autostart/Yandex.Disk-indicator.desktop"
+  fi
 fi
-exit 0

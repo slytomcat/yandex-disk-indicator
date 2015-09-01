@@ -92,7 +92,7 @@ def quitApplication(widget):
     stopYDdaemon()    # Stop daemon
     debugPrint('Daemon is stopped')
   # --- Stop all timers ---
-  # stopTimer(iconAnimationTimer)
+  stopTimer(iconAnimationTimer)
   stopTimer(iNotifierTimer)
   stopTimer(watchTimer)
   debugPrint("Timers are closed")
@@ -342,7 +342,8 @@ def renderMenu(): # Render initial menu (without any actual information)
   global menu_free
   global menu_YD_daemon_stop
   global menu_YD_daemon_start
-  global widgetsList
+  global menu_last
+  global submenu_last
   global pathsList
   global yandexDiskFolder
   menu = Gtk.Menu()           # Create menu
@@ -361,18 +362,12 @@ def renderMenu(): # Render initial menu (without any actual information)
   menu_free.set_sensitive(False)
   menu_free.set_label('...')
   menu.append(menu_free)
-  submenu_last = Gtk.Menu()   # Sub-menu: list of last synchronized
-  widgetsList = []            # List of menu_last widgets to update their labels later
-  pathsList = []              # List of files/folders in lastMenu items
-  for i in range(0, 9):
-    pathsList.append('...')   # Initialize file list
-    widgetsList.append(Gtk.MenuItem.new_with_label('...'))  # Store widget ID
-    widgetsList[i].set_use_underline(False)
-    widgetsList[i].connect("activate", openLast, i)
-    submenu_last.append(widgetsList[i])
   menu_last = Gtk.MenuItem(_('Last synchronized items'))
   menu_last.set_use_underline(False)
-  menu_last.set_submenu(submenu_last)
+  submenu_last = Gtk.Menu()             # Sub-menu: list of last synchronized files/folders
+  pathsList = []                        # List of files/folders in lastMenu items
+  menu_last.set_submenu(submenu_last)   # Add submenu (empty at the start)
+  menu_last.set_sensitive(False)        # Set as inactive as there is no items in submenu
   menu.append(menu_last)
   menu.append(Gtk.SeparatorMenuItem.new()) #-----separator--------
   menu_YD_daemon_start = Gtk.MenuItem(_('Start Yandex.Disk daemon'))
@@ -414,6 +409,21 @@ def renderMenu(): # Render initial menu (without any actual information)
   menu.show_all()
   return menu
 
+def startYDdaemon(): # Execute 'yandex-disk start' and return '' if success or error message if not
+  # ... but sometime it starts successfully with error message
+  try:
+    msg = subprocess.check_output(['yandex-disk', 'start'],universal_newlines=True)
+    debugPrint('Start success, message: %s'%msg)
+    return ''
+  except subprocess.CalledProcessError as e:
+    debugPrint('Start failed:%s'%e.output)
+    if e.output == '':   # probably 'os: no file'
+      return 'NOTINSTALLED'
+    err = 'NONET' if e.output.find('Proxy')>0 else\
+          'BADDAEMON' if e.output.find('daemon')>0 else\
+          'NOCONFIG'
+    return err
+
 def startDaemon(widget):
   # Try to start yandex-disk daemon and change the menu items sensitivity
   err = startYDdaemon()
@@ -423,48 +433,45 @@ def startDaemon(widget):
     daemonErrorDialog(err)
     updateStartStop(False)
 
+def stopYDdaemon(): # Execute 'yandex-disk stop'
+  try:
+    msg = subprocess.check_output(['yandex-disk','stop'],universal_newlines=True)
+  except:
+    msg = ''
+  return (msg != '')
+
 def stopDaemon(widget):
   stopYDdaemon()
   updateStartStop(False)
 
-def checkDaemon(): # Checks that daemon process is running.
-  # It should provide correct response.
-  # Kills the daemon when it is running but not responding (HARON_CASE).
-  global currentStatus
-  currentStatus = 'none'
+def getDaemonOutput():
+  global daemonOutput
   try:
-    msg = subprocess.check_output(['pgrep', '-x', 'yandex-disk'], universal_newlines=True)[ :-1]
+    daemonOutput = subprocess.check_output(['yandex-disk', 'status'], universal_newlines=True)
   except:
-    debugPrint("yandex-disk daemon is not running")
-    return False
-  debugPrint('yandex-disk daemon PID is: %s'%msg)
-  if getDaemonOutput():  # Check for correct daemon response
-    debugPrint('yandex-disk daemon is responding correctly.')
-    parseDaemonOutput()  # Parse response to get real currentStatus
-    return True
-  debugPrint('yandex-disk daemon is NOT responding!')
-  try:                   # As it is not responding - try to kill all instances of daemon
-    subprocess.check_call(['killall', 'yandex-disk'])
-    debugPrint('yandex-disk daemon(s) killed')
-  except:
-    debugPrint('yandex-disk daemon kill error')
-  return False
+    daemonOutput = ''     # daemon is not running or bad
+  if not PY3:             # Decode required for python 2.7 and not required for Python3
+    daemonOutput = daemonOutput.decode('utf-8') 
+  #debugPrint('output = %s'%daemonOutput)
+  return (daemonOutput != '')
 
-def parseDaemonOutput(): # Parse the daemon output
+def parseDaemonOutput():  # Parse the daemon output
   # Pre-formats status messages for menu
   global currentStatus
+  global lastStatus
   global yandexDiskStatus
   global yandexDiskSpace1
   global yandexDiskSpace2
   global syncProgress
   global lastItems
+  global lastItemsChanged
   global daemonOutput
   global YD_STATUS
   # Look for synchronization progress
   lastPos = 0
   startPos = daemonOutput.find('ync progress: ')
   if startPos > 0:
-    startPos += 14  # 14 is a length of 'ync progress: ' string
+    startPos += 14                 # 14 is a length of 'ync progress: ' string
     lastPos = daemonOutput.find('\n',startPos)
     syncProgress = daemonOutput[startPos: lastPos]
   else:
@@ -475,7 +482,7 @@ def parseDaemonOutput(): # Parse the daemon output
     lastPos = daemonOutput.find('\n',startPos)
     currentStatus = daemonOutput[startPos: lastPos]
     if currentStatus == 'index':   # Don't handle index status
-      currentStatus = 'busy'
+      currentStatus = lastStatus   # keep last status
   else:
     currentStatus = 'none'
   # Look for total Yandex.Disk size
@@ -505,43 +512,65 @@ def parseDaemonOutput(): # Parse the daemon output
   # Look for last synchronized items list
   startPos = daemonOutput.find('Last synchronized',lastPos)
   if startPos > 0:
-    startPos = daemonOutput.find('\n',startPos)+1 # skip one line
-    lastItems = daemonOutput[startPos: ] # save the rest
-    # Don't split last synchronized list on individual lines/paths.
-    # It is easer to do it in the same loop where menu is being updated (in updateMenuInfo()).
+    startPos = daemonOutput.find('\n',startPos)+1  # skip one line
+    items = daemonOutput[startPos: ]               # save the rest
   else:
-    lastItems = ''
+    items = ''
+  lastItemsChanged = (lastItems != items)          # check changes in the list 
+  #debugPrint(str(lastItemsChanged))
+  lastItems = items
+  # Don't split last synchronized list on individual lines/paths
+  # It is easier to do it in the same loop where menu is being updated (in updateMenuInfo()).  
   # Prepare and format information for menu
   yandexDiskStatus = _('Status: ')+YD_STATUS.get(currentStatus, _('Error'))+syncProgress
   yandexDiskSpace1 = _('Used: ')+sUsed+'/'+sTotal
   yandexDiskSpace2 = _('Free: ')+sAvailable+_(', trash: ')+sTrash
 
-def startYDdaemon(): # Execute 'yandex-disk start' and return '' if success or error message if not
-  # ... but sometime it starts successfully with error message
-  try:
-    msg = subprocess.check_output(['yandex-disk', 'start'],universal_newlines=True)
-    debugPrint('Start success, message: %s'%msg)
-    return ''
-  except subprocess.CalledProcessError as e:
-    debugPrint('Start failed:%s'%e.output)
-    if e.output == '':   # probably 'os: no file'
-      return 'NOTINSTALLED'
-    err = 'NONET' if e.output.find('Proxy')>0 else\
-          'BADDAEMON' if e.output.find('daemon')>0 else\
-          'NOCONFIG'
-    return err
-
-def stopYDdaemon(): # Execute 'yandex-disk stop'
-  try:
-    msg = subprocess.check_output(['yandex-disk','stop'],universal_newlines=True)
-  except:
-    msg = ''
-  return (msg != '')
+def checkDaemon():               # Checks that daemon installed, configured and it is running.
+  # it also reads the configuration file in any case when it returns
+  global settings
+  if not os.path.exists('/usr/bin/yandex-disk'):
+    daemonErrorDialog('NOTINSTALLED')
+    appExit()                    # Daemon is not installed. Exit right now.
+  while not readConfig():        # Try to read Yandex.Disk configuration file
+    if daemonErrorDialog('NOCONFIG') !=0:
+      appExit()                  # User hasn't configured daemon. Exit right now.
+  while not getDaemonOutput():   # Check for correct daemon response (also check that it is running)
+    try:                         # Try to find daemon running process
+      msg = subprocess.check_output(['pgrep', '-x', 'yandex-disk'], universal_newlines=True)[ :-1]
+      debugPrint('yandex-disk daemon is running but NOT responding!')
+      # Kills the daemon when it is running but not responding (HARON_CASE).
+      try:                       # Try to kill all instances of daemon
+        subprocess.check_call(['killall', 'yandex-disk'])
+        debugPrint('yandex-disk daemon(s) killed')
+        msg = ''
+      except:
+        debugPrint('yandex-disk daemon kill error')
+        daemonErrorDialog('')
+        appExit()                # nonconvertible error - exit 
+    except:
+      debugPrint("yandex-disk daemon is not running")
+      msg = ''
+    if msg == '' and not settings.get_boolean("startonstart"):  
+      return False               # Daemon is not started and should not be started
+    else:  
+      err = startYDdaemon()      # Try to start it
+      if err != '':
+        if daemonErrorDialog(err)  !=0:
+          appExit()              # Something wrong. It's no way to continue. Exit right now.
+        else:
+          return False           # Daemon was not started but user decided to start indicator anyway
+    # here we started daemon. Try to check it's output (while)
+  # At this point we know that daemon is installed, configured and started
+  debugPrint('yandex-disk daemon is responding correctly.')
+  return True                    # Everything OK
 
 def updateMenuInfo(): # Update information in menu
-  global widgetsList
+  global menu_last
+  global submenu_last
   global pathsList
   global lastItems
+  global lastItemsChanged
   global yandexDiskStatus
   global yandexDiskSpace1
   global yandexDiskSpace2
@@ -552,28 +581,40 @@ def updateMenuInfo(): # Update information in menu
   menu_status.set_label(yandexDiskStatus) # Update status data
   menu_used.set_label(yandexDiskSpace1)
   menu_free.set_label(yandexDiskSpace2)
+  if not lastItemsChanged:
+    return
   # --- Update last synchronized list ---
-  endPos = 0
-  for i in range(0, 9):
-    # Find and get path in lastItems
-    startPos = lastItems.find("'",endPos+2)
-    endPos = lastItems.find("\n",startPos)
-    if (startPos<0) or (endPos<0) or (startPos == endPos):
-      lastLine = '...'
-    else:
-      lastLine = lastItems[startPos+1:endPos-1]
-    pathsList[i] = lastLine   # Store path/file to have an ability to open it later
-    if len(lastLine) > 50:    # Is path too long to be a menu label?
-      # Shorten it: get 23 symbols from beginning, then '...', and 24 from end (50 total)
-      lastLine = lastLine[:22]+'...'+lastLine[-25:]
-    # Replace underscore to disable use_underline feature of GTK menu acceleration
-    widgetsList[i].set_label(lastLine.replace('_',u"\u02CD"))
-    # Change sensitivity of last menu item according to the path existence.
-    if os.path.exists(os.path.join(yandexDiskFolder,pathsList[i])):
-      widgetsList[i].set_sensitive(True)
-    else:
-      widgetsList[i].set_sensitive(False)
-
+  # clear sub menu and list of file paths 
+  for widget in submenu_last.get_children():
+    submenu_last.remove(widget)
+  pathsList = []
+  # Find paths in lastItems
+  for lastLine in lastItems.splitlines():
+    startPos = lastLine.find("'")
+    endPos = lastLine.find("'", startPos+1)
+    if (startPos > 0) and (endPos > 0):   # File path was found
+      lastLine = lastLine[startPos+1:endPos]
+      pathsList.append(lastLine)          # Store path/file to have an ability to open it later
+      if len(lastLine) > 50:              # Is path too long to be a menu label?
+        # Shorten it: get 23 symbols from beginning, then '...', and 24 from end (50 total)
+        lastName = lastLine[:22]+'...'+lastLine[-25:]
+      else:
+        lastName = lastLine
+      # Replace underscore to disable menu acceleration feature of GTK menu
+      widget=Gtk.MenuItem.new_with_label(lastName.replace('_',u"\u02CD"))
+      widget.set_use_underline(False)
+      if os.path.exists(os.path.join(yandexDiskFolder,lastLine)):
+        widget.set_sensitive(True)
+        widget.connect("activate", openLast, len(pathsList)-1)
+      else:
+        widgetsList[i].set_sensitive(False)
+      submenu_last.append(widget)
+      widget.show()
+  if len(pathsList) == 0:       # no items in list
+    menu_last.set_sensitive(False)
+  else:                         # there are some items in list
+    menu_last.set_sensitive(True)
+  
 def updateStartStop(started): # Update daemon start and stop menu items availability
   global menu_YD_daemon_start
   global menu_YD_daemon_stop
@@ -610,6 +651,9 @@ def handleEvent(triggeredBy_iNotifier): # Main working routine: event handler fu
   updateMenuInfo()                  # Update information in menu
   if lastStatus != newStatus:       # Handle status change
     updateIcon()                    # Update icon
+    if lastStatus == 'none':        # Daemon was just started when 'none' changed to something else
+      updateStartStop(True)         # Change menu sensitivity
+      sendmessage(_('Yandex.Disk'), _('Yandex.Disk daemon is started'))
     if newStatus == 'busy':         # Just entered into 'busy'
       sendmessage(_('Yandex.Disk'), _('Synchronization is started'))
     elif newStatus == 'idle':       # Just entered into 'idle'
@@ -623,9 +667,6 @@ def handleEvent(triggeredBy_iNotifier): # Main working routine: event handler fu
       sendmessage(_('Yandex.Disk'), _('Yandex.Disk daemon is stopped'))
     else:                           # newStatus = 'error' - Just entered into 'error'
       sendmessage(_('Yandex.Disk'), _('Synchronization ERROR'))
-    if lastStatus == 'none':        # Daemon was just started when 'none' changed to something else
-      updateStartStop(True)         # Change menu sensitivity
-      sendmessage(_('Yandex.Disk'), _('Yandex.Disk daemon is started'))
     lastStatus = newStatus          # remember new status
   # --- Handle timer delays ---
   if triggeredBy_iNotifier:         # True means that it is called by iNonifier
@@ -678,6 +719,7 @@ def updateIcon(): # Change indicator icon according to the current status
     return                          # there is nothing to do any more here
   if newStatus != 'busy' and iconAnimationTimer > 0:  # Not 'busy' and animation is running
     stopTimer(iconAnimationTimer)   # Stop icon animation
+    iconAnimationTimer = 0
   # --- Set icon for non-animated statuses ---
   if newStatus == 'idle':
     ind.set_icon(icon_idle)
@@ -852,17 +894,6 @@ def readConfig(): # Update settings according to daemon config file and get yand
     settings.set_boolean('optionoverwrite', ovVal)
     return (yandexDiskFolder != '')
 
-def getDaemonOutput():
-  global daemonOutput
-  try:
-    daemonOutput = subprocess.check_output(['yandex-disk', 'status'], universal_newlines=True)
-  except:
-    daemonOutput = ''
-  if not PY3:    # Decode required for python 2.7 and not required for Python3
-    daemonOutput = daemonOutput.decode('utf-8') 
-  #debugPrint('output = %s'%daemonOutput)
-  return (daemonOutput != '')
-
 ###################### MAIN LOOP #########################
 if __name__ == '__main__':
   ### Running environment detection
@@ -926,23 +957,18 @@ if __name__ == '__main__':
   lockFile.write('%d\n'%os.getpid())
   lockFile.flush()
   ### Yandex.Disk daemon ###
+  # Initialize global variables 
   YD_STATUS = {'idle':_('Synchronized'), 'busy':_('Sync.: '), 'none':_('Not started'), \
                'paused':_('Paused'), 'no internet access':_('Not connected')}
-  if not checkDaemon():         # Daemon is not running now ?
-    if not os.path.exists('/usr/bin/yandex-disk'):
-      daemonErrorDialog('NOTINSTALLED')
-      appExit()               # Daemon is not installed. Exit right now.
-    if not readConfig():      # Read Yandex.Disk config file
-      if daemonErrorDialog('NOCONFIG') != 0:
-        appExit()             # User hasn't configured daemon. Exit right now.
-    if settings.get_boolean("startonstart"):
-        err = startYDdaemon() # Try to start it
-        if err != '':
-          if daemonErrorDialog(err) != 0:
-            appExit()         # Something wrong. It's no way to continue. Exit right now.
-  readConfig()                # Read Yandex.Disk config file
+  lastItems = ''
+  currentStatus = 'none'
+  lastStatus = 'idle'         # fallback status for "index" status substitution at start time
+  if checkDaemon():           # Check that daemon is installed, configured and started (responding)
+    parseDaemonOutput()       # Parse daemon output to get real currentStatus
+  # Read Yandex.Disk configuration file is read in checkDaemon()
   ### Set initial statuses
   newStatus = lastStatus = currentStatus
+  lastItems = ''              # Reset lastItems in order to update menu in handleEvent()
   ### On-screen notifications ###
   Notify.init(appName)        # Initialize notification engine
   notifier = Notify.Notification()

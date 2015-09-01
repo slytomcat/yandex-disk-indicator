@@ -1,5 +1,5 @@
 #! /bin/bash -e
-#DEBHELPER#
+
 userName=$(eval echo $SUDO_USER) 
 userHome=$(eval echo ~${SUDO_USER})
 
