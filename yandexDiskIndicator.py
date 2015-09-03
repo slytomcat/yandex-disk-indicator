@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-#  Yandex.Disk indicator (see version in about dialog)
+#  Yandex.Disk indicator (see appVersion variable in main loop code below for version info)
 #
 #  Copyright 2014 Sly_tom_cat <slytomcat@mail.ru>
 #  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
@@ -79,7 +79,7 @@ def quitApplication(widget):
   appExit()
 
 def openLast(widget, index):  # Open last synchronized item
-  global yandexDiskFolder, pathsList
+  global pathsList
   openPath(widget, pathsList[index])
 
 def openPath(widget, path):  # Open path
@@ -206,7 +206,7 @@ def openPreferences(menu_widget):   # Preferences Window
   # --- Indicator preferences tab ---
   preferencesBox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 5)
   key = 'autostart'                 # Auto-start indicator on system start-up
-  autostart_check_button = Gtk.CheckButton( \
+  autostart_check_button = Gtk.CheckButton(
                              _('Start Yandex.Disk indicator when you start your computer'))
   autostart_check_button.set_active(settings.get_boolean(key))
   autostart_check_button.connect("toggled", onCheckButtonToggled, autostart_check_button, key)
@@ -284,24 +284,24 @@ def openPreferences(menu_widget):   # Preferences Window
   optionsSave()                     # Save daemon statrt options in config file
   menu_widget.set_sensitive(True)   # Enable menu item
 
-def showOutput(menu_widget):            # Display daemon output in dialogue window
+def showOutput(menu_widget):                    # Display daemon output in dialogue window
   global origLANG, workLANG, daemonOutput
-  menu_widget.set_sensitive(False)      # Disable menu item
-  os.putenv('LANG', origLANG)           # Restore user LANG settings
-  getDaemonOutput()                     # Receve daemon output in user language
-  os.putenv('LANG', workLANG)           # Restore working LANG settings
+  menu_widget.set_sensitive(False)              # Disable menu item
+  os.putenv('LANG', origLANG)                   # Restore user LANG settings
+  getDaemonOutput()                             # Receve daemon output in user language
+  os.putenv('LANG', workLANG)                   # Restore working LANG settings
   statusWindow = Gtk.Dialog(_('Yandex.Disk daemon output message'))
   statusWindow.set_icon(GdkPixbuf.Pixbuf.new_from_file(yandexDiskIcon))
   statusWindow.set_border_width(6)
   statusWindow.add_button(_('Close'), Gtk.ResponseType.CLOSE)
-  textBox = Gtk.TextView()              # Create text-box to display daemon output 
+  textBox = Gtk.TextView()                      # Create text-box to display daemon output 
   textBox.get_buffer().set_text(daemonOutput)
   textBox.set_editable(False)
-  statusWindow.get_content_area().add(textBox) # Put it inside the dialogue content area
+  statusWindow.get_content_area().add(textBox)  # Put it inside the dialogue content area
   statusWindow.show_all()
   statusWindow.run()
   statusWindow.destroy()
-  menu_widget.set_sensitive(True)       # Enable menu item
+  menu_widget.set_sensitive(True)               # Enable menu item
 
 def renderMenu():                           # Render initial menu (without any actual information)
   global menu_status, menu_used, menu_free, menu_YD_daemon_stop, menu_YD_daemon_start
@@ -344,7 +344,8 @@ def renderMenu():                           # Render initial menu (without any a
   menu.show_all()
   return menu
 
-def startYDdaemon():      # Execute 'yandex-disk start' and return '' if success or error message if not
+def startYDdaemon():      # Execute 'yandex-disk start' 
+                          # and return '' if success or error message if not
                           # ... but sometime it starts successfully with error message
   try:
     msg = subprocess.check_output(['yandex-disk', 'start'], universal_newlines=True)
@@ -415,15 +416,15 @@ def parseDaemonOutput():                   # Parse the daemon output
     sTotal = daemonOutput[startPos: lastPos]
     ## If 'Total: ' was found then other information as also should be presented
     # Look for used size                  # 6 is len('Used: ')
-    startPos = daemonOutput.find('Used: ', lastPos)+6
+    startPos = daemonOutput.find('Used: ', lastPos) + 6
     lastPos = daemonOutput.find('\n', startPos)
     sUsed = daemonOutput[startPos: lastPos]
     # Look for free size                  # 11 is len('Available: ')
-    startPos = daemonOutput.find('Available: ', lastPos)+11
+    startPos = daemonOutput.find('Available: ', lastPos) + 11
     lastPos = daemonOutput.find('\n', startPos)
     sFree = daemonOutput[startPos: lastPos]
     # Look for trash size                 # 12 is len('Trash size: ')
-    startPos = daemonOutput.find('Trash size: ', lastPos)+12
+    startPos = daemonOutput.find('Trash size: ', lastPos) + 12
     lastPos = daemonOutput.find('\n', startPos)
     sTrash = daemonOutput[startPos: lastPos]
   else:  # When there is no Total: then other sizes are not presented
@@ -542,8 +543,8 @@ def handleEvent(triggeredBy_iNotifier): # Main working routine: event handler fu
   # Convert status to the internal presentation ['busy','idle','paused','none','error']
   newStatus = currentStatus if currentStatus in ['busy', 'idle', 'paused', 'none'] else 'error'
   # Status 'error' covers 'error', 'no internet access','failed to connect to daemon process'...
-  debugPrint('Event triggered by %s  status: %s -> %s' % ('inotify' if triggeredBy_iNotifier 
-                                                          else 'timer  ', lastStatus, newStatus))
+  debugPrint('Event triggered by %s  status: %s -> %s' % ('inotify' if triggeredBy_iNotifier else
+                                                          'timer  ', lastStatus, newStatus))
   updateMenuInfo()                  # Update information in menu
   if lastStatus != newStatus:       # Handle status change
     updateIcon()                    # Update icon
@@ -769,7 +770,7 @@ def readConfig():     # Update settings according to daemon config file and get 
           yandexDiskFolder = line[pos: line.find('/n', pos)]
         if not PY3:   # Decode required for python 2.7 and not required for Python3
           yandexDiskFolder = yandexDiskFolder.decode('utf-8')
-        debugPrint('Config: yandexDiskFolder = %s'%yandexDiskFolder)
+        debugPrint('Config: yandexDiskFolder = %s' % yandexDiskFolder)
     cfgFile.close()
     settings.set_boolean('optionreadonly', roVal)
     settings.set_boolean('optionoverwrite', ovVal)
