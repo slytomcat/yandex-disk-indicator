@@ -2,8 +2,8 @@
 cd yd-tools/
 cp ../../yandexDiskIndicator.py opt/yd-tools/yandexDiskIndicator.py
 cp ../../ya-setup opt/yd-tools/ya-setup
-cp ../../yandex-disk-indicator.mo usr/share/locale/ru/LC_MESSAGES/
-cp ../../yandex-disk-indicator_g.mo usr/share/locale/el/LC_MESSAGES/yandex-disk-indicator.mo
+cp ../../yandex-disk-indicator_ru.mo usr/share/locale/ru/LC_MESSAGES/yandex-disk-indicator.mo
+cp ../../yandex-disk-indicator_el.mo usr/share/locale/el/LC_MESSAGES/yandex-disk-indicator.mo
 cp ../../apps.yandex-disk-indicator.gschema.xml usr/share/glib-2.0/schemas/
 cp ../../Yandex.Disk-indicator.desktop usr/share/applications/
 cp ../../Yandex.Disk.desktop usr/share/applications/
