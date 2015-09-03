@@ -1,0 +1,53 @@
+#!/bin/bash
+
+#### Author: Snow Dimon ####
+#### Website: snowdimon.ru ####
+
+###Proxy
+ans=$(zenity  --list --cancel-label="Выход" --ok-label="Далее" --title "Yandex.Disk setup" --text "Добро пожаловать в мастер установки Яндекс.Диск!
+До начала использования клиента необходимо ответить на несколько вопросов:
+Использовать проки-сервер?" --radiolist --hide-header --column "" --column "Варианты" TRUE "Нет"  FALSE "Да" FALSE "Системные настройки")
+if [ $? -eq "0" ];then
+echo "auth=/home/$USER/.config/yandex-disk/passwd" > /home/$USER/.config/yandex-disk/config.cfg
+	if [ "$ans" = "Нет" ]; then
+	echo "proxy=no" >> /home/$USER/.config/yandex-disk/config.cfg
+
+	else
+		if [ "$ans" = "Системные настройки" ]; then
+		echo "proxy=auto" >> /home/$USER/.config/yandex-disk/config.cfg
+
+		else
+			if [ "$ans" = "Да" ]; then
+			echo "proxy=`zenity --entry --title="Настройки прокси-сервера" --text="Введите тип соединения, адрес, порт, логин, пароль. Например:" \
+          --entry-text="https,127.0.0.1,443,login,password"`" >> /home/$USER/.config/yandex-disk/config.cfg
+			fi
+		fi
+	fi
+else
+exit 1
+fi
+###Folder
+ans=$(zenity  --list --cancel-label="Выход" --ok-label="Далее" --title "Yandex.Disk setup" --text "Выберите папку для синхронизации ваших файлов." --radiolist --hide-header --column "" --column "Варианты" TRUE "По умолчанию (~/Yandex.Disk)" FALSE "Выбрать существующую папку")
+if [ $? -eq "0" ];then
+	if [ "$ans" = "По умолчанию (~/Yandex.Disk)" ]; then
+	mkdir /home/$USER/Yandex.Disk
+	echo "dir=/home/$USER/Yandex.Disk" >> /home/$USER/.config/yandex-disk/config.cfg
+
+	else
+		if [ "$ans" = "Выбрать существующую папку" ]; then
+		folder=`zenity --file-selection --directory --title="Выбор папки для синхронизации"`
+		echo "dir=$folder" >> /home/$USER/.config/yandex-disk/config.cfg
+		fi
+	fi
+else
+exit 1
+fi
+###Token
+ENTRY=`zenity --password --username --title="Yandex.Disk setup"`
+if [ $? -eq "0" ];then
+echo $ENTRY | cut -d'|' -f2 | yandex-disk token `echo $ENTRY | cut -d'|' -f1`  | cut -d':' -f2 | zenity --text-info --width=350 --height=200 --title="Yandex.Disk авторизация..."
+exit 0
+else
+exit 1
+fi
+##############################
