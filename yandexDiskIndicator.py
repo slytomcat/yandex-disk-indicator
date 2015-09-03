@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator (see appVersion variable in main loop code below for version info)
@@ -786,10 +786,10 @@ if __name__ == '__main__':
   appVersion = '1.3.1_Py' + ('3' if PY3 else '2')
   appName = 'yandex-disk-indicator'
   # Define .desktop files locations for auto-start facility
-  autoStartSource = os.path.join(installDir, 'Yandex.Disk-indicator.desktop')
+  autoStartSource = os.path.join('usr', 'share', 'applications', 'Yandex.Disk-indicator.desktop')
   autoStartDestination = os.path.join(userHome, '.config', 'autostart',
                                       'Yandex.Disk-indicator.desktop')
-  autoStartSource1 = os.path.join(installDir, 'Yandex.Disk.desktop')
+  autoStartSource1 = os.path.join('usr', 'share', 'applications', 'Yandex.Disk.desktop')
   autoStartDestination1 = os.path.join(userHome, '.config', 'autostart', 'Yandex.Disk.desktop')
   # Yandex.Disk configuration file path
   daemonConfig = os.path.join(userHome, '.config', 'yandex-disk', 'config.cfg')
@@ -847,8 +847,8 @@ if __name__ == '__main__':
   currentStatus = 'none'
   lastStatus = 'idle'         # fallback status for "index" status substitution at start time
   if checkDaemon():           # Check that daemon is installed, configured and started (responding)
-    parseDaemonOutput()       # Parse daemon output to get real currentStatus
-  # Read Yandex.Disk configuration file is read in checkDaemon()
+    parseDaemonOutput()       # Parse daemon output to determine the real currentStatus
+  # Yandex.Disk configuration file is read within checkDaemon()
   ### Set initial statuses
   newStatus = lastStatus = currentStatus
   lastItems = '*'             # Reset lastItems in order to update menu in handleEvent()
@@ -857,7 +857,7 @@ if __name__ == '__main__':
   notifier = Notify.Notification()
   ### Application Indicator ###
   ## Icons ##
-  yandexDiskIcon = os.path.join(installDir, 'icons', 'yd-128.png')            # Big icon
+  yandexDiskIcon = os.path.join(installDir, 'yd-128.png')            # logo
   updateIconTheme()           # Define the rest icons paths
   iconAnimationTimer = 0      # Define the icon animation timer variable
   ## Indicator ##

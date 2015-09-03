@@ -2,9 +2,34 @@
 cd yd-tools/
 cp ../../yandexDiskIndicator.py opt/yd-tools/yandexDiskIndicator.py
 cp ../../ya-setup opt/yd-tools/ya-setup
-cp ../../yandex-disk-indicator.mo usr/share/locale/ru/LC_MESSAGES/yandex-disk-indicator.mo
+cp ../../yandex-disk-indicator.mo usr/share/locale/ru/LC_MESSAGES/
 cp ../../yandex-disk-indicator_g.mo usr/share/locale/el/LC_MESSAGES/yandex-disk-indicator.mo
-cp ../../apps.yandex-disk-indicator.gschema.xml usr/share/glib-2.0/schemas/apps.yandex-disk-indicator.gschema.xml
+cp ../../apps.yandex-disk-indicator.gschema.xml usr/share/glib-2.0/schemas/
+cp ../../Yandex.Disk-indicator.desktop usr/share/applications/
+cp ../../Yandex.Disk.desktop usr/share/applications/
+cp ../../yd-128.png opt/yd-tools/
+cp ../../icons/dark/yd-busy1.png opt/yd-tools/icons/dark/
+cp ../../icons/dark/yd-busy2.png opt/yd-tools/icons/dark/
+cp ../../icons/dark/yd-busy3.png opt/yd-tools/icons/dark/
+cp ../../icons/dark/yd-busy4.png opt/yd-tools/icons/dark/
+cp ../../icons/dark/yd-busy5.png opt/yd-tools/icons/dark/
+cp ../../icons/dark/yd-ind-error.png opt/yd-tools/icons/dark/
+cp ../../icons/dark/yd-ind-idle.png opt/yd-tools/icons/dark/
+cp ../../icons/dark/yd-ind-pause.png opt/yd-tools/icons/dark/
+cp ../../icons/light/yd-busy1.png opt/yd-tools/icons/light/
+cp ../../icons/light/yd-busy2.png opt/yd-tools/icons/light/
+cp ../../icons/light/yd-busy3.png opt/yd-tools/icons/light/
+cp ../../icons/light/yd-busy4.png opt/yd-tools/icons/light/
+cp ../../icons/light/yd-busy5.png opt/yd-tools/icons/light/
+cp ../../icons/light/yd-ind-error.png opt/yd-tools/icons/light/
+cp ../../icons/light/yd-ind-idle.png opt/yd-tools/icons/light/
+cp ../../icons/light/yd-ind-pause.png opt/yd-tools/icons/light/
+cp ../../fm-actions/Nautilus_Nemo/publish opt/yd-tools/fm-actions/Nautilus_Nemo/
+cp ../../fm-actions/Nautilus_Nemo/unpublish opt/yd-tools/fm-actions/Nautilus_Nemo/
+cp ../../fm-actions/Dolphin/publish.desktop opt/yd-tools/fm-actions/Dolphin/
+cp ../../fm-actions/Dolphin/unpublish.desktop opt/yd-tools/fm-actions/Dolphin/
+cp ../../yandex-disk-indicator usr/bin/
+
 chmod -R u+rw *
 chmod -R go-w *
 chmod a+x debian/rules

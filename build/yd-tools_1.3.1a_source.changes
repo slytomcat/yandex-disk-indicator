@@ -1,0 +1,45 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Format: 1.8
+Date: mon, 31 Aug 2015 15:05:18 +0300
+Source: yd-tools
+Binary: yd-tools
+Architecture: source
+Version: 1.3.1a
+Distribution: precise
+Urgency: medium
+Maintainer: Sly_tom_cat <slytomcat@mail.ru>
+Changed-By: Sly_tom_cat <slytomcat@mail.ru>
+Description:
+ yd-tools   - Yandex.Disk indicator for Ubuntu desktop panel.
+Changes:
+ yd-tools (1.3.1a) precise; urgency=medium
+ .
+   * Changes:
+    -- Fix issue with Debian installation of file utils for Nautilus.
+    -- Icon resized to 24x24 size (128x128 are available in _128 catalogs)
+    -- Fix issue with new version of Nemo installation
+    -- Python 2 and 3 versino compatibility added (app can be run in any version of Python)
+    -- Dynamic menu creation for las syncronized items
+Checksums-Sha1:
+ 9b08e131ee61bf643a85096eec2cecb225d60744 1025 yd-tools_1.3.1a.dsc
+ d8ab3bbd48906906c2d58deb2c069f479b1b2e00 62042 yd-tools_1.3.1a.tar.gz
+Checksums-Sha256:
+ 25410466266c80833bb5825efc7fb34557a6faf699f88804a1c2c7f23b921657 1025 yd-tools_1.3.1a.dsc
+ d530ce95ac78d48bc828c651111ad94875527aab041ce9c02583dab784c341fb 62042 yd-tools_1.3.1a.tar.gz
+Files:
+ 475c7927afc93f0cc7c09f2a62e593af 1025 net optional yd-tools_1.3.1a.dsc
+ 4cbadc9e8b7f83d601a5df57400cb534 62042 net optional yd-tools_1.3.1a.tar.gz
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQEcBAEBAgAGBQJV6J30AAoJEO/UtzIl2tA/edkIAKxwjv98jjkybjWGkMO9RlyG
+5QznlLsXOe2RM1mRBnXn6UpSgnauassQmgjSwleaXjTnwt9czgcmI3tCfa3v0093
+fBHt0UVO3MzSQmhXWtVInPBRLegUXnC3L3vQ+olWeZRouUHRxfUTHZPGPjwOztwI
++MhbzKPqigaAAtCyGvBbbem11TuQA4QovxMnxnh+ROzxFb+5XueJFm4nrb6+NV4F
+zEAZid3TIW6OExJA0oAXDt79WVxdfJ0gd0B6XrOxGfq+UcYXBVAboW7QrQX5YlyF
+vbQ8q/oq9+mZSgqTKOdRzeva/GQmwtxOLoqSX7pF8iRinANyL8ZNO9xa1aHaXPA=
+=M8Ez
+-----END PGP SIGNATURE-----
