@@ -1,4 +1,4 @@
-yd-tools (1.3.1a) precise; urgency=medium
+yd-tools (1.3.1b) precise; urgency=medium
 
   * Changes:
    -- Fix issue with Debian installation of file utils for Nautilus.
@@ -6,5 +6,7 @@ yd-tools (1.3.1a) precise; urgency=medium
    -- Fix issue with new version of Nemo installation
    -- Python 2 and 3 versino compatibility added (app can be run in any version of Python)
    -- Dynamic menu creation for las syncronized items
+   -- Format python code to be more likely to PEP-8
+   -- fix some minor mistakes made during project optimization
 
- -- Sly_tom_cat <slytomcat@mail.ru>  mon, 31 Aug 2015 15:05:18 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Fri, 4 Sep 2015 11:16:04 +0300

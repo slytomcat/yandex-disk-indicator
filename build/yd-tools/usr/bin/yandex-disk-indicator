@@ -1,4 +1,0 @@
-#!/bin/bash
-# This is wrapper script to run Yandex.Disk Indicator
-cd '/opt/yd-tools/'
-./yandexDiskIndicator.py

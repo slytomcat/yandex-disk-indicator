@@ -1,6 +1,7 @@
 opt/yd-tools/yandexDiskIndicator.py opt/yd-tools/
 opt/yd-tools/ya-setup opt/yd-tools/
-opt/yd-tools/yd-128.png opt/yd-tools/
+opt/yd-tools/icons/yd-128.png opt/yd-tools/icons/
+opt/yd-tools/icons/yd-128_g.png opt/yd-tools/icons/
 opt/yd-tools/icons/dark/yd-busy1.png opt/yd-tools/icons/dark/
 opt/yd-tools/icons/dark/yd-busy2.png opt/yd-tools/icons/dark/
 opt/yd-tools/icons/dark/yd-busy3.png opt/yd-tools/icons/dark/

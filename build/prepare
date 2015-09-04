@@ -8,6 +8,7 @@ cp ../../apps.yandex-disk-indicator.gschema.xml usr/share/glib-2.0/schemas/
 cp ../../Yandex.Disk-indicator.desktop usr/share/applications/
 cp ../../Yandex.Disk.desktop usr/share/applications/
 cp ../../icons/yd-128.png opt/yd-tools/icons/
+cp ../../icons/yd-128_g.png opt/yd-tools/icons/
 cp ../../icons/dark/yd-busy1.png opt/yd-tools/icons/dark/
 cp ../../icons/dark/yd-busy2.png opt/yd-tools/icons/dark/
 cp ../../icons/dark/yd-busy3.png opt/yd-tools/icons/dark/

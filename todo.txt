@@ -3,8 +3,7 @@
  … как вариант — просто список с добавлением строк (директорий), но как добавлять? Копипастом или вписывать вручную - возможны ошибки. 
 Пока думаю над реализацией и пробую разные библиотечные древовидные контролы для просмотра файловой системы.
 - DAEMON-INSTALL_STORY — solution 5???
-- одолеть возникший баг на ланчпаде — пакеты не собираются (с работы заливка на ланчпад залочена — разобраться можно только дома)
-- переделать работу с .desktop файлами: брать .desktop для автозапуска из /usr/share/application/ и убрать их из /opt/yd-tools
+- Перформатировать пакет согласно концепции ICONS_AND_FILES_LOCATIONS_STORY
  
 ________CANCELED________
 - Добавить скрипт установки демона в preinst скрипт пакета — NGI (DAEMON-INSTALL_STORY) - CANCELED
@@ -34,29 +33,21 @@ peregrine: «иконка берётся из темы иконок, если о
 Вариант:
 /opt/yd-tools/yandexDiskIndicator.py        -> /usr/bin/yandex-disk-indicator (вместо bash заглушки)
 /opt/yd-tools/ya-setup                      -> /usr/share/yd-tools/ya-setup
-/opt/yd-tools/Yandex.Disk.desktop           -> /usr/share/yd-tools/Yandex.Disk.desktop
-/opt/yd-tools/Yandex.Disk-indicator.desktop -> /usr/share/yd-tools/Yandex.Disk-indicator.desktop
-/opt/yd-tools/icons/yd-128.png              -> /usr/share/yd-tools/yd-128.png
 /opt/yd-tools/fm-actions/*                  -> /usr/share/yd-tools/fm-actions/*
-/opt/yd-tools/icons/light                   -> ??? как простой ваиант в /usr/share/yd-tools/icons/light  ???
-/opt/yd-tools/icons/dark                    -> ??? как простой ваиант в /usr/share/yd-tools/icons/dark   ???
+/opt/yd-tools/icons/*                       -> ??? как простой ваиант в /usr/share/yd-tools/icons/   ???
 
 Потребуется: 
 В простейшем варианте (иконки в /usr/share/yd-tools/icons/): 
+меняем:
   installDir = os.path.dirname(os.path.realpath(__file__))  - получает путь где лежит исполняющийся файл.
-на 
+на:
   installDir = '/usr/share/yd-tools/' - константа, т. к. исполняемый переползает в /usr/bin/
-Чтени лого (т.к. оно вынесено в корень каталога утилиты):
-  yandexDiskIcon = os.path.join(installDir, 'icons', 'yd-128.png')            # Big icon 
-на
-  yandexDiskIcon = os.path.join(installDir, 'yd-128.png')            # Big icon 
 .... все остальное - вроде без изменеий
-  
 
 Настройки (dconf) - остаются там же (/usr/share/glib-2.0/schemas/apps.yandex-disk-indicator.gschema.xml)
 
 
-Решение: надо дальше исследовать вопрос 
+Решение: надо дальше прорабатывать вопрос 
 
 ______FIXED issues:_____
 - Fix menu issue on unity (много строк в одной позиции)
@@ -149,7 +140,11 @@ FIXED 1.1.9
 FIXED 1.3.0 (github realize)
 - Динамическое меню для последних синхронизированных т. к. песледняя версия демона показывает только те последние синхронизированные, которые были синхронизированы в ходе последней сессии запуска демона. Подменю обновляется только при изменении списка выдаваемого демоном. FIXED ver 1.3.1(dev)
 - Оптимизация и правка оформления кода (PEP8) и комментариев 
-FIXED 1.3.1 (dev)
+FIXED 1.3.1 
+- одолеть возникший баг на ланчпаде — пакеты не собираются (с работы заливка на ланчпад залочена — разобраться можно только дома) - все получилось, но что было - не понял.
+FIXED 1.3.1a
+- переделать работу с .desktop файлами: брать .desktop для автозапуска из /usr/share/application/ и убрать их из /opt/yd-tools. Сами .desktop названы универсально, что бы имя подходило и для меню и для автозапуска.
+FIXED 1.3.1b (dev)
 
 ____________FIXED STORIES_______________
 MENU-ACCELERATOR_CASE: FIXED (1.1.3)

@@ -1,0 +1,98 @@
+ dpkg-buildpackage -rfakeroot -D -us -uc
+dpkg-buildpackage: пакет исходных текстов yd-tools
+dpkg-buildpackage: версия исходных текстов 1.3.1b
+dpkg-buildpackage: source distribution precise
+dpkg-buildpackage: исходные тексты изменены Sly_tom_cat <slytomcat@mail.ru>
+ dpkg-source --before-build yd-tools
+dpkg-buildpackage: архитектура узла amd64
+ fakeroot debian/rules clean
+dh clean 
+   dh_testdir
+   dh_auto_clean
+   dh_clean
+ dpkg-source -b yd-tools
+dpkg-source: предупреждение: не задан формат исходников в debian/source/format, см. dpkg-source(1)
+dpkg-source: предупреждение: каталог исходников «yd-tools» не в виде <пакет исходников>-<оригинальная версия> «yd-tools-1.3.1b»
+dpkg-source: инфо: используется формат исходника «1.0»
+dpkg-source: инфо: сборка yd-tools в yd-tools_1.3.1b.tar.gz
+dpkg-source: инфо: сборка yd-tools в yd-tools_1.3.1b.dsc
+ debian/rules build
+dh build 
+   dh_testdir
+   dh_auto_configure
+   dh_auto_build
+   dh_auto_test
+ fakeroot debian/rules binary
+dh binary 
+   dh_testroot
+   dh_prep
+   dh_auto_install
+   dh_install
+   dh_installdocs
+   dh_installchangelogs
+   dh_installgsettings
+   dh_perl
+   dh_link
+   dh_compress
+   dh_fixperms
+   dh_installdeb
+   dh_gencontrol
+dpkg-gencontrol: предупреждение: Depends поле из пакета yd-tools: неизвестная подстановочная переменная ${python:Depends}
+   dh_md5sums
+   dh_builddeb
+dpkg-deb: сборка пакета «yd-tools» в файл «../yd-tools_1.3.1b_all.deb».
+ dpkg-genchanges  >../yd-tools_1.3.1b_amd64.changes
+dpkg-genchanges: в закачку включён весь исходный код
+ dpkg-source --after-build yd-tools
+dpkg-buildpackage: закачка всего; родной пакет Debian (включены все пакеты исходного кода)
+Now running lintian...
+E: yd-tools source: python-depends-but-no-python-helper yd-tools
+W: yd-tools source: syntax-error-in-dep5-copyright line 6: Duplicate field files.
+W: yd-tools: debian-changelog-line-too-long line 7
+E: yd-tools: copyright-file-contains-full-gpl-license
+W: yd-tools: extended-description-line-too-long
+E: yd-tools: dir-or-file-in-opt opt/yd-tools/
+E: yd-tools: dir-or-file-in-opt opt/yd-tools/fm-actions/
+E: yd-tools: dir-or-file-in-opt opt/yd-tools/fm-actions/Dolphin/
+E: yd-tools: dir-or-file-in-opt opt/yd-tools/fm-actions/Dolphin/publish.desktop
+E: yd-tools: dir-or-file-in-opt opt/yd-tools/fm-actions/Dolphin/unpublish.desktop
+E: yd-tools: dir-or-file-in-opt opt/yd-tools/fm-actions/Nautilus_Nemo/
+E: yd-tools: dir-or-file-in-opt opt/yd-tools/fm-actions/Nautilus_Nemo/publish
+E: yd-tools: dir-or-file-in-opt opt/yd-tools/fm-actions/Nautilus_Nemo/unpublish
+E: yd-tools: dir-or-file-in-opt opt/yd-tools/icons/
+E: yd-tools: dir-or-file-in-opt opt/yd-tools/icons/dark/
+E: yd-tools: dir-or-file-in-opt opt/yd-tools/icons/dark/yd-busy1.png
+E: yd-tools: dir-or-file-in-opt opt/yd-tools/icons/dark/yd-busy2.png
+E: yd-tools: dir-or-file-in-opt opt/yd-tools/icons/dark/yd-busy3.png
+E: yd-tools: dir-or-file-in-opt opt/yd-tools/icons/dark/yd-busy4.png
+E: yd-tools: dir-or-file-in-opt opt/yd-tools/icons/dark/yd-busy5.png
+E: yd-tools: dir-or-file-in-opt opt/yd-tools/icons/dark/yd-ind-error.png
+E: yd-tools: dir-or-file-in-opt opt/yd-tools/icons/dark/yd-ind-idle.png
+E: yd-tools: dir-or-file-in-opt opt/yd-tools/icons/dark/yd-ind-pause.png
+E: yd-tools: dir-or-file-in-opt opt/yd-tools/icons/light/
+E: yd-tools: dir-or-file-in-opt opt/yd-tools/icons/light/yd-busy1.png
+E: yd-tools: dir-or-file-in-opt opt/yd-tools/icons/light/yd-busy2.png
+E: yd-tools: dir-or-file-in-opt opt/yd-tools/icons/light/yd-busy3.png
+E: yd-tools: dir-or-file-in-opt opt/yd-tools/icons/light/yd-busy4.png
+E: yd-tools: dir-or-file-in-opt opt/yd-tools/icons/light/yd-busy5.png
+E: yd-tools: dir-or-file-in-opt opt/yd-tools/icons/light/yd-ind-error.png
+E: yd-tools: dir-or-file-in-opt opt/yd-tools/icons/light/yd-ind-idle.png
+E: yd-tools: dir-or-file-in-opt opt/yd-tools/icons/light/yd-ind-pause.png
+E: yd-tools: dir-or-file-in-opt opt/yd-tools/icons/yd-128.png
+E: yd-tools: dir-or-file-in-opt opt/yd-tools/icons/yd-128_g.png
+E: yd-tools: dir-or-file-in-opt opt/yd-tools/ya-setup
+E: yd-tools: dir-or-file-in-opt opt/yd-tools/yandexDiskIndicator.py
+W: yd-tools: binary-without-manpage usr/bin/yandex-disk-indicator
+W: yd-tools: desktop-command-not-in-package usr/share/applications/Yandex.Disk.desktop yandex-disk
+E: yd-tools: python-script-but-no-python-dep opt/yd-tools/yandexDiskIndicator.py
+W: yd-tools: executable-not-elf-or-script opt/yd-tools/fm-actions/Dolphin/unpublish.desktop
+W: yd-tools: executable-not-elf-or-script opt/yd-tools/fm-actions/Dolphin/publish.desktop
+W: yd-tools: possibly-insecure-handling-of-tmp-files-in-maintainer-script prerm:9
+W: yd-tools: possibly-insecure-handling-of-tmp-files-in-maintainer-script preinst:6
+Finished running lintian.
+Now signing changes and any dsc files...
+ signfile yd-tools_1.3.1b.dsc 0x25DAD03F
+
+ signfile yd-tools_1.3.1b_amd64.changes 0x25DAD03F
+
+Successfully signed dsc and changes files

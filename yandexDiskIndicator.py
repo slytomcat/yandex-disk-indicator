@@ -46,7 +46,7 @@ def sendmessage(title, message):
     notifier.show()                                    # Display new notification
 
 def copyFile(source, destination):
-  debugPrint("File Copy: from %s to %s" % (source, destination))
+  #debugPrint("File Copy: from %s to %s" % (source, destination))
   try:    fileCopy (source, destination)
   except: debugPrint("File Copy Error: from %s to %s" % (source, destination))
 

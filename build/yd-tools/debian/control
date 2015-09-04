@@ -3,7 +3,7 @@ Section: net
 Priority: optional
 Maintainer: Sly_tom_cat <slytomcat@mail.ru>
 Build-Depends: debhelper (>= 9)
-Standards-Version: 3.9.4
+Standards-Version: 3.9.5
 X-Python-Version: >= 2.6
 
 Package: yd-tools
