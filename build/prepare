@@ -1,6 +1,6 @@
 #!/bin/bash
 cd yd-tools/
-cp ../../yandex-disk-indicator usr/bin/
+cp ../../yandex-disk-indicator.py usr/bin/yandex-disk-indicator
 cp ../../ya-setup usr/share/yd-tools/ya-setup
 cp ../../yandex-disk-indicator_ru.mo usr/share/locale/ru/LC_MESSAGES/yandex-disk-indicator.mo
 cp ../../yandex-disk-indicator_el.mo usr/share/locale/el/LC_MESSAGES/yandex-disk-indicator.mo
