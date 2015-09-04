@@ -1,3 +1,4 @@
+### **![yandex-disk-indicator](https://github.com/slytomcat/yandex-disk-indicator/blob/master/icons/yd-128.png)**
 # yandex-disk-indicator
 Desktop panel indicator for YandexDisk CLI client for Linux
 
