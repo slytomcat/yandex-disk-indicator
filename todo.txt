@@ -30,14 +30,11 @@ ICONS_AND_FILES_LOCATIONS_STORY:
 peregrine: «иконка берётся из темы иконок, если она там есть. Если же её там нет, то иконка загружается дефолтная, а куда в системе ты её положишь уже тебе решать.» 
 Нужно разобраться с путями в системе (пути к темам и т. п.) И возможно раскидать весь /opt/yd-tools. Но это затронет множество мест в коде.
 
-Вариант:
+Вариант 1 (простейший -- 1.4.0?):
 /opt/yd-tools/yandexDiskIndicator.py        -> /usr/bin/yandex-disk-indicator (вместо bash заглушки)
-/opt/yd-tools/ya-setup                      -> /usr/share/yd-tools/ya-setup
-/opt/yd-tools/fm-actions/*                  -> /usr/share/yd-tools/fm-actions/*
-/opt/yd-tools/icons/*                       -> ??? как простой ваиант в /usr/share/yd-tools/icons/   ???
+все из /opt/yd-tools/                       -> /usr/share/yd-tools/ (или /usr/share/yandex-disk-indicator ???)
 
 Потребуется: 
-В простейшем варианте (иконки в /usr/share/yd-tools/icons/): 
 меняем:
   installDir = os.path.dirname(os.path.realpath(__file__))  - получает путь где лежит исполняющийся файл.
 на:
@@ -45,6 +42,10 @@ peregrine: «иконка берётся из темы иконок, если о
 .... все остальное - вроде без изменеий
 
 Настройки (dconf) - остаются там же (/usr/share/glib-2.0/schemas/apps.yandex-disk-indicator.gschema.xml)
+
+Вариант 2 (расширение варианта 1)
+В дополнение к варианту 1 добавить пользовательскую конфигурацию в ~/.config/yd-tools или ~/.config/yandex-disk-indicator
+При этом иконки брать из пользовательского конфига а если там нет то из каталога приложения.
 
 
 Решение: надо дальше прорабатывать вопрос 
@@ -144,7 +145,9 @@ FIXED 1.3.1
 - одолеть возникший баг на ланчпаде — пакеты не собираются (с работы заливка на ланчпад залочена — разобраться можно только дома) - все получилось, но что было - не понял.
 FIXED 1.3.1a
 - переделать работу с .desktop файлами: брать .desktop для автозапуска из /usr/share/application/ и убрать их из /opt/yd-tools. Сами .desktop названы универсально, что бы имя подходило и для меню и для автозапуска.
-FIXED 1.3.1b (dev)
+FIXED 1.3.1d (launcpad realize)
+- перенос проетка из /opt/yd-tools в /usr/share/yd-tools, а также размещение основного python кода непосредствено в /usr/bin/yandex-disk-indicator (вместо баш-вызывалки)
+FIXED 1.4.0
 
 ____________FIXED STORIES_______________
 MENU-ACCELERATOR_CASE: FIXED (1.1.3)

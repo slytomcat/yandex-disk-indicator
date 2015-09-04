@@ -1,7 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-#  Yandex.Disk indicator (see appVersion variable in main loop code below for version info)
+#  Yandex.Disk indicator
+appVer = '1.4.0'
 #
 #  Copyright 2014 Sly_tom_cat <slytomcat@mail.ru>
 #  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
@@ -135,7 +136,7 @@ def openAbout(widget):          # Show About window
   aboutWindow.set_logo(logo)
   aboutWindow.set_icon(logo)
   aboutWindow.set_program_name(_('Yandex.Disk indicator'))
-  aboutWindow.set_version(_('Version ') + appVersion)
+  aboutWindow.set_version(_('Version ') + appVer)
   aboutWindow.set_copyright('Copyright ' + u'\u00a9' + ' 2013-' + 
                             datetime.datetime.now().strftime("%Y") + '\nSly_tom_cat')
   aboutWindow.set_comments(_('Yandex.Disk indicator \n(Grive Tools was used as example)'))
@@ -382,7 +383,7 @@ def getDaemonOutput():
   global daemonOutput
   try:    daemonOutput = subprocess.check_output(['yandex-disk', 'status'], universal_newlines=True)
   except: daemonOutput = ''     # daemon is not running or bad
-  if not PY3:                   # Decode required for python 2.7 and not required for Python3
+  if PY2:                       # Decode required only for python 2.7 (for UTF-8 support)
     daemonOutput = daemonOutput.decode('utf-8')
   #debugPrint('output = %s' % daemonOutput)
   return (daemonOutput != '')
@@ -428,7 +429,7 @@ def parseDaemonOutput():                   # Parse the daemon output
     startPos = daemonOutput.find('Trash size: ', lastPos) + 12
     lastPos = daemonOutput.find('\n', startPos)
     sTrash = daemonOutput[startPos: lastPos]
-  else:  # When there is no Total: then other sizes are not presented
+  else:  # When there is no Total: then other sizes are not presented too
     sTotal = '...'
     sUsed = '...'
     sFree = '...'
@@ -440,10 +441,9 @@ def parseDaemonOutput():                   # Parse the daemon output
     buf = daemonOutput[startPos: ]        # save the rest
   else:
     buf = ''
-  lastItemsChanged = (lastItems != buf)   # check changes in the list 
-  #debugPrint(str(lastItemsChanged))
+  lastItemsChanged = (lastItems != buf)   # check for changes in the list 
   lastItems = buf
-  # Don't split last synchronized list on individual lines/paths
+  # Last synchronized list stored as one buffer withot splitting on individual lines/paths.
   # It is easier to do it in the same loop where menu is being updated (in updateMenuInfo()).  
   # Prepare and format information for menu
   yandexDiskStatus = _('Status: ') + YD_STATUS.get(currentStatus, _('Error')) + syncProgress
@@ -451,7 +451,8 @@ def parseDaemonOutput():                   # Parse the daemon output
   yandexDiskSpace2 = _('Free: ') + sFree + _(', trash: ') + sTrash
 
 def checkDaemon():               # Checks that daemon installed, configured and it is running.
-  # it also reads the configuration file in any case when it returns
+  # It also reads the configuration file in any case when it returns.
+  # I case of nonconvertible errors it finishes the application.
   global settings
   if not os.path.exists('/usr/bin/yandex-disk'):
     daemonErrorDialog('NOTINSTALLED')
@@ -484,9 +485,8 @@ def checkDaemon():               # Checks that daemon installed, configured and 
           appExit()              # Something wrong. It's no way to continue. Exit right now.
         else:
           return False           # Daemon was not started but user decided to start indicator anyway
-    # here we started daemon. Try to check it's output (in while)
-  # At this point we know that daemon is installed, configured and started
-  debugPrint('yandex-disk daemon is responding correctly.')
+    # here we have started daemon. Try to check it's output (in while loop)
+  debugPrint('yandex-disk daemon is installed, configured and responding.')
   return True                    # Everything OK
 
 def updateMenuInfo():                           # Update information in menu
@@ -495,7 +495,7 @@ def updateMenuInfo():                           # Update information in menu
   menu_status.set_label(yandexDiskStatus)       # Update status data
   menu_used.set_label(yandexDiskSpace1)
   menu_free.set_label(yandexDiskSpace2)
-  # --- Update last synchronized list ---
+  # --- Update last synchronized sub-menu ---
   if lastItemsChanged:                          # only when list of last synchronized is changed
     for widget in submenu_last.get_children():  # clear last synchronized sub menu 
       submenu_last.remove(widget)
@@ -521,19 +521,15 @@ def updateMenuInfo():                           # Update information in menu
       menu_last.set_sensitive(False)
     else:                                       # there are some items in list
       menu_last.set_sensitive(True)
+    debugPrint("Sub-menu 'Last synchronized' has been updated")
   
 def updateStartStop(started):   # Update daemon start and stop menu items availability
   global menu_YD_daemon_start, menu_YD_daemon_stop, menu_status
-  if started:
-    menu_YD_daemon_start.set_sensitive(False)
-    menu_YD_daemon_stop.set_sensitive(True)
-    menu_status.set_sensitive(True)
-  else:
-    menu_YD_daemon_start.set_sensitive(True)
-    menu_YD_daemon_stop.set_sensitive(False)
-    menu_status.set_sensitive(False)
+  menu_YD_daemon_start.set_sensitive(not started)
+  menu_YD_daemon_stop.set_sensitive(started)
+  menu_status.set_sensitive(started)
 
-def handleEvent(triggeredBy_iNotifier): # Main working routine: event handler function.
+def handleEvent(triggeredBy_iNotifier): # It is main working routine.
   # It react (icon change/messages) on status change and also update
   # status information in menu (status, sizes, last synchronized items).
   # It can be called asynchronously by timer (triggeredBy_iNotifier=False)
@@ -544,25 +540,25 @@ def handleEvent(triggeredBy_iNotifier): # Main working routine: event handler fu
   # Convert status to the internal presentation ['busy','idle','paused','none','error']
   newStatus = currentStatus if currentStatus in ['busy', 'idle', 'paused', 'none'] else 'error'
   # Status 'error' covers 'error', 'no internet access','failed to connect to daemon process'...
-  debugPrint('Event triggered by %s  status: %s -> %s' % ('inotify' if triggeredBy_iNotifier else
-                                                          'timer  ', lastStatus, newStatus))
+  debugPrint('Triggered by %s status: %s -> %s' % ('iNotify' if triggeredBy_iNotifier else
+                                                   'Timer  ', lastStatus, newStatus))
   updateMenuInfo()                  # Update information in menu
   if lastStatus != newStatus:       # Handle status change
     updateIcon()                    # Update icon
     if lastStatus == 'none':        # Daemon was just started when 'none' changed to something else
       updateStartStop(True)         # Change menu sensitivity
-      sendmessage(_('Yandex.Disk'), _('Yandex.Disk daemon is started'))
+      sendmessage(_('Yandex.Disk'), _('Yandex.Disk daemon has been started'))
     if newStatus == 'busy':         # Just entered into 'busy'
-      sendmessage(_('Yandex.Disk'), _('Synchronization is started'))
+      sendmessage(_('Yandex.Disk'), _('Synchronization started'))
     elif newStatus == 'idle':       # Just entered into 'idle'
       if lastStatus == 'busy':      # ...from 'busy' status
-        sendmessage(_('Yandex.Disk'), _('Synchronization is finished'))
+        sendmessage(_('Yandex.Disk'), _('Synchronization has been completed'))
     elif newStatus =='paused':      # Just entered into 'paused'
       if lastStatus != 'none':      # ...not from 'none' status
-        sendmessage(_('Yandex.Disk'), _('Synchronization is paused'))
+        sendmessage(_('Yandex.Disk'), _('Synchronization has been paused'))
     elif newStatus == 'none':       # Just entered into 'none' from some another status
       updateStartStop(False)        # Change menu sensitivity as daemon not started
-      sendmessage(_('Yandex.Disk'), _('Yandex.Disk daemon is stopped'))
+      sendmessage(_('Yandex.Disk'), _('Yandex.Disk daemon has been stopped'))
     else:                           # newStatus = 'error' - Just entered into 'error'
       sendmessage(_('Yandex.Disk'), _('Synchronization ERROR'))
     lastStatus = newStatus          # remember new status
@@ -570,14 +566,14 @@ def handleEvent(triggeredBy_iNotifier): # Main working routine: event handler fu
   if triggeredBy_iNotifier:         # True means that it is called by iNonifier
     stopTimer(watchTimer)           # Recreate timer with 2 sec interval.
     watchTimer = GLib.timeout_add_seconds(2, handleEvent, False)
-    timerTriggeredCount = 0         # reset counter as it was triggered not by time watcher
+    timerTriggeredCount = 0         # reset counter as it was triggered not by timer
   else:
-    if newStatus != 'busy':         # in 'busy' keep last update interval (2 sec.)
+    if newStatus != 'busy':         # in 'busy' keep update interval (2 sec.)
       if timerTriggeredCount < 9:   # increase interval up to 10 sec (2+8)
-        stopTimer(watchTimer)       # Recreate timer.
+        stopTimer(watchTimer)       # Recreate watch timer.
         watchTimer = GLib.timeout_add_seconds(2 + timerTriggeredCount, handleEvent, False)
-        timerTriggeredCount += 1    # Increase cunt to increase delay in next time
-  return True                       # To continue activations by timer.
+        timerTriggeredCount += 1    # Increase counter to increase delay in next activation.
+  return True                       # True is required to continue activations by timer.
 
 def updateIconTheme():    # Update paths to icons according to current theme
   global iconThemePath, ind, icon_busy, icon_idle, icon_pause, icon_error
@@ -593,7 +589,7 @@ def updateIconTheme():    # Update paths to icons according to current theme
   icon_pause = os.path.join(iconThemePath, 'yd-ind-pause.png')
   icon_error = os.path.join(iconThemePath, 'yd-ind-error.png')
 
-def updateIcon():                     # Change indicator icon according to current status
+def updateIcon():                     # Change indicator icon according to new status
   global newStatus, lastStatus, icon_busy, icon_idle, icon_pause
   global icon_error, iconAnimationTimer, seqNum, ind
 
@@ -769,7 +765,7 @@ def readConfig():     # Update settings according to daemon config file and get 
           yandexDiskFolder = line[pos: line.find('"', pos)]
         else:
           yandexDiskFolder = line[pos: line.find('/n', pos)]
-        if not PY3:   # Decode required for python 2.7 and not required for Python3
+        if PY2:       # Decode required for python 2.7 and not required for Python3
           yandexDiskFolder = yandexDiskFolder.decode('utf-8')
         debugPrint('Config: yandexDiskFolder = %s' % yandexDiskFolder)
     cfgFile.close()
@@ -780,11 +776,12 @@ def readConfig():     # Update settings according to daemon config file and get 
 ###################### MAIN LOOP #########################
 if __name__ == '__main__':
   ### Running environment detection
-  PY3 = sys.version_info[0] == 3
-  installDir = os.path.dirname(os.path.realpath(__file__))
+  PY2 = sys.version_info[0] == 2
+  #installDir = os.path.dirname(os.path.realpath(__file__))
+  installDir = os.path.join(os.sep, 'usr', 'share', 'yd-tools')
   userHome = os.getenv("HOME")
-  ### Application constants and settings ###
-  appVersion = '1.3.1_Py' + ('3' if PY3 else '2')
+  ### Application constants ###
+  appVer += ('-Py2' if PY2 else '-Py3')
   appName = 'yandex-disk-indicator'
   # Define .desktop files locations for auto-start facility
   autoStartSource = os.path.join(os.sep, 'usr', 'share', 'applications', 
@@ -793,8 +790,6 @@ if __name__ == '__main__':
                                       'Yandex.Disk-indicator.desktop')
   autoStartSource1 = os.path.join(os.sep, 'usr', 'share', 'applications', 'Yandex.Disk.desktop')
   autoStartDestination1 = os.path.join(userHome, '.config', 'autostart', 'Yandex.Disk.desktop')
-  # Yandex.Disk configuration file path
-  daemonConfig = os.path.join(userHome, '.config', 'yandex-disk', 'config.cfg')
   # Store and set LANG environment for daemon output (it must be 'en' for correct parsing)
   origLANG = os.getenv('LANG')
   workLANG = 'en_US.UTF-8'
@@ -809,6 +804,8 @@ if __name__ == '__main__':
     verboseDebug = settings.get_boolean("debug")
   except:
     verboseDebug = False
+  # Output the version and environment information to debug stream
+  debugPrint('%s v.%s (app_home=%s)' % (appName, appVer, installDir))
   try:
     notificationSetting = settings.get_boolean("notifications")
   except:
@@ -820,14 +817,15 @@ if __name__ == '__main__':
   except:
     pass
   ### Localization ###
-  debugPrint("Current Locale : %s" % origLANG)
   try:                        # Try to load translation
-    if PY3:                   # use gettext in python3
-      _ = gettext.translation(appName, '/usr/share/locale', fallback=True).gettext
-    else:                     # use ugettext in python2.7 for UTF-8 support
-      _ = gettext.translation(appName, '/usr/share/locale', fallback=True).ugettext
+    if PY2:                   # unicode flag required in python2.7 for UTF-8 support
+      gettext.translation(appName, '/usr/share/locale', fallback=True).install(unicode=True)
+    else:                     # python3 works with Unicode without any trick
+      gettext.translation(appName, '/usr/share/locale', fallback=True).install()
+    debugPrint("Localization for %s is activated" % origLANG)
   except:
-    _ = str                   # use original English as fallback
+    _ = str                   # use English (as writtenss in code)
+    debugPrint("Localization for %s was not found" % origLANG)
   ### Activate FM actions according to settings if lock file not exists (probably it is a first run)
   lockFileName = '/tmp/' + appName + '.lock'
   if not os.path.isfile(lockFileName):
@@ -842,6 +840,8 @@ if __name__ == '__main__':
   lockFile.write('%d\n' % os.getpid())
   lockFile.flush()
   ### Yandex.Disk daemon ###
+  # Yandex.Disk configuration file path
+  daemonConfig = os.path.join(userHome, '.config', 'yandex-disk', 'config.cfg')
   # Initialize global variables
   YD_STATUS = {'idle': _('Synchronized'), 'busy': _('Sync.: '), 'none': _('Not started'),
                'paused': _('Paused'), 'no internet access': _('Not connected')}
@@ -851,7 +851,7 @@ if __name__ == '__main__':
   if checkDaemon():           # Check that daemon is installed, configured and started (responding)
     parseDaemonOutput()       # Parse daemon output to determine the real currentStatus
   # Yandex.Disk configuration file is read within checkDaemon()
-  ### Set initial statuses
+  # Set initial statuses
   newStatus = lastStatus = currentStatus
   lastItems = '*'             # Reset lastItems in order to update menu in handleEvent()
   ### On-screen notifications ###
