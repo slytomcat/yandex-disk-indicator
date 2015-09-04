@@ -1,0 +1,45 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Format: 1.8
+Date: Fri, 4 Sep 2015 23:54:48 +0300
+Source: yd-tools
+Binary: yd-tools
+Architecture: source all
+Version: 1.4.0
+Distribution: precise
+Urgency: medium
+Maintainer: Sly_tom_cat <slytomcat@mail.ru>
+Changed-By: Sly_tom_cat <slytomcat@mail.ru>
+Description:
+ yd-tools   - Yandex.Disk indicator for Ubuntu desktop panel.
+Changes:
+ yd-tools (1.4.0) precise; urgency=medium
+ .
+   * Changes:
+    -- move project catalog from /opt/yd-tools to /usr/share/yd-tools
+    -- /usr/bin/yandex-disk-indicator now the main python code but not bash wrapper
+Checksums-Sha1:
+ 30bba4704bfac3ad60024991d6187ed344ce0b72 1021 yd-tools_1.4.0.dsc
+ 87896a328217ac1806eb6b38917a7d701fd81372 72729 yd-tools_1.4.0.tar.gz
+ 4394d1d25c516b7673795e529807a33e9bf8040d 69084 yd-tools_1.4.0_all.deb
+Checksums-Sha256:
+ 2ab006da499aa0f595e2dad20d93a8bf5d26bb21749eb484cf6a31e220b3dbad 1021 yd-tools_1.4.0.dsc
+ 7074650c641487b69b165020b8aae5e3c08f584de1e17797b14daaca71a5841a 72729 yd-tools_1.4.0.tar.gz
+ 3df2af7e24453c364ca1c901a76a581f67f42497916bb7c8c990021326892731 69084 yd-tools_1.4.0_all.deb
+Files:
+ fcd10566c6f15c24e3064335abfd5414 1021 net optional yd-tools_1.4.0.dsc
+ a94fa21ce9732d8c52f7f740f71b536e 72729 net optional yd-tools_1.4.0.tar.gz
+ 441609664beb2beca8c6816245296fad 69084 python optional yd-tools_1.4.0_all.deb
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQEcBAEBAgAGBQJV6hi5AAoJEO/UtzIl2tA/Z8oH/1xI00YL4Q/Mmo5GRtklwom5
+Mc3d5Wn3yhvXGTfWdPDhd1ufMeM1l8y1Azhf5Mzb+QI8iGLqR3gv3+NaxCdSjLZ7
+T3Lb3ZFuTHj9Iqu/QyM15n2u42iwXlY7v1urrAwxGlfsg8d2gga+GDIZPxOHA2/C
+wbv5mMWn3KPf5FT9Rd/X6Ub9U1GkUnB6Ygl8VKVCVwf0HD+RHBKsgNF0+T9ATBJA
+AnJnmDFm27PwNwBynUKX5JIykkLWz+Lzqc5DB5DLxgKS+M6c2Rt3CZB/Y3R4u8ve
+Ks/SJ8KI+EYRpDYmPMlXp2DbN1j40GnCCSBhdbYeW4WUitZsAm+3PhcIV7c7ids=
+=GHai
+-----END PGP SIGNATURE-----

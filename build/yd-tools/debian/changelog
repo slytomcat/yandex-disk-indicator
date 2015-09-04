@@ -1,12 +1,7 @@
-yd-tools (1.3.1b) precise; urgency=medium
+yd-tools (1.4.0) precise; urgency=medium
 
   * Changes:
-   -- Fix issue with Debian installation of file utils for Nautilus.
-   -- Icon resized to 24x24 size (128x128 are available in _128 catalogs)
-   -- Fix issue with new version of Nemo installation
-   -- Python 2 and 3 versino compatibility added (app can be run in any version of Python)
-   -- Dynamic menu creation for las syncronized items
-   -- Format python code to be more likely to PEP-8
-   -- fix some minor mistakes made during project optimization
+   -- move project catalog from /opt/yd-tools to /usr/share/yd-tools
+   -- /usr/bin/yandex-disk-indicator now the main python code but not bash wrapper 
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Fri, 4 Sep 2015 11:16:04 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Fri, 4 Sep 2015 23:54:48 +0300
