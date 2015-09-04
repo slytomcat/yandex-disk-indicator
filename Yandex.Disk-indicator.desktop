@@ -1,12 +1,12 @@
 [Desktop Entry]
 Version=1.0
 Type=Application
-Name=Yandex.Disk indicator autostart
-Comment=Yandex.Disk indicator autostart
+Name=Yandex.Disk indicator
+Comment=Yandex.Disk indicator
 Path=/opt/yd-tools/
 Exec=/opt/yd-tools/yandexDiskIndicator.py
 Terminal=false
 Icon=/opt/yd-tools/icons/yd-128.png
-GenericName=
-Name[ru]=Автозапуск индикатора Yandex.Disk
+GenericName=Yandex.Disk indicator
+Name[ru]=Индикатор Yandex.Disk
 Name[el]=Αυτόματη εκκίνηση τις ένδειξης Yandex.Disk

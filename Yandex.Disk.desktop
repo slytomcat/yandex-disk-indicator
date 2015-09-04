@@ -1,10 +1,11 @@
 [Desktop Entry]
 Version=1.0
 Type=Application
-Name=Yandex.Disk daemon autostart
-Comment=Yandex.Disk daemon autostart
+Name=Yandex.Disk sync daemon 
+Comment=Yandex.Disk sync daemon
 Exec=yandex-disk start
 Terminal=false
 Icon=/opt/yd-tools/icons/yd-128_g.png
-Name[ru]=Автозапуск сервиса Yandex.Disk 
+GenericName=Yandex.Disk sync daemon
+Name[ru]=Cервис синхронизации Yandex.Disk 
 Name[el]=Αυτόματη εκκίνηση υπηρεσίας Yandex.Disk

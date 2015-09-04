@@ -2,7 +2,7 @@
 cd yd-tools/
 rm opt/yd-tools/yandexDiskIndicator.py
 rm opt/yd-tools/ya-setup
-rm opt/yd-tools/yd-128.png
+rm opt/yd-tools/icons/yd-128.png
 rm opt/yd-tools/icons/dark/yd-busy1.png
 rm opt/yd-tools/icons/dark/yd-busy2.png
 rm opt/yd-tools/icons/dark/yd-busy3.png

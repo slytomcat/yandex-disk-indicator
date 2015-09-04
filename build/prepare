@@ -7,7 +7,7 @@ cp ../../yandex-disk-indicator_el.mo usr/share/locale/el/LC_MESSAGES/yandex-disk
 cp ../../apps.yandex-disk-indicator.gschema.xml usr/share/glib-2.0/schemas/
 cp ../../Yandex.Disk-indicator.desktop usr/share/applications/
 cp ../../Yandex.Disk.desktop usr/share/applications/
-cp ../../yd-128.png opt/yd-tools/
+cp ../../icons/yd-128.png opt/yd-tools/icons/
 cp ../../icons/dark/yd-busy1.png opt/yd-tools/icons/dark/
 cp ../../icons/dark/yd-busy2.png opt/yd-tools/icons/dark/
 cp ../../icons/dark/yd-busy3.png opt/yd-tools/icons/dark/
@@ -35,8 +35,10 @@ chmod -R go-w *
 chmod a+x debian/rules
 chmod a+x debian/prerm
 chmod a+x debian/preinst
-chmod a+x opt/yd-tools/*
+chmod a+x opt/yd-tools/ya-setup
+chmod a+x opt/yd-tools/yandexDiskIndicator.py
 chmod a+x opt/yd-tools/fm-actions/Nautilus_Nemo/*
+chmod a+x opt/yd-tools/fm-actions/Dolphin/*
 chmod a+x usr/bin/*
 chmod a+x usr/share/applications/*
 cd ..

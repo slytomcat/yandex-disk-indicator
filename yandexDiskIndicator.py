@@ -46,6 +46,7 @@ def sendmessage(title, message):
     notifier.show()                                    # Display new notification
 
 def copyFile(source, destination):
+  debugPrint("File Copy: from %s to %s" % (source, destination))
   try:    fileCopy (source, destination)
   except: debugPrint("File Copy Error: from %s to %s" % (source, destination))
 
@@ -786,10 +787,11 @@ if __name__ == '__main__':
   appVersion = '1.3.1_Py' + ('3' if PY3 else '2')
   appName = 'yandex-disk-indicator'
   # Define .desktop files locations for auto-start facility
-  autoStartSource = os.path.join('usr', 'share', 'applications', 'Yandex.Disk-indicator.desktop')
+  autoStartSource = os.path.join(os.sep, 'usr', 'share', 'applications', 
+                                 'Yandex.Disk-indicator.desktop')
   autoStartDestination = os.path.join(userHome, '.config', 'autostart',
                                       'Yandex.Disk-indicator.desktop')
-  autoStartSource1 = os.path.join('usr', 'share', 'applications', 'Yandex.Disk.desktop')
+  autoStartSource1 = os.path.join(os.sep, 'usr', 'share', 'applications', 'Yandex.Disk.desktop')
   autoStartDestination1 = os.path.join(userHome, '.config', 'autostart', 'Yandex.Disk.desktop')
   # Yandex.Disk configuration file path
   daemonConfig = os.path.join(userHome, '.config', 'yandex-disk', 'config.cfg')
@@ -857,7 +859,7 @@ if __name__ == '__main__':
   notifier = Notify.Notification()
   ### Application Indicator ###
   ## Icons ##
-  yandexDiskIcon = os.path.join(installDir, 'yd-128.png')            # logo
+  yandexDiskIcon = os.path.join(installDir, 'icons', 'yd-128.png')            # logo
   updateIconTheme()           # Define the rest icons paths
   iconAnimationTimer = 0      # Define the icon animation timer variable
   ## Indicator ##
