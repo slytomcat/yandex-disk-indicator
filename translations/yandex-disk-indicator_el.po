@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: yd-tools\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-09-05 01:34+0300\n"
-"PO-Revision-Date: 2015-09-05 01:36+0300\n"
+"PO-Revision-Date: 2015-09-05 15:51+0200\n"
 "Last-Translator: Sergey Tsabolov <linuxmangr@yandex.ru>\n"
 "Language-Team: ubuntu.ru local team <slytomcat@mail.ru>\n"
 "Language: el_GR\n"
@@ -13,7 +13,7 @@ msgstr ""
 "X-Poedit-KeywordsList: _;gettext;gettext_noop\n"
 "X-Poedit-Basepath: /home/stc/Yandex.Disk/YD-tools\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 1.7.5\n"
+"X-Generator: Poedit 1.5.4\n"
 "X-Poedit-SearchPath-0: /home/stc/Yandex.Disk/YD-tools\n"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:106
@@ -210,7 +210,7 @@ msgid ""
 msgstr ""
 "Τα τοπικά τροποποιημένα αρχεία θα μετονομασθούν εάν μια νέα έκδοση "
 "εμφανιστεί στο Yandex.Disk.\n"
-" ΠΡΟΣΟΧΉ! Θα πρέπει να επανεκκινήσετε τον δαίμονα για την ενεργοποόιηση της "
+" Προσοχή! Θα πρέπει να επανεκκινήσετε τον δαίμονα για την ενεργοποίηση της "
 "ρύθμισης αυτής."
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:271
@@ -336,7 +336,7 @@ msgstr "Σφάλμα συγχρονισμού"
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:669
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:695
 msgid "Publish via Yandex.Disk"
-msgstr ""
+msgstr "Δημοσιεύστε μέσω Yandex.Disk"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:640
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:643
@@ -347,12 +347,12 @@ msgstr ""
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:687
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:698
 msgid "Unpublish from Yandex.disk"
-msgstr ""
+msgstr "Απóσυρση δημοσίευσης από Yandex.Disk"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:674
 #, python-format
 msgid "URL to file: %f has copied into clipboard."
-msgstr ""
+msgstr "Διεύθυνσης URL στο αρχείο: %f  έχει αντιγραφεί στο πρόχειρο."
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:838
 #, python-format
@@ -373,7 +373,7 @@ msgstr "Συγχρ.:"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:846
 msgid "Not started"
-msgstr ""
+msgstr "Δεν ξεκίνησε"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:847
 msgid "Paused"
