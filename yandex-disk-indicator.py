@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.4.0'
+appVer = '1.4.1'
 #
 #  Copyright 2014 Sly_tom_cat <slytomcat@mail.ru>
 #  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
@@ -805,7 +805,7 @@ if __name__ == '__main__':
   except:
     verboseDebug = False
   # Output the version and environment information to debug stream
-  debugPrint('%s v.%s (app_home=%s)' % (appName, appVer, installDir))
+  debugPrint("%s v.%s (app_home='%s')" % (appName, appVer, installDir))
   try:
     notificationSetting = settings.get_boolean("notifications")
   except:
