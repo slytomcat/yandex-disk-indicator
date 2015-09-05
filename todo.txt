@@ -40,7 +40,8 @@ peregrine: «иконка берётся из темы иконок, если о
    на:
      installDir = '/usr/share/yd-tools/' - константа, т. к. исполняемый переползает в /usr/bin/
 2. в .desktop файлах меняем пути к иконкам и в .desktop файле индикатора exec=yandex-disk-indicator и path=''
-3. переделываем сборку
+3. заменяем пути к иконкам в файловых расширениях
+4. переделываем сборку
 .... все остальное - вроде без изменеий
 Настройки (dconf) - остаются там же (/usr/share/glib-2.0/schemas/apps.yandex-disk-indicator.gschema.xml)
 
