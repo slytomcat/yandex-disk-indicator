@@ -1,5 +1,12 @@
 usr/bin/yandex-disk-indicator usr/bin/
+usr/share/locale/ru/LC_MESSAGES/yandex-disk-indicator.mo usr/share/locale/ru/LC_MESSAGES/
+usr/share/locale/el/LC_MESSAGES/yandex-disk-indicator.mo usr/share/locale/el/LC_MESSAGES/
+usr/share/applications/Yandex.Disk.desktop usr/share/applications/
+usr/share/applications/Yandex.Disk-indicator.desktop usr/share/applications/
+usr/share/glib-2.0/schemas/apps.yandex-disk-indicator.gschema.xml usr/share/glib-2.0/schemas/
 usr/share/yd-tools/ya-setup usr/share/yd-tools/
+usr/share/yd-tools/IndicatorDebug_ON.sh usr/share/yd-tools/
+usr/share/yd-tools/IndicatorDebug_OFF.sh usr/share/yd-tools/
 usr/share/yd-tools/icons/yd-128.png usr/share/yd-tools/icons/
 usr/share/yd-tools/icons/yd-128_g.png usr/share/yd-tools/icons/
 usr/share/yd-tools/icons/dark/yd-busy1.png usr/share/yd-tools/icons/dark/
@@ -22,8 +29,3 @@ usr/share/yd-tools/fm-actions/Nautilus_Nemo/publish usr/share/yd-tools/fm-action
 usr/share/yd-tools/fm-actions/Nautilus_Nemo/unpublish usr/share/yd-tools/fm-actions/Nautilus_Nemo/
 usr/share/yd-tools/fm-actions/Dolphin/publish.desktop usr/share/yd-tools/fm-actions/Dolphin/
 usr/share/yd-tools/fm-actions/Dolphin/unpublish.desktop usr/share/yd-tools/fm-actions/Dolphin/
-usr/share/glib-2.0/schemas/apps.yandex-disk-indicator.gschema.xml usr/share/glib-2.0/schemas/
-usr/share/locale/ru/LC_MESSAGES/yandex-disk-indicator.mo usr/share/locale/ru/LC_MESSAGES/
-usr/share/locale/el/LC_MESSAGES/yandex-disk-indicator.mo usr/share/locale/el/LC_MESSAGES/
-usr/share/applications/Yandex.Disk.desktop usr/share/applications/
-usr/share/applications/Yandex.Disk-indicator.desktop usr/share/applications/

@@ -2,6 +2,8 @@
 cd yd-tools/
 rm usr/bin/yandex-disk-indicator
 rm usr/share/yd-tools/ya-setup
+rm usr/share/yd-tools/IndicatorDebug_ON.sh
+rm usr/share/yd-tools/IndicatorDebug_OFF.sh
 rm usr/share/yd-tools/icons/yd-128.png
 rm usr/share/yd-tools/icons/yd-128_g.png
 rm usr/share/yd-tools/icons/dark/yd-busy1.png
@@ -32,3 +34,4 @@ rm usr/share/applications/Yandex.Disk-indicator.desktop
 
 rm -r debian/yd-tools*
 cd ..
+rm yd-tools_*
