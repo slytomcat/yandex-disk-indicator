@@ -669,7 +669,7 @@ def activateActions():  # Install/deinstall file extensions
                          '<name>"' + _("Publish via Yandex.Disk") +
                          '"<\/name><command>yandex-disk publish %f | xclip -filter -selection' +
                          ' clipboard; zenity --info ' +
-                         '--window-icon=\/opt\/yd-tools\/icons\/yd-128.png --title="Yandex.Disk"' +
+                         '--window-icon=\/usr\/share\/yd-tools\/icons\/yd-128.png --title="Yandex.Disk"' +
                          ' --ok-label="' + _('Close') + '" --text="' +
                          _('URL to file: %f has copied into clipboard.') +
                          '"<\/command><description><\/description><patterns>*<\/patterns>' +
@@ -682,7 +682,7 @@ def activateActions():  # Install/deinstall file extensions
         subprocess.call(["sed", "-i", "s/<\/actions>/<action><icon>folder<\/icon><name>\"" +
                          _("Unpublish from Yandex.disk") +
                          '"<\/name><command>zenity --info ' +
-                         '--window-icon=\/opt\/yd-tools\/icons\/yd-128_g.png --ok-label="' +
+                         '--window-icon=\/usr\/share\/yd-tools\/icons\/yd-128_g.png --ok-label="' +
                          _('Close') + '" --title="Yandex.Disk" --text="' +
                          _("Unpublish from Yandex.disk") +
                          ': \`yandex-disk unpublish %f\`"<\/command>' +
