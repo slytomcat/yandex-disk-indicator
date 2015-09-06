@@ -66,9 +66,9 @@ def appExit():
   os._exit(0)
 
 def quitApplication(widget):
-  global iconAnimationTimer, iNotifierTimer, watchTimer, currentStatus, daemonConfigPath
-  try:    stopOnExit = settings.get_boolean("stoponexit")
-  except: stopOnExit = False
+  global iconAnimationTimer, iNotifierTimer, watchTimer, currentStatus, daemonConfigFile
+
+  stopOnExit = appConfig.get("stoponexit", False)
   debugPrint('Stop daemon on exit is - %s' % str(stopOnExit))
   if stopOnExit and currentStatus != 'none':
     stopYDdaemon()    # Stop daemon
@@ -99,6 +99,39 @@ def iNotifyHandler():  # iNotify working routine (called by timer)
     iNotifier.read_events()
     iNotifier.process_events()
   return True
+
+def readConfigFile(configFile):   # Read config file to dict (returned value)
+  config = {}
+  try:
+    with open(configFile) as cf:
+      for ln in cf:               # Parse lines remove quotes if they are used
+        if ln[0] != '#':          # Ignore comments 
+          p = ln.find('=')
+          q = ln.find('"', p)
+          if p > 0:
+            key = ln[:p]
+            val = (ln[p+1:-1] if q < 0 else ln[q+1: ln.find('"', q+1)])
+            # Convert boolean values from string representation
+            if val in ['True', 'true', 'Yes', 'yes']:
+              val = True
+            elif val in ['False', 'false', 'No', 'no']:
+              val = False
+            config[key] = val
+    debugPrint('Config read: %s' % configFile)
+  except:
+    debugPrint('Config file read error: %s' % configFile)
+  return config
+
+def writeConfigFile(configFile, confSet, boolval=['yes', 'no']):  # Write setting to config file
+  try:
+    with open(configFile, 'wt') as cf:
+      for key, val in confSet.items():
+        if isinstance(val, bool):          # Treat boolean
+          val = boolval[0] if val else boolval[1]       
+        print('%s="%s"' % (key, val), file=cf) 
+    debugPrint('Config written: %s' % configFile)
+  except:
+    debugPrint('Config file write error: %s' % daemonConfigFile)
 
 def daemonErrorDialog(err):   # Show error messages according to the error
   if err == 'NOCONFIG':
@@ -167,9 +200,12 @@ def openAbout(widget):          # Show About window
   widget.set_sensitive(True)    # Enable menu item
 
 def onCheckButtonToggled(widget, button, key):  # Handle clicks on check-buttons
-  global notificationSetting, settings, overwrite_check_button
+  global notificationSetting, appConfig, overwrite_check_button
   toggleState = button.get_active()
-  settings.set_boolean(key, toggleState)        # Update dconf settings
+  if key in ['optionreadonly', 'optionoverwrite']:
+    daemonConfig[key] = toggleState             # Update daemon config
+  else:
+    appConfig[key] = toggleState                 # Update app config
   debugPrint('Togged: %s  val: %s' % (key, str(toggleState)))
   if key == 'theme':
     updateIconTheme()                           # Update themeStyle
@@ -195,103 +231,95 @@ def onCheckButtonToggled(widget, button, key):  # Handle clicks on check-buttons
   elif key == 'optionreadonly':
     overwrite_check_button.set_sensitive(toggleState)
 
-def openPreferences(menu_widget):   # Preferences Window
-  global settings, overwrite_check_button
-  menu_widget.set_sensitive(False)  # Disable menu item to avoid multiple preferences windows
+def openPreferences(menu_widget):          # Preferences Window
+  global appConfig, daemonConfig, overwrite_check_button
+  menu_widget.set_sensitive(False)         # Disable menu item to avoid multiple preferences windows
   # Create Preferences window
   preferencesWindow = Gtk.Dialog(_('Yandex.Disk-indicator and Yandex.Disk preferences'))
   preferencesWindow.set_icon(GdkPixbuf.Pixbuf.new_from_file(yandexDiskIcon))
   preferencesWindow.set_border_width(6)
   preferencesWindow.add_button(_('Close'), Gtk.ResponseType.CLOSE)
-  pref_notebook = Gtk.Notebook()    # Create notebook for indicator and daemon options
+  pref_notebook = Gtk.Notebook()           # Create notebook for indicator and daemon options
   preferencesWindow.get_content_area().add(pref_notebook)  # Put it inside the dialog content area
   # --- Indicator preferences tab ---
   preferencesBox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 5)
-  key = 'autostart'                 # Auto-start indicator on system start-up
+  key = 'autostart'                        # Auto-start indicator on system start-up
   autostart_check_button = Gtk.CheckButton(
                              _('Start Yandex.Disk indicator when you start your computer'))
-  autostart_check_button.set_active(settings.get_boolean(key))
+  autostart_check_button.set_active(appConfig[key])
   autostart_check_button.connect("toggled", onCheckButtonToggled, autostart_check_button, key)
-  settings.bind(key, autostart_check_button, 'active', Gio.SettingsBindFlags.GET)
   preferencesBox.add(autostart_check_button)
-  key = 'startonstart'              # Start daemon on indicator start
+  key = 'startonstart'                     # Start daemon on indicator start
   start_check_button = Gtk.CheckButton(_('Start Yandex.Disk daemon when indicator is starting'))
   start_check_button.set_tooltip_text(_("When daemon was not started before."))
-  start_check_button.set_active(settings.get_boolean(key))
+  start_check_button.set_active(appConfig[key])
   start_check_button.connect("toggled", onCheckButtonToggled, start_check_button, key)
-  settings.bind(key, start_check_button, 'active', Gio.SettingsBindFlags.GET)
   preferencesBox.add(start_check_button)
-  key = 'stoponexit'                # Stop daemon on exit
+  key = 'stoponexit'                       # Stop daemon on exit
   stop_check_button = Gtk.CheckButton(_('Stop Yandex.Disk daemon on closing of indicator'))
-  stop_check_button.set_active(settings.get_boolean(key))
+  stop_check_button.set_active(appConfig[key])
   stop_check_button.connect("toggled", onCheckButtonToggled, stop_check_button, key)
-  settings.bind(key, stop_check_button, 'active', Gio.SettingsBindFlags.GET)
   preferencesBox.add(stop_check_button)
-  key = 'notifications'             # Notifications
+  key = 'notifications'                    # Notifications
   notifications_check_button = Gtk.CheckButton(_('Show on-screen notifications'))
-  notifications_check_button.set_active(settings.get_boolean(key))
+  notifications_check_button.set_active(appConfig[key])
   notifications_check_button.connect("toggled", onCheckButtonToggled,
                                      notifications_check_button, key)
-  settings.bind(key, notifications_check_button, 'active', Gio.SettingsBindFlags.GET)
   preferencesBox.add(notifications_check_button)
-  key = 'theme'                     # Theme
+  key = 'theme'                            # Theme
   theme_check_button = Gtk.CheckButton(_('Prefer light icon theme'))
-  theme_check_button.set_active(settings.get_boolean(key))
+  theme_check_button.set_active(appConfig[key])
   theme_check_button.connect("toggled", onCheckButtonToggled, theme_check_button, key)
-  settings.bind(key, theme_check_button, 'active', Gio.SettingsBindFlags.GET)
   preferencesBox.add(theme_check_button)
-  key = 'fmextensions'              # Activate file-manager extensions
+  key = 'fmextensions'                     # Activate file-manager extensions
   fmext_check_button = Gtk.CheckButton(_('Activate file manager extensions'))
-  fmext_check_button.set_active(settings.get_boolean(key))
+  fmext_check_button.set_active(appConfig[key])
   fmext_check_button.connect("toggled", onCheckButtonToggled, fmext_check_button, key)
-  settings.bind(key, fmext_check_button, 'active', Gio.SettingsBindFlags.GET)
   preferencesBox.add(fmext_check_button)
   # --- End of Indicator preferences tab --- add it to notebook
   pref_notebook.append_page(preferencesBox, Gtk.Label(_('Indicator settings')))
   # --- Daemon start options tab ---
   optionsBox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 5)
-  key = 'autostartdaemon'           # Auto-start daemon on system start-up
+  key = 'autostartdaemon'                  # Auto-start daemon on system start-up
   autostart_d_check_button = Gtk.CheckButton(
                                _('Start Yandex.Disk daemon when you start your computer'))
-  autostart_d_check_button.set_active(settings.get_boolean(key))
+  autostart_d_check_button.set_active(appConfig[key])
   autostart_d_check_button.connect("toggled", onCheckButtonToggled, autostart_d_check_button, key)
-  settings.bind(key, autostart_d_check_button, 'active', Gio.SettingsBindFlags.GET)
   optionsBox.add(autostart_d_check_button)
-  key = 'optionreadonly'            # Option Read-Only
+  key = 'optionreadonly'                   # Option Read-Only    # daemon config
   readOnly_check_button = Gtk.CheckButton(
                             _('Read-Only: Do not upload locally changed files to Yandex.Disk'))
   readOnly_check_button.set_tooltip_text(
     _("Locally changed files will be renamed if a newer version of this file appear in " + 
       "Yandex.Disk. \n NOTE! You have to reload daemon to activate this setting"))
-  readOnly_check_button.set_active(settings.get_boolean(key))
+  readOnly_check_button.set_active(daemonConfig[key])
   readOnly_check_button.connect("toggled", onCheckButtonToggled, readOnly_check_button, key)
-  settings.bind(key, readOnly_check_button, 'active', Gio.SettingsBindFlags.GET)
   optionsBox.add(readOnly_check_button)
-  key = 'optionoverwrite'           # Option Overwrite
+  key = 'optionoverwrite'                  # Option Overwrite    # daemon config
   overwrite_check_button = Gtk.CheckButton(_('Overwrite locally changed files by files' + 
                                              ' from Yandex.Disk (in read-only mode)'))
   overwrite_check_button.set_tooltip_text(
     _("Locally changed files will be overwritten if a newer version of this file appear " + 
       "in Yandex.Disk. \n NOTE! You have to reload daemon to activate this setting"))
-  overwrite_check_button.set_active(settings.get_boolean(key))
-  overwrite_check_button.set_sensitive(settings.get_boolean('optionreadonly'))
+  overwrite_check_button.set_active(daemonConfig[key])
+  overwrite_check_button.set_sensitive(daemonConfig['optionreadonly'])
   overwrite_check_button.connect("toggled", onCheckButtonToggled, overwrite_check_button, key)
-  settings.bind(key, overwrite_check_button, 'active', Gio.SettingsBindFlags.GET)
   optionsBox.add(overwrite_check_button)
   # --- End of Daemon start options tab --- add it to notebook
   pref_notebook.append_page(optionsBox, Gtk.Label(_('Daemon options')))
   preferencesWindow.show_all()
   preferencesWindow.run()
   preferencesWindow.destroy()
-  daemonOptionsSave()               # Save daemon options in config file
-  menu_widget.set_sensitive(True)   # Enable menu item
+  daemonConfigSave()                       # Save daemon options in config file
+  writeConfigFile(appCofigFile, appConfig)  # Save app appConfig
+  menu_widget.set_sensitive(True)          # Enable menu item
 
 def showOutput(menu_widget):                    # Display daemon output in dialogue window
   global origLANG, workLANG, daemonOutput
   menu_widget.set_sensitive(False)              # Disable menu item
-  os.putenv('LANG', origLANG)                   # Restore user LANG settings
+  os.putenv('LANG', origLANG)                   # Restore user LANG appConfig
   getDaemonOutput()                             # Receve daemon output in user language
-  os.putenv('LANG', workLANG)                   # Restore working LANG settings
+  os.putenv('LANG', workLANG)                   # Restore working LANG appConfig
   statusWindow = Gtk.Dialog(_('Yandex.Disk daemon output message'))
   statusWindow.set_icon(GdkPixbuf.Pixbuf.new_from_file(yandexDiskIcon))
   statusWindow.set_border_width(6)
@@ -453,7 +481,7 @@ def parseDaemonOutput():                   # Parse the daemon output
 def checkDaemon():               # Checks that daemon installed, configured and it is running.
   # It also reads the configuration file in any case when it returns.
   # I case of nonconvertible errors it finishes the application.
-  global settings
+  global appConfig
   if not os.path.exists('/usr/bin/yandex-disk'):
     daemonErrorDialog('NOTINSTALLED')
     appExit()                    # Daemon is not installed. Exit right now.
@@ -476,7 +504,7 @@ def checkDaemon():               # Checks that daemon installed, configured and 
     except:
       debugPrint("yandex-disk daemon is not running")
       msg = ''
-    if msg == '' and not settings.get_boolean("startonstart"):  
+    if msg == '' and not appConfig["startonstart"]:
       return False               # Daemon is not started and should not be started
     else:  
       err = startYDdaemon()      # Try to start it
@@ -577,13 +605,9 @@ def handleEvent(triggeredBy_iNotifier): # It is main working routine.
 
 def updateIconTheme():    # Update paths to icons according to current theme
   global iconThemePath, ind, icon_busy, icon_idle, icon_pause, icon_error
-  
-  try:                    # Read defaults from dconf Settings
-    themeStyle = 'light' if settings.get_boolean("theme") else 'dark'
-  except:
-    themeStyle = 'dark'
-  # --- Set appropriate paths to icons ---
-  iconThemePath = os.path.join(installDir, 'icons', themeStyle )
+  # Determine theme from application configuration settings
+  iconThemePath = os.path.join(installDir, 'icons', 'light' if appConfig["theme"] else 'dark' )
+  # Set appropriate paths to icons
   icon_busy =  os.path.join(iconThemePath, 'yd-busy1.png')
   icon_idle =  os.path.join(iconThemePath, 'yd-ind-idle.png')
   icon_pause = os.path.join(iconThemePath, 'yd-ind-pause.png')
@@ -619,10 +643,7 @@ def iconAnimation(widget):   # Changes busy icon by loop (triggered by iconAnima
   return True                # True required to continue triggering by timer
 
 def activateActions():  # Install/deinstall file extensions
-  try:                  # get settings
-    activate = settings.get_boolean("fmextensions")
-  except:
-    activate = False
+  activate = appConfig["fmextensions"]
   # --- Actions for Nautilus ---
   ret = subprocess.call(["dpkg -s nautilus>/dev/null 2>&1"], shell=True)
   debugPrint("Nautilus installed: %s" % str(ret == 0))
@@ -710,59 +731,41 @@ def activateActions():  # Install/deinstall file extensions
       deleteFile(os.path.join(userHome, ".kde/share/kde4/services/publish.desktop"))
       deleteFile(os.path.join(userHome," .kde/share/kde4/services/unpublish.desktop"))
 
-def readConfigFile(configPath):   # Read settings from config file to dict (returned value)
-  config = {}
-  try:
-    with open(configPath) as cf:
-      for ln in cf:               # Parse lines and remove quotes if they are used
-        if ln[0] != '#':          # Ignore comments 
-          p = ln.find('=')
-          q = ln.find('"', p)
-          if p > 0:
-            config[ln[:p]] = (ln[p+1:-1] if q < 0 else
-                              ln[q+1: ln.find('"', q+1)])
-  except:
-    debugPrint('Config file read error: %s' % configPath)
-  return config
-
-def daemonOptionsSave():  # Update daemon config file according to the configuration settings
-  global daemonConfigPath, settings
-  fileConfig = readConfigFile(daemonConfigPath)
-  fileConfig.pop('read-only',None)            # Ignore "read-only" settings from file 
-  fileConfig.pop('overwrite',None)            # Ignore "overwrite" settings from file
-  if settings.get_boolean('optionreadonly'):
+def daemonConfigSave():  # Update daemon config file according to the configuration appConfig
+  global daemonConfigFile, daemonConfig
+  fileConfig = readConfigFile(daemonConfigFile)
+  fileConfig.pop('read-only',None)            # Ignore "read-only" appConfig from file 
+  fileConfig.pop('overwrite',None)            # Ignore "overwrite" appConfig from file
+  if daemonConfig['optionreadonly']:
     fileConfig['read-only'] = ''
-    if settings.get_boolean('optionoverwrite'):
+    if daemonConfig['optionoverwrite']:
       fileConfig['overwrite'] = ''
-  try:
-    with open(daemonConfigPath, 'wt') as cf:
-      for key, val in fileConfig.items():     # Write setting to config file 
-        print('%s="%s"' % (key, val), file=cf) 
-  except:
-    debugPrint('Config file write error: %s' % daemonConfigPath)
-
-def daemonConfigRead():  # Get daemon settings from its config file
-  global daemonConfigPath, yandexDiskFolder, settings
+  writeConfigFile(daemonConfigFile, fileConfig)
+  
+def daemonConfigRead():  # Get daemon appConfig from its config file
+  global daemonConfigFile, yandexDiskFolder, daemonConfig
   yandexDiskFolder = ''
-  fileConfig = readConfigFile(daemonConfigPath)
+  fileConfig = readConfigFile(daemonConfigFile)
   if len(fileConfig) > 0:
     yandexDiskFolder = fileConfig.get('dir', '')
     if PY2:                       # Decode required only for python 2.7 (for UTF-8 support)
       yandexDiskFolder = yandexDiskFolder.decode('utf-8')
-    settings.set_boolean('optionreadonly', fileConfig.get('read-only', False))
-    settings.set_boolean('optionoverwrite', fileConfig.get('overwrite', False))
+    daemonConfig['optionreadonly'] = fileConfig.get('read-only', False)
+    daemonConfig['optionoverwrite'] = fileConfig.get('overwrite', False)
   return (yandexDiskFolder != '')
 
 ###################### MAIN LOOP #########################
 if __name__ == '__main__':
   ### Running environment detection
   PY2 = sys.version_info[0] == 2
-  #installDir = os.path.dirname(os.path.realpath(__file__))
-  installDir = os.path.join(os.sep, 'usr', 'share', 'yd-tools')
-  userHome = os.getenv("HOME")
   ### Application constants ###
   appVer += ('-Py2' if PY2 else '-Py3')
   appName = 'yandex-disk-indicator'
+  appHomeName = 'yd-tools'
+  installDir = os.path.join(os.sep, 'usr', 'share', appHomeName)
+  userHome = os.getenv("HOME")
+  appCofigPath = os.path.join(userHome, '.config', appHomeName)
+  appCofigFile = os.path.join(appCofigPath, appName + '.conf')
   # Define .desktop files locations for auto-start facility
   autoStartSource = os.path.join(os.sep, 'usr', 'share', 'applications', 
                                  'Yandex.Disk-indicator.desktop')
@@ -770,47 +773,8 @@ if __name__ == '__main__':
                                       'Yandex.Disk-indicator.desktop')
   autoStartSource1 = os.path.join(os.sep, 'usr', 'share', 'applications', 'Yandex.Disk.desktop')
   autoStartDestination1 = os.path.join(userHome, '.config', 'autostart', 'Yandex.Disk.desktop')
-  # Store and set LANG environment for daemon output (it must be 'en' for correct parsing)
-  origLANG = os.getenv('LANG')
-  workLANG = 'en_US.UTF-8'
-  os.putenv('LANG', workLANG)
-  ### Configuration settings ###
-  try:
-    settings = Gio.Settings.new("apps." + appName)
-  except:
-    sys.exit('dconf settings are not found!')
-  # Read some settings to variables
-  try:
-    verboseDebug = settings.get_boolean("debug")
-  except:
-    verboseDebug = False
-  # Output the version and environment information to debug stream
-  debugPrint('%s v.%s (app_home=%s)' % (appName, appVer, installDir))
-  try:
-    notificationSetting = settings.get_boolean("notifications")
-  except:
-    notificationSetting = True
-  # Update auto-start settings according to actual files existence in ~/.config/autostart
-  try:  
-    settings.set_boolean('autostart', os.path.isfile(autoStartDestination))
-    settings.set_boolean('autostartdaemon', os.path.isfile(autoStartDestination1))
-  except:
-    pass
-  ### Localization ###
-  try:                        # Try to load translation
-    if PY2:                   # unicode flag required in python2.7 for UTF-8 support
-      gettext.translation(appName, '/usr/share/locale', fallback=True).install(unicode=True)
-    else:                     # python3 works with Unicode without any trick
-      gettext.translation(appName, '/usr/share/locale', fallback=True).install()
-    debugPrint("Localization for %s is activated" % origLANG)
-  except:
-    _ = str                   # use English (as writtenss in code)
-    debugPrint("Localization for %s was not found" % origLANG)
-  ### Activate FM actions according to settings if lock file not exists (probably it is a first run)
-  lockFileName = '/tmp/' + appName + '.lock'
-  if not os.path.isfile(lockFileName):
-    activateActions()
   ### Check for already running instance of the indicator application ###
+  lockFileName = '/tmp/' + appName + '.lock'
   try:
     lockFile = open(lockFileName, 'w')                      # Open lock file for write
     fcntl.flock(lockFile, fcntl.LOCK_EX | fcntl.LOCK_NB)    # Try to acquire exclusive lock
@@ -820,9 +784,51 @@ if __name__ == '__main__':
   lockFile.write('%d\n' % os.getpid())
   lockFile.flush()
 
+  ### Output the version and environment information to debug stream
+  verboseDebug = True     # Temporary allow debug output to handle exeptions
+  debugPrint('%s v.%s (app_home=%s)' % (appName, appVer, installDir))
+
+  ### Localization ###
+  # Store original LANG environment
+  origLANG = os.getenv('LANG')
+  try:                        # Try to load translation
+    if PY2:                   # unicode flag required in python2.7 for UTF-8 support
+      gettext.translation(appName, '/usr/share/locale', fallback=True).install(unicode=True)
+    else:                     # python3 works with Unicode without any trick
+      gettext.translation(appName, '/usr/share/locale', fallback=True).install()
+    debugPrint("Localization for %s is activated" % origLANG)
+  except:
+    _ = str                   # use English (as writtenss in code)
+    debugPrint("Localization for %s was not found" % origLANG)
+  # Set LANG environment for daemon output (it must be 'en' for correct parsing)
+  workLANG = 'en_US.UTF-8'
+  os.putenv('LANG', workLANG)
+
+  ### Application configuration ###
+  appConfig = readConfigFile(appCofigFile)
+  # Read some settings to variables
+  verboseDebug = appConfig.setdefault('debug', False)
+  notificationSetting = appConfig.setdefault('notifications', True)
+  # Set defaults (just in case some setting missed in config file or there is no config file) 
+  appConfig.setdefault('theme', False)
+  appConfig.setdefault('startonstart', True)
+  appConfig.setdefault('stoponexit', False)
+  appConfig.setdefault('fmextensions', True)
+  # Update auto-start appConfig according to actual files existence in ~/.config/autostart
+  appConfig['autostart'] = os.path.isfile(autoStartDestination)
+  appConfig['autostartdaemon'] = os.path.isfile(autoStartDestination1)
+  # Store settings to app config file (required to create default appConfig at first start)
+  if not os.path.exists(appCofigPath): 
+    # create app config folder in ~/.config
+    os.makedirs(appCofigPath)
+    ### Activate FM actions according to appConfig (as it is a first run)
+    activateActions()
+  writeConfigFile(appCofigFile, appConfig)
+  
   ### Yandex.Disk daemon ###
   # Yandex.Disk configuration file path
-  daemonConfigPath = os.path.join(userHome, '.config', 'yandex-disk', 'config.cfg')
+  daemonConfigFile = os.path.join(userHome, '.config', 'yandex-disk', 'config.cfg')
+  daemonConfig = {}
   # Initialize global variables
   YD_STATUS = {'idle': _('Synchronized'), 'busy': _('Sync.: '), 'none': _('Not started'),
                'paused': _('Paused'), 'no internet access': _('Not connected')}
@@ -831,7 +837,7 @@ if __name__ == '__main__':
   lastStatus = 'idle'         # fallback status for "index" status substitution at start time
   if checkDaemon():           # Check that daemon is installed, configured and started (responding)
     parseDaemonOutput()       # Parse daemon output to determine the real currentStatus
-  # Yandex.Disk configuration file is read within checkDaemon()
+  # Yandex.Disk configuration file is read in checkDaemon()
   # Set initial statuses
   newStatus = lastStatus = currentStatus
   lastItems = '*'             # Reset lastItems in order to update menu in handleEvent()
@@ -841,7 +847,7 @@ if __name__ == '__main__':
   ### Application Indicator ###
   ## Icons ##
   yandexDiskIcon = os.path.join(installDir, 'icons', 'yd-128.png')            # logo
-  updateIconTheme()           # Define the rest icons paths
+  updateIconTheme()           # Define the rest icons paths according to current theme
   iconAnimationTimer = 0      # Define the icon animation timer variable
   ## Indicator ##
   ind = appindicator.Indicator.new("yandex-disk", icon_pause,
