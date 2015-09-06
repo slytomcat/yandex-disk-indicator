@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
 Exec=yandex-disk start
-Icon=/opt/yd-tools/icons/yd-128_g.png
+Icon=/usr/share/yd-tools/icons/yd-128_g.png
 Terminal=false
 Name=Yandex.Disk daemon
 Comment=Start Yandex.Disk daemon

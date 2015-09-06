@@ -1,8 +1,8 @@
 [Desktop Entry]
 Type=Application
-Exec=/opt/yd-tools/yandexDiskIndicator.py
-Path=/opt/yd-tools/
-Icon=/opt/yd-tools/icons/yd-128.png
+Exec=/usr/share/yd-tools/yandexDiskIndicator.py
+Path=/usr/share/yd-tools/
+Icon=/usr/share/yd-tools/icons/yd-128.png
 Terminal=false
 Name=Yandex.Disk indicator
 Comment=Yandex.Disk indicator
