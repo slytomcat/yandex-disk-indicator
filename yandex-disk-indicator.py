@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.4.0'
+appVer = '1.4.2'
 #
 #  Copyright 2014 Sly_tom_cat <slytomcat@mail.ru>
 #  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
@@ -66,7 +66,7 @@ def appExit():
   os._exit(0)
 
 def quitApplication(widget):
-  global iconAnimationTimer, iNotifierTimer, watchTimer, currentStatus
+  global iconAnimationTimer, iNotifierTimer, watchTimer, currentStatus, daemonConfigPath
   try:    stopOnExit = settings.get_boolean("stoponexit")
   except: stopOnExit = False
   debugPrint('Stop daemon on exit is - %s' % str(stopOnExit))
@@ -283,7 +283,7 @@ def openPreferences(menu_widget):   # Preferences Window
   preferencesWindow.show_all()
   preferencesWindow.run()
   preferencesWindow.destroy()
-  optionsSave()                     # Save daemon statrt options in config file
+  daemonOptionsSave()               # Save daemon options in config file
   menu_widget.set_sensitive(True)   # Enable menu item
 
 def showOutput(menu_widget):                    # Display daemon output in dialogue window
@@ -457,7 +457,7 @@ def checkDaemon():               # Checks that daemon installed, configured and 
   if not os.path.exists('/usr/bin/yandex-disk'):
     daemonErrorDialog('NOTINSTALLED')
     appExit()                    # Daemon is not installed. Exit right now.
-  while not readConfig():        # Try to read Yandex.Disk configuration file
+  while not daemonConfigRead():  # Try to read Yandex.Disk configuration file
     if daemonErrorDialog('NOCONFIG') != 0:
       appExit()                  # User hasn't configured daemon. Exit right now.
   while not getDaemonOutput():   # Check for correct daemon response (also check that it is running)
@@ -710,68 +710,48 @@ def activateActions():  # Install/deinstall file extensions
       deleteFile(os.path.join(userHome, ".kde/share/kde4/services/publish.desktop"))
       deleteFile(os.path.join(userHome," .kde/share/kde4/services/unpublish.desktop"))
 
-def optionsSave():  # Update daemon config file according to the configuration settings
-  global daemonConfig, settings
-  roExist = False
-  ovExist = False
-  roVal = settings.get_boolean('optionreadonly')
-  ovVal = settings.get_boolean('optionoverwrite')
+def readConfigFile(configPath):   # Read settings from config file to dict (returned value)
+  config = {}
   try:
-    cfgFile = open(daemonConfig, 'rt')
+    with open(configPath) as cf:
+      for ln in cf:               # Parse lines and remove quotes if they are used
+        if ln[0] != '#':          # Ignore comments 
+          p = ln.find('=')
+          q = ln.find('"', p)
+          if p > 0:
+            config[ln[:p]] = (ln[p+1:-1] if q < 0 else
+                              ln[q+1: ln.find('"', q+1)])
   except:
-    debugPrint('CFG File open error')
-  else:             # Open new temporary file in text mode for write ad keep it after close
-    newFile = newTempFile(mode='wt', delete=False)
-    for line in cfgFile:
-      if line.startswith('read-only='):
-        roExist = True
-        if not roVal:
-          continue
-      elif line.startswith('overwrite='):
-        ovExist = True
-        if not (roVal and ovVal):
-          continue
-      newFile.write(line)
-    if roVal and not roExist:
-      newFile.write('read-only=""\n')
-    if ovVal and roVal and not ovExist:
-      newFile.write('overwrite=""\n')
-    cfgFile.close()
-    newFile.close()
-    deleteFile(daemonConfig)
-    copyFile(newFile.name, daemonConfig)
+    debugPrint('Config file read error: %s' % configPath)
+  return config
 
-def readConfig():     # Update settings according to daemon config file and get yandex.disk folder path
-  global daemonConfig, yandexDiskFolder, settings
-  roVal = False
-  ovVal = False
-  yandexDiskFolder = ''
-  if not os.path.exists(daemonConfig):
-    return False
+def daemonOptionsSave():  # Update daemon config file according to the configuration settings
+  global daemonConfigPath, settings
+  fileConfig = readConfigFile(daemonConfigPath)
+  fileConfig.pop('read-only',None)            # Ignore "read-only" settings from file 
+  fileConfig.pop('overwrite',None)            # Ignore "overwrite" settings from file
+  if settings.get_boolean('optionreadonly'):
+    fileConfig['read-only'] = ''
+    if settings.get_boolean('optionoverwrite'):
+      fileConfig['overwrite'] = ''
   try:
-    cfgFile = open(daemonConfig, 'rt')
+    with open(daemonConfigPath, 'wt') as cf:
+      for key, val in fileConfig.items():     # Write setting to config file 
+        print('%s="%s"' % (key, val), file=cf) 
   except:
-    debugPrint('CFG File open error')
-  else:
-    for line in cfgFile:
-      if line.startswith('read-only='):
-        roVal = True
-      if line.startswith('overwrite='):
-        ovVal = True
-      pos = line.find('dir=')+4
-      if pos > 3:
-        if line[pos] == '"':
-          pos+=1
-          yandexDiskFolder = line[pos: line.find('"', pos)]
-        else:
-          yandexDiskFolder = line[pos: line.find('/n', pos)]
-        if PY2:       # Decode required for python 2.7 and not required for Python3
-          yandexDiskFolder = yandexDiskFolder.decode('utf-8')
-        debugPrint('Config: yandexDiskFolder = %s' % yandexDiskFolder)
-    cfgFile.close()
-    settings.set_boolean('optionreadonly', roVal)
-    settings.set_boolean('optionoverwrite', ovVal)
-    return (yandexDiskFolder != '')
+    debugPrint('Config file write error: %s' % daemonConfigPath)
+
+def daemonConfigRead():  # Get daemon settings from its config file
+  global daemonConfigPath, yandexDiskFolder, settings
+  yandexDiskFolder = ''
+  fileConfig = readConfigFile(daemonConfigPath)
+  if len(fileConfig) > 0:
+    yandexDiskFolder = fileConfig.get('dir', '')
+    if PY2:                       # Decode required only for python 2.7 (for UTF-8 support)
+      yandexDiskFolder = yandexDiskFolder.decode('utf-8')
+    settings.set_boolean('optionreadonly', fileConfig.get('read-only', False))
+    settings.set_boolean('optionoverwrite', fileConfig.get('overwrite', False))
+  return (yandexDiskFolder != '')
 
 ###################### MAIN LOOP #########################
 if __name__ == '__main__':
@@ -839,9 +819,10 @@ if __name__ == '__main__':
                '(file /tmp/%s.lock is locked by another process)') % appName)
   lockFile.write('%d\n' % os.getpid())
   lockFile.flush()
+
   ### Yandex.Disk daemon ###
   # Yandex.Disk configuration file path
-  daemonConfig = os.path.join(userHome, '.config', 'yandex-disk', 'config.cfg')
+  daemonConfigPath = os.path.join(userHome, '.config', 'yandex-disk', 'config.cfg')
   # Initialize global variables
   YD_STATUS = {'idle': _('Synchronized'), 'busy': _('Sync.: '), 'none': _('Not started'),
                'paused': _('Paused'), 'no internet access': _('Not connected')}
