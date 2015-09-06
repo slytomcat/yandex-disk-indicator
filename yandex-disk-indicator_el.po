@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: yd-tools\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-09-05 01:34+0300\n"
-"PO-Revision-Date: 2015-09-05 15:57+0200\n"
+"PO-Revision-Date: 2015-09-06 15:49+0200\n"
 "Last-Translator: Sergey Tsabolov <linuxmangr@yandex.ru>\n"
 "Language-Team: ubuntu.ru local team <slytomcat@mail.ru>\n"
 "Language: el_GR\n"
@@ -241,7 +241,7 @@ msgstr "Η υπηρεσία Yandex.Disk ξεκίνησε"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:318
 msgid "Last synchronized items"
-msgstr "Οι πιο πρόσφατες συγχρονισμένες καταχωρήσεις"
+msgstr "Πρόσφατα συγχρονισμένα αρχεία"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:324
 msgid "Start Yandex.Disk daemon"
