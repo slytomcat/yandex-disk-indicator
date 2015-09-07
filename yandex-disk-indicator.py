@@ -414,8 +414,7 @@ def getDaemonOutput():
   global daemonOutput
   try:    daemonOutput = subprocess.check_output(['yandex-disk', 'status'], universal_newlines=True)
   except: daemonOutput = ''     # daemon is not running or bad
-  if PY2:                       # Decode required only for python 2.7 (for UTF-8 support)
-    daemonOutput = daemonOutput.decode('utf-8')
+  daemonOutput = daemonOutput.decode('utf-8')
   #debugPrint('output = %s' % daemonOutput)
   return (daemonOutput != '')
 
@@ -767,19 +766,14 @@ def daemonConfigRead():  # Get daemon appConfig from its config file
   yandexDiskFolder = ''
   fileConfig = readConfigFile(daemonConfigFile)
   if len(fileConfig) > 0:
-    yandexDiskFolder = fileConfig.get('dir', '')
-    if PY2:                       # Decode required only for python 2.7 (for UTF-8 support)
-      yandexDiskFolder = yandexDiskFolder.decode('utf-8')
+    yandexDiskFolder = fileConfig.get('dir', '').decode('utf-8')
     daemonConfig['optionreadonly'] = fileConfig.get('read-only', False)
     daemonConfig['optionoverwrite'] = fileConfig.get('overwrite', False)
   return (yandexDiskFolder != '')
 
 ###################### MAIN LOOP #########################
 if __name__ == '__main__':
-  ### Running environment detection
-  PY2 = sys.version_info[0] == 2
   ### Application constants ###
-  appVer += ('-Py2' if PY2 else '-Py3')
   appName = 'yandex-disk-indicator'
   appHomeName = 'yd-tools'
   installDir = os.path.join(os.sep, 'usr', 'share', appHomeName)
@@ -813,10 +807,7 @@ if __name__ == '__main__':
   # Store original LANG environment
   origLANG = os.getenv('LANG')
   try:                        # Try to load translation
-    if PY2:                   # unicode flag required in python2.7 for UTF-8 support
-      gettext.translation(appName, '/usr/share/locale', fallback=True).install(unicode=True)
-    else:                     # python3 works with Unicode without any trick
-      gettext.translation(appName, '/usr/share/locale', fallback=True).install()
+    gettext.translation(appName, '/usr/share/locale', fallback=True).install(unicode=True)
     debugPrint("Localization for %s is activated" % origLANG)
   except:
     _ = str                   # use English (as writtenss in code)
