@@ -112,6 +112,7 @@ def readConfigFile(configFile):   # Read config file to dict (returned value)
   try:
     with open(configFile) as cf:
       for ln in cf:               # Parse lines remove quotes if they are used
+        ln = ln.decode('utf-8')
         if ln[0] != '#':          # Ignore comments 
           p = ln.find('=')
           q = ln.find('"', p)
@@ -628,9 +629,6 @@ def updateIconTheme():    # Determine paths to icons according to current theme
   else:
     icon_busy = os.path.join(defaultIconThemePath, 'yd-busy1.png')
     iconThemePath = defaultIconThemePath
-  debugPrint('yd-ind-error: %s' % icon_error)
-  debugPrint('yd-ind-idle: %s' % icon_idle)
-
 
 def updateIcon():                     # Change indicator icon according to new status
   global newStatus, lastStatus, icon_busy, icon_idle, icon_pause
@@ -766,7 +764,7 @@ def daemonConfigRead():  # Get daemon appConfig from its config file
   yandexDiskFolder = ''
   fileConfig = readConfigFile(daemonConfigFile)
   if len(fileConfig) > 0:
-    yandexDiskFolder = fileConfig.get('dir', '').decode('utf-8')
+    yandexDiskFolder = fileConfig.get('dir', '')
     daemonConfig['optionreadonly'] = fileConfig.get('read-only', False)
     daemonConfig['optionoverwrite'] = fileConfig.get('overwrite', False)
   return (yandexDiskFolder != '')
