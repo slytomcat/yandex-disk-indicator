@@ -29,7 +29,7 @@ from gi.repository import AppIndicator3 as appindicator
 from gi.repository import GdkPixbuf
 from gi.repository import Notify
 from shutil import copy as fileCopy
-from tempfile import NamedTemporaryFile as newTempFile
+from collections import OrderedDict
 from webbrowser import open_new as openNewBrowser
 import os, sys, subprocess, pyinotify, fcntl, gettext, datetime
 
@@ -100,8 +100,15 @@ def iNotifyHandler():  # iNotify working routine (called by timer)
     iNotifier.process_events()
   return True
 
+def setDefault(settings, key, val):
+  try:
+    return settings[key]
+  except:
+    settings[key] = val
+    return val
+
 def readConfigFile(configFile):   # Read config file to dict (returned value)
-  config = {}
+  config = OrderedDict()
   try:
     with open(configFile) as cf:
       for ln in cf:               # Parse lines remove quotes if they are used
@@ -806,17 +813,15 @@ if __name__ == '__main__':
 
   ### Application configuration ###
   appConfig = readConfigFile(appCofigFile)
-  # Read some settings to variables
-  verboseDebug = appConfig.setdefault('debug', False)
-  notificationSetting = appConfig.setdefault('notifications', True)
-  # Set defaults (just in case some setting missed in config file or there is no config file) 
-  appConfig.setdefault('theme', False)
-  appConfig.setdefault('startonstart', True)
-  appConfig.setdefault('stoponexit', False)
-  appConfig.setdefault('fmextensions', True)
-  # Update auto-start appConfig according to actual files existence in ~/.config/autostart
+  # Read some settings to variables, set default values and updte some values
   appConfig['autostart'] = os.path.isfile(autoStartDestination)
+  setDefault(appConfig, 'startonstart', True)
+  setDefault(appConfig, 'stoponexit', False)
+  notificationSetting = setDefault(appConfig, 'notifications', True)
+  setDefault(appConfig, 'theme', False)
+  setDefault(appConfig, 'fmextensions', True)
   appConfig['autostartdaemon'] = os.path.isfile(autoStartDestination1)
+  verboseDebug = setDefault(appConfig, 'debug', False)
   # Store settings to app config file (required to create default appConfig at first start)
   if not os.path.exists(appCofigPath): 
     # create app config folder in ~/.config
@@ -828,7 +833,7 @@ if __name__ == '__main__':
   ### Yandex.Disk daemon ###
   # Yandex.Disk configuration file path
   daemonConfigFile = os.path.join(userHome, '.config', 'yandex-disk', 'config.cfg')
-  daemonConfig = {}
+  daemonConfig = OrderedDict()
   # Initialize global variables
   YD_STATUS = {'idle': _('Synchronized'), 'busy': _('Sync.: '), 'none': _('Not started'),
                'paused': _('Paused'), 'no internet access': _('Not connected')}
