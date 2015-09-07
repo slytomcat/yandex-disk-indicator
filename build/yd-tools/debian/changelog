@@ -1,7 +1,8 @@
-yd-tools (1.4.0) precise; urgency=medium
+yd-tools (1.4.2) precise; urgency=medium
 
   * Changes:
-   -- move project catalog from /opt/yd-tools to /usr/share/yd-tools
-   -- /usr/bin/yandex-disk-indicator now the main python code but not bash wrapper 
+   -- Daemon config read/update procedure has optimized 
+   -- Application setting storage changed from dconf database to file ~/.config/yd-tools/yandex-disk-indicator.conf
+   -- User icon themes in ~/.config/yd-tools/icons/ are used when they are exists or defaul icons from /usr/share/yd-tools/icons are used.
 
  -- Sly_tom_cat <slytomcat@mail.ru>  Fri, 4 Sep 2015 23:54:48 +0300

@@ -610,15 +610,29 @@ def handleEvent(triggeredBy_iNotifier): # It is main working routine.
         timerTriggeredCount += 1    # Increase counter to increase delay in next activation.
   return True                       # True is required to continue activations by timer.
 
-def updateIconTheme():    # Update paths to icons according to current theme
-  global iconThemePath, ind, icon_busy, icon_idle, icon_pause, icon_error
+def updateIconTheme():    # Determine paths to icons according to current theme
+  global iconThemePath, ind, icon_busy, icon_idle, icon_pause, icon_error, installDir, appCofigPath
   # Determine theme from application configuration settings
-  iconThemePath = os.path.join(installDir, 'icons', 'light' if appConfig["theme"] else 'dark' )
+  iconTheme = 'light' if appConfig["theme"] else 'dark' 
+  defaultIconThemePath = os.path.join(installDir, 'icons')
+  userIconThemePath = os.path.join(appCofigPath, 'icons')
   # Set appropriate paths to icons
-  icon_busy =  os.path.join(iconThemePath, 'yd-busy1.png')
-  icon_idle =  os.path.join(iconThemePath, 'yd-ind-idle.png')
-  icon_pause = os.path.join(iconThemePath, 'yd-ind-pause.png')
-  icon_error = os.path.join(iconThemePath, 'yd-ind-error.png')
+  userIcon = os.path.join(userIconThemePath, 'yd-ind-idle.png')
+  icon_idle = (userIcon if os.path.exists(userIcon) else 
+               os.path.join(defaultIconThemePath, 'yd-ind-idle.png'))
+  userIcon = os.path.join(userIconThemePath, 'yd-ind-pause.png')
+  icon_pause = (userIcon if os.path.exists(userIcon) else
+                os.path.join(defaultIconThemePath, 'yd-ind-pause.png'))
+  userIcon = os.path.join(userIconThemePath, 'yd-ind-error.png')
+  icon_error = (userIcon if os.path.exists(userIcon) else
+                os.path.join(defaultIconThemePath, 'yd-ind-error.png'))
+  userIcon = os.path.join(userIconThemePath, 'yd-busy1.png')
+  if os.path.exists(userIcon):
+    icon_busy = userIcon
+    iconThemePath = userIconThemePath
+  else:
+    icon_busy = os.path.join(defaultIconThemePath, 'yd-busy1.png')
+    iconThemePath = defaultIconThemePath
 
 def updateIcon():                     # Change indicator icon according to new status
   global newStatus, lastStatus, icon_busy, icon_idle, icon_pause
@@ -824,8 +838,16 @@ if __name__ == '__main__':
   verboseDebug = setDefault(appConfig, 'debug', False)
   # Store settings to app config file (required to create default appConfig at first start)
   if not os.path.exists(appCofigPath): 
-    # create app config folder in ~/.config
-    os.makedirs(appCofigPath)
+    # create app config folders in ~/.config
+    try: os.makedirs(appCofigPath)
+    except: pass
+    try: os.makedirs(os.path.join(appCofigPath, 'icons', 'light'))
+    except: pass
+    try: os.makedirs(os.path.join(appCofigPath, 'icons', 'dark'))
+    except: pass
+    # Copy icon themes description readme to user config catalogue 
+    copyFile(os.path.join(installDir, 'icons', 'readme'),
+             os.path.join(appCofigPath, 'icons', 'readme'))
     ### Activate FM actions according to appConfig (as it is a first run)
     activateActions()
   writeConfigFile(appCofigFile, appConfig)

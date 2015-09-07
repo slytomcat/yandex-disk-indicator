@@ -1,0 +1,17 @@
+Icons themes are used to display the indicator status.
+There are two themes:
+ dark - for dark panel
+ light - for light panel
+Each theme should provide the following set of icons:
+ yd-ind-idle.png - displayed when Yandex.disk is synchronized
+ yd-ind-pause.png - displayed when Yandex.disk daemon not started or synchronization is paused
+ yd-ind-error.png - displayed when some error occurs in synchronisation
+ yd-busy[1-5].png - set of icons to indicate the synchronosation process. 
+Icons yd-busy[1-5].png are displayed in loop (to provide animated icon):
+  /--> yd-busy1.png --> yd-busy2.png --> yd-busy3.png -\ 
+  \--------- yd-busy5.png <-- yd-busy4.png <-----------/
+
+NOTE: you can redefine some icons (ex. yd-ind-error.png) individually (by placing 
+necessary icon in one of ~/.config/yd-tools/icons/ theme) but when you redefines 
+the set of animated icons then you have to provide the whole set of icons (i.e. yd-busy1.png, 
+yd-busy2.png, yd-busy3.png, yd-busy4.png and yd-busy5.png)

@@ -4,6 +4,7 @@ rm usr/bin/yandex-disk-indicator
 rm usr/share/yd-tools/ya-setup
 rm usr/share/yd-tools/IndicatorDebug_ON.sh
 rm usr/share/yd-tools/IndicatorDebug_OFF.sh
+rm usr/share/yd-tools/icons/readme
 rm usr/share/yd-tools/icons/yd-128.png
 rm usr/share/yd-tools/icons/yd-128_g.png
 rm usr/share/yd-tools/icons/dark/yd-busy1.png
@@ -26,7 +27,6 @@ rm usr/share/yd-tools/fm-actions/Nautilus_Nemo/publish
 rm usr/share/yd-tools/fm-actions/Nautilus_Nemo/unpublish
 rm usr/share/yd-tools/fm-actions/Dolphin/publish.desktop
 rm usr/share/yd-tools/fm-actions/Dolphin/unpublish.desktop
-rm usr/share/glib-2.0/schemas/apps.yandex-disk-indicator.gschema.xml
 rm usr/share/locale/ru/LC_MESSAGES/yandex-disk-indicator.mo
 rm usr/share/locale/el/LC_MESSAGES/yandex-disk-indicator.mo
 rm usr/share/applications/Yandex.Disk.desktop

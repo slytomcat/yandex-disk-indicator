@@ -7,6 +7,7 @@ usr/share/glib-2.0/schemas/apps.yandex-disk-indicator.gschema.xml usr/share/glib
 usr/share/yd-tools/ya-setup usr/share/yd-tools/
 usr/share/yd-tools/IndicatorDebug_ON.sh usr/share/yd-tools/
 usr/share/yd-tools/IndicatorDebug_OFF.sh usr/share/yd-tools/
+usr/share/yd-tools/icons/readme usr/share/yd-tools/icons/
 usr/share/yd-tools/icons/yd-128.png usr/share/yd-tools/icons/
 usr/share/yd-tools/icons/yd-128_g.png usr/share/yd-tools/icons/
 usr/share/yd-tools/icons/dark/yd-busy1.png usr/share/yd-tools/icons/dark/

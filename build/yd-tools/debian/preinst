@@ -20,4 +20,8 @@ then
     zenity  --error --width=350 --height=150 --ok-label="Выход" --title "Yandex.Disk" --text="Yandex.disk CLI utility is not installed! \nVisit www.yandex.ru, download and install Yandex.Disk CLI Utility\n After that repeeat yd-tools installation."
     exit 1
 fi
+
+if [ -e "/usr/share/glib-2.0/schemas/apps.yandex-disk-indicator.gschema.xml" ]
+    rm /usr/share/glib-2.0/schemas/apps.yandex-disk-indicator.gschema.xml
+    glib-compile-schemas /usr/share/glib-2.0/schemas
 exit 0

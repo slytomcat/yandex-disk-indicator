@@ -4,11 +4,11 @@ cp ../../yandex-disk-indicator.py usr/bin/yandex-disk-indicator
 cp ../../ya-setup usr/share/yd-tools/
 cp ../../translations/yandex-disk-indicator_ru.mo usr/share/locale/ru/LC_MESSAGES/yandex-disk-indicator.mo
 cp ../../translations/yandex-disk-indicator_el.mo usr/share/locale/el/LC_MESSAGES/yandex-disk-indicator.mo
-cp ../../tools/apps.yandex-disk-indicator.gschema.xml usr/share/glib-2.0/schemas/
 cp ../../tools/IndicatorDebug_ON.sh usr/share/yd-tools/
 cp ../../tools/IndicatorDebug_OFF.sh usr/share/yd-tools/
 cp ../../Yandex.Disk-indicator.desktop usr/share/applications/
 cp ../../Yandex.Disk.desktop usr/share/applications/
+cp ../../readme usr/share/yd-tools/icons/
 cp ../../icons/yd-128.png usr/share/yd-tools/icons/
 cp ../../icons/yd-128_g.png usr/share/yd-tools/icons/
 cp ../../icons/dark/yd-busy1.png usr/share/yd-tools/icons/dark/
