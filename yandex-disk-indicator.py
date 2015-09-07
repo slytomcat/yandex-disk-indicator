@@ -25,7 +25,7 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 from gi.repository import Gio
 from gi.repository import GLib
-from gi.repository import AppIndicator3 as appindicator
+from gi.repository import AppIndicator3 as appIndicator
 from gi.repository import GdkPixbuf
 from gi.repository import Notify
 from shutil import copy as fileCopy
@@ -133,9 +133,9 @@ def writeConfigFile(configFile, confSet, boolval=['yes', 'no']):  # Write settin
   try:
     with open(configFile, 'wt') as cf:
       for key, val in confSet.items():
-        if isinstance(val, bool):          # Treat boolean
+        if isinstance(val, bool):                                 # Treat boolean
           val = boolval[0] if val else boolval[1]       
-        print('%s="%s"' % (key, val), file=cf) 
+        cf.write('%s="%s"\n' % (key, val)) 
     debugPrint('Config written: %s' % configFile)
   except:
     debugPrint('Config file write error: %s' % daemonConfigFile)
@@ -177,7 +177,7 @@ def openAbout(widget):          # Show About window
   aboutWindow.set_icon(logo)
   aboutWindow.set_program_name(_('Yandex.Disk indicator'))
   aboutWindow.set_version(_('Version ') + appVer)
-  aboutWindow.set_copyright('Copyright ' + u'\u00a9' + ' 2013-' + 
+  aboutWindow.set_copyright('Copyright ' + unichr(0x00a9) + ' 2013-' + 
                             datetime.datetime.now().strftime("%Y") + '\nSly_tom_cat')
   aboutWindow.set_comments(_('Yandex.Disk indicator \n(Grive Tools was used as example)'))
   aboutWindow.set_license(
@@ -238,47 +238,47 @@ def onCheckButtonToggled(widget, button, key):  # Handle clicks on check-buttons
   elif key == 'optionreadonly':
     overwrite_check_button.set_sensitive(toggleState)
 
-def openPreferences(menu_widget):          # Preferences Window
+def openPreferences(menu_widget):           # Preferences Window
   global appConfig, daemonConfig, overwrite_check_button
-  menu_widget.set_sensitive(False)         # Disable menu item to avoid multiple preferences windows
+  menu_widget.set_sensitive(False)          # Disable menu item to avoid multiple preferences windows
   # Create Preferences window
   preferencesWindow = Gtk.Dialog(_('Yandex.Disk-indicator and Yandex.Disk preferences'))
   preferencesWindow.set_icon(GdkPixbuf.Pixbuf.new_from_file(yandexDiskIcon))
   preferencesWindow.set_border_width(6)
   preferencesWindow.add_button(_('Close'), Gtk.ResponseType.CLOSE)
-  pref_notebook = Gtk.Notebook()           # Create notebook for indicator and daemon options
+  pref_notebook = Gtk.Notebook()            # Create notebook for indicator and daemon options
   preferencesWindow.get_content_area().add(pref_notebook)  # Put it inside the dialog content area
   # --- Indicator preferences tab ---
   preferencesBox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 5)
-  key = 'autostart'                        # Auto-start indicator on system start-up
+  key = 'autostart'                         # Auto-start indicator on system start-up
   autostart_check_button = Gtk.CheckButton(
                              _('Start Yandex.Disk indicator when you start your computer'))
   autostart_check_button.set_active(appConfig[key])
   autostart_check_button.connect("toggled", onCheckButtonToggled, autostart_check_button, key)
   preferencesBox.add(autostart_check_button)
-  key = 'startonstart'                     # Start daemon on indicator start
+  key = 'startonstart'                      # Start daemon on indicator start
   start_check_button = Gtk.CheckButton(_('Start Yandex.Disk daemon when indicator is starting'))
   start_check_button.set_tooltip_text(_("When daemon was not started before."))
   start_check_button.set_active(appConfig[key])
   start_check_button.connect("toggled", onCheckButtonToggled, start_check_button, key)
   preferencesBox.add(start_check_button)
-  key = 'stoponexit'                       # Stop daemon on exit
+  key = 'stoponexit'                        # Stop daemon on exit
   stop_check_button = Gtk.CheckButton(_('Stop Yandex.Disk daemon on closing of indicator'))
   stop_check_button.set_active(appConfig[key])
   stop_check_button.connect("toggled", onCheckButtonToggled, stop_check_button, key)
   preferencesBox.add(stop_check_button)
-  key = 'notifications'                    # Notifications
+  key = 'notifications'                     # Notifications
   notifications_check_button = Gtk.CheckButton(_('Show on-screen notifications'))
   notifications_check_button.set_active(appConfig[key])
   notifications_check_button.connect("toggled", onCheckButtonToggled,
                                      notifications_check_button, key)
   preferencesBox.add(notifications_check_button)
-  key = 'theme'                            # Theme
+  key = 'theme'                             # Theme
   theme_check_button = Gtk.CheckButton(_('Prefer light icon theme'))
   theme_check_button.set_active(appConfig[key])
   theme_check_button.connect("toggled", onCheckButtonToggled, theme_check_button, key)
   preferencesBox.add(theme_check_button)
-  key = 'fmextensions'                     # Activate file-manager extensions
+  key = 'fmextensions'                      # Activate file-manager extensions
   fmext_check_button = Gtk.CheckButton(_('Activate file manager extensions'))
   fmext_check_button.set_active(appConfig[key])
   fmext_check_button.connect("toggled", onCheckButtonToggled, fmext_check_button, key)
@@ -287,13 +287,13 @@ def openPreferences(menu_widget):          # Preferences Window
   pref_notebook.append_page(preferencesBox, Gtk.Label(_('Indicator settings')))
   # --- Daemon start options tab ---
   optionsBox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 5)
-  key = 'autostartdaemon'                  # Auto-start daemon on system start-up
+  key = 'autostartdaemon'                   # Auto-start daemon on system start-up
   autostart_d_check_button = Gtk.CheckButton(
                                _('Start Yandex.Disk daemon when you start your computer'))
   autostart_d_check_button.set_active(appConfig[key])
   autostart_d_check_button.connect("toggled", onCheckButtonToggled, autostart_d_check_button, key)
   optionsBox.add(autostart_d_check_button)
-  key = 'optionreadonly'                   # Option Read-Only    # daemon config
+  key = 'optionreadonly'                    # Option Read-Only    # daemon config
   readOnly_check_button = Gtk.CheckButton(
                             _('Read-Only: Do not upload locally changed files to Yandex.Disk'))
   readOnly_check_button.set_tooltip_text(
@@ -302,7 +302,7 @@ def openPreferences(menu_widget):          # Preferences Window
   readOnly_check_button.set_active(daemonConfig[key])
   readOnly_check_button.connect("toggled", onCheckButtonToggled, readOnly_check_button, key)
   optionsBox.add(readOnly_check_button)
-  key = 'optionoverwrite'                  # Option Overwrite    # daemon config
+  key = 'optionoverwrite'                   # Option Overwrite    # daemon config
   overwrite_check_button = Gtk.CheckButton(_('Overwrite locally changed files by files' + 
                                              ' from Yandex.Disk (in read-only mode)'))
   overwrite_check_button.set_tooltip_text(
@@ -317,9 +317,9 @@ def openPreferences(menu_widget):          # Preferences Window
   preferencesWindow.show_all()
   preferencesWindow.run()
   preferencesWindow.destroy()
-  daemonConfigSave()                       # Save daemon options in config file
+  daemonConfigSave()                        # Save daemon options in config file
   writeConfigFile(appCofigFile, appConfig)  # Save app appConfig
-  menu_widget.set_sensitive(True)          # Enable menu item
+  menu_widget.set_sensitive(True)           # Enable menu item
 
 def showOutput(menu_widget):                    # Display daemon output in dialogue window
   global origLANG, workLANG, daemonOutput
@@ -335,9 +335,7 @@ def showOutput(menu_widget):                    # Display daemon output in dialo
   textBox.get_buffer().set_text(daemonOutput)
   textBox.set_editable(False)
   statusWindow.get_content_area().add(textBox)  # Put it inside the dialogue content area
-  statusWindow.show_all()
-  statusWindow.run()
-  statusWindow.destroy()
+  statusWindow.show_all();  statusWindow.run();   statusWindow.destroy()
   menu_widget.set_sensitive(True)               # Enable menu item
 
 def renderMenu():                           # Render initial menu (without any actual information)
@@ -346,10 +344,8 @@ def renderMenu():                           # Render initial menu (without any a
   menu = Gtk.Menu()                         # Create menu
   menu_status = Gtk.MenuItem();   menu_status.connect("activate", showOutput)
   menu.append(menu_status)
-  menu_used = Gtk.MenuItem();     menu_used.set_sensitive(False)
-  menu.append(menu_used)
-  menu_free = Gtk.MenuItem();     menu_free.set_sensitive(False)
-  menu.append(menu_free)
+  menu_used = Gtk.MenuItem();     menu_used.set_sensitive(False);   menu.append(menu_used)
+  menu_free = Gtk.MenuItem();     menu_free.set_sensitive(False);   menu.append(menu_free)
   menu_last = Gtk.MenuItem(_('Last synchronized items'))
   submenu_last = Gtk.Menu()                 # Sub-menu: list of last synchronized files/folders
   pathsList = []                            # List of files/folders in lastMenu items
@@ -372,8 +368,7 @@ def renderMenu():                           # Render initial menu (without any a
   menu_help = Gtk.MenuItem(_('Help'))
   menu_help.connect("activate", openInBrowser, 'https://yandex.ru/support/disk/')
   menu.append(menu_help)
-  menu_about = Gtk.MenuItem(_('About'))
-  menu_about.connect("activate", openAbout)
+  menu_about = Gtk.MenuItem(_('About'));    menu_about.connect("activate", openAbout)
   menu.append(menu_about)
   menu.append(Gtk.SeparatorMenuItem.new())  # -----separator--------
   menu_quit = Gtk.MenuItem(_('Quit'))
@@ -544,7 +539,7 @@ def updateMenuInfo():                           # Update information in menu
         # with replaced underscore (to disable menu acceleration feature of GTK menu).
         widget = Gtk.MenuItem.new_with_label(
                    (filePath[: 20] + '...' + filePath[-27: ] if len(filePath) > 50 else
-                    filePath).replace('_', u"\u02CD"))
+                    filePath).replace('_', u'ˍ'))
         if os.path.exists(pathsList[-1]):
           widget.set_sensitive(True)            # It can be opened
           widget.connect("activate", openLast, len(pathsList) - 1)
@@ -614,8 +609,8 @@ def updateIconTheme():    # Determine paths to icons according to current theme
   global iconThemePath, ind, icon_busy, icon_idle, icon_pause, icon_error, installDir, appCofigPath
   # Determine theme from application configuration settings
   iconTheme = 'light' if appConfig["theme"] else 'dark' 
-  defaultIconThemePath = os.path.join(installDir, 'icons')
-  userIconThemePath = os.path.join(appCofigPath, 'icons')
+  defaultIconThemePath = os.path.join(installDir, 'icons', iconTheme)
+  userIconThemePath = os.path.join(appCofigPath, 'icons', iconTheme)
   # Set appropriate paths to icons
   userIcon = os.path.join(userIconThemePath, 'yd-ind-idle.png')
   icon_idle = (userIcon if os.path.exists(userIcon) else 
@@ -633,6 +628,9 @@ def updateIconTheme():    # Determine paths to icons according to current theme
   else:
     icon_busy = os.path.join(defaultIconThemePath, 'yd-busy1.png')
     iconThemePath = defaultIconThemePath
+  debugPrint('yd-ind-error: %s' % icon_error)
+  debugPrint('yd-ind-idle: %s' % icon_idle)
+
 
 def updateIcon():                     # Change indicator icon according to new status
   global newStatus, lastStatus, icon_busy, icon_idle, icon_pause
@@ -826,6 +824,18 @@ if __name__ == '__main__':
   os.putenv('LANG', workLANG)
 
   ### Application configuration ###
+  ''' User configuration is stored in ~/.config/<appHomeName>/<appName>.conf file
+      This file can contain comments (lines starts with '#') and follofing keywords:
+        autostart, startonstart, stoponexit, notifications, theme, fmextensions, autostartdaemon
+        and debug (debug is not configurable from indicator preferences dialogue)
+      Dictionary appConfig stores the config settings for usage in code. Its values are saved 
+      to config file on Preferences dialogue exit.
+      
+      Note that daemon settings "read-only" and "overwrite" are stored 
+      in ~/ .config/yandex-disk/config.cfg file. They are read in checkDaemon function 
+      (in dictionary daemonConfig). Their values are saved to daemon config file also
+      on Preferences dialogue exit.        
+  '''
   appConfig = readConfigFile(appCofigFile)
   # Read some settings to variables, set default values and updte some values
   appConfig['autostart'] = os.path.isfile(autoStartDestination)
@@ -877,9 +887,9 @@ if __name__ == '__main__':
   updateIconTheme()           # Define the rest icons paths according to current theme
   iconAnimationTimer = 0      # Define the icon animation timer variable
   ## Indicator ##
-  ind = appindicator.Indicator.new("yandex-disk", icon_pause,
-                                   appindicator.IndicatorCategory.APPLICATION_STATUS)
-  ind.set_status(appindicator.IndicatorStatus.ACTIVE)
+  ind = appIndicator.Indicator.new("yandex-disk", icon_pause,
+                                   appIndicator.IndicatorCategory.APPLICATION_STATUS)
+  ind.set_status(appIndicator.IndicatorStatus.ACTIVE)
   ind.set_menu(renderMenu())  # Prepare and attach menu to indicator
   updateIcon()                # Update indicator icon according to current status
   ### Timer triggered event staff ###
