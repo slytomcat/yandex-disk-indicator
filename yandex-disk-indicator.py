@@ -816,7 +816,7 @@ if __name__ == '__main__':
 
   ### Application configuration ###
   ''' User configuration is stored in ~/.config/<appHomeName>/<appName>.conf file
-      This file can contain comments (lines starts with '#') and follofing keywords:
+      This file can contain comments (lines starts with '#') and following keywords:
         autostart, startonstart, stoponexit, notifications, theme, fmextensions, autostartdaemon
         and debug (debug is not configurable from indicator preferences dialogue)
       Dictionary appConfig stores the config settings for usage in code. Its values are saved 
