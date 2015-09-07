@@ -627,9 +627,6 @@ def updateIconTheme():    # Determine paths to icons according to current theme
   else:
     icon_busy = os.path.join(defaultIconThemePath, 'yd-busy1.png')
     iconThemePath = defaultIconThemePath
-  debugPrint('yd-ind-error: %s' % icon_error)
-  debugPrint('yd-ind-idle: %s' % icon_idle)
-
 
 def updateIcon():                     # Change indicator icon according to new status
   global newStatus, lastStatus, icon_busy, icon_idle, icon_pause
@@ -787,17 +784,6 @@ if __name__ == '__main__':
   autoStartSource1 = os.path.join(os.sep, 'usr', 'share', 'applications', 'Yandex.Disk.desktop')
   autoStartDestination1 = os.path.join(userHome, '.config', 'autostart', 'Yandex.Disk.desktop')
 
-  ### Check for already running instance of the indicator application ###
-  lockFileName = '/tmp/' + appName + '.lock'
-  try:
-    lockFile = open(lockFileName, 'w')                      # Open lock file for write
-    fcntl.flock(lockFile, fcntl.LOCK_EX | fcntl.LOCK_NB)    # Try to acquire exclusive lock
-  except:                                                   # File is already locked
-    sys.exit(_('Yandex.Disk Indicator instance already running\n' +
-               '(file /tmp/%s.lock is locked by another process)') % appName)
-  lockFile.write('%d\n' % os.getpid())
-  lockFile.flush()
-
   ### Output the version and environment information to debug stream
   verboseDebug = True     # Temporary allow debug output to handle exeptions
   debugPrint('%s v.%s (app_home=%s)' % (appName, appVer, installDir))
@@ -815,9 +801,20 @@ if __name__ == '__main__':
   workLANG = 'en_US.UTF-8'
   os.putenv('LANG', workLANG)
 
+  ### Check for already running instance of the indicator application ###
+  lockFileName = '/tmp/' + appName + '.lock'
+  try:
+    lockFile = open(lockFileName, 'w')                      # Open lock file for write
+    fcntl.flock(lockFile, fcntl.LOCK_EX | fcntl.LOCK_NB)    # Try to acquire exclusive lock
+  except:                                                   # File is already locked
+    sys.exit(_('Yandex.Disk Indicator instance already running\n' +
+               '(file /tmp/%s.lock is locked by another process)') % appName)
+  lockFile.write('%d\n' % os.getpid())
+  lockFile.flush()
+
   ### Application configuration ###
   ''' User configuration is stored in ~/.config/<appHomeName>/<appName>.conf file
-      This file can contain comments (lines starts with '#') and follofing keywords:
+      This file can contain comments (lines starts with '#') and following keywords:
         autostart, startonstart, stoponexit, notifications, theme, fmextensions, autostartdaemon
         and debug (debug is not configurable from indicator preferences dialogue)
       Dictionary appConfig stores the config settings for usage in code. Its values are saved 
