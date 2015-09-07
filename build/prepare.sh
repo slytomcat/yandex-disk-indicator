@@ -4,8 +4,6 @@ cp ../../yandex-disk-indicator.py usr/bin/yandex-disk-indicator
 cp ../../ya-setup usr/share/yd-tools/
 cp ../../translations/yandex-disk-indicator_ru.mo usr/share/locale/ru/LC_MESSAGES/yandex-disk-indicator.mo
 cp ../../translations/yandex-disk-indicator_el.mo usr/share/locale/el/LC_MESSAGES/yandex-disk-indicator.mo
-cp ../../tools/IndicatorDebug_ON.sh usr/share/yd-tools/
-cp ../../tools/IndicatorDebug_OFF.sh usr/share/yd-tools/
 cp ../../Yandex.Disk-indicator.desktop usr/share/applications/
 cp ../../Yandex.Disk.desktop usr/share/applications/
 cp ../../icons/readme usr/share/yd-tools/icons/
