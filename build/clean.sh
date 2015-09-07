@@ -2,8 +2,6 @@
 cd yd-tools/
 rm usr/bin/yandex-disk-indicator
 rm usr/share/yd-tools/ya-setup
-rm usr/share/yd-tools/IndicatorDebug_ON.sh
-rm usr/share/yd-tools/IndicatorDebug_OFF.sh
 rm usr/share/yd-tools/icons/readme
 rm usr/share/yd-tools/icons/yd-128.png
 rm usr/share/yd-tools/icons/yd-128_g.png
