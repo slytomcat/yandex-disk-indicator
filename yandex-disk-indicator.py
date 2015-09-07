@@ -793,6 +793,7 @@ if __name__ == '__main__':
                                       'Yandex.Disk-indicator.desktop')
   autoStartSource1 = os.path.join(os.sep, 'usr', 'share', 'applications', 'Yandex.Disk.desktop')
   autoStartDestination1 = os.path.join(userHome, '.config', 'autostart', 'Yandex.Disk.desktop')
+
   ### Check for already running instance of the indicator application ###
   lockFileName = '/tmp/' + appName + '.lock'
   try:
