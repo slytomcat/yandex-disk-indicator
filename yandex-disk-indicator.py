@@ -1,8 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.4.2'
+appVer = '1.4.3'
 #
 #  Copyright 2014 Sly_tom_cat <slytomcat@mail.ru>
 #  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
@@ -178,7 +178,7 @@ def openAbout(widget):          # Show About window
   aboutWindow.set_icon(logo)
   aboutWindow.set_program_name(_('Yandex.Disk indicator'))
   aboutWindow.set_version(_('Version ') + appVer)
-  aboutWindow.set_copyright('Copyright ' + u'©' + ' 2013-' +   # u'\u00a9'
+  aboutWindow.set_copyright('Copyright ' + u'\u00a9' + ' 2013-' +
                             datetime.datetime.now().strftime("%Y") + '\nSly_tom_cat')
   aboutWindow.set_comments(_('Yandex.Disk indicator \n(Grive Tools was used as example)'))
   aboutWindow.set_license(
@@ -414,8 +414,6 @@ def getDaemonOutput():
   global daemonOutput
   try:    daemonOutput = subprocess.check_output(['yandex-disk', 'status'], universal_newlines=True)
   except: daemonOutput = ''     # daemon is not running or bad
-  if PY2:                       # Decode required only for python 2.7 (for UTF-8 support)
-    daemonOutput = daemonOutput.decode('utf-8')
   #debugPrint('output = %s' % daemonOutput)
   return (daemonOutput != '')
 
@@ -540,7 +538,7 @@ def updateMenuInfo():                           # Update information in menu
         # with replaced underscore (to disable menu acceleration feature of GTK menu).
         widget = Gtk.MenuItem.new_with_label(
                    (filePath[: 20] + '...' + filePath[-27: ] if len(filePath) > 50 else
-                    filePath).replace('_', u'ˍ'))  # u"\u02CD"
+                    filePath).replace('_', u'\u02CD'))
         if os.path.exists(pathsList[-1]):
           widget.set_sensitive(True)            # It can be opened
           widget.connect("activate", openLast, len(pathsList) - 1)
@@ -768,18 +766,13 @@ def daemonConfigRead():  # Get daemon appConfig from its config file
   fileConfig = readConfigFile(daemonConfigFile)
   if len(fileConfig) > 0:
     yandexDiskFolder = fileConfig.get('dir', '')
-    if PY2:                       # Decode required only for python 2.7 (for UTF-8 support)
-      yandexDiskFolder = yandexDiskFolder.decode('utf-8')
     daemonConfig['optionreadonly'] = fileConfig.get('read-only', False)
     daemonConfig['optionoverwrite'] = fileConfig.get('overwrite', False)
   return (yandexDiskFolder != '')
 
 ###################### MAIN LOOP #########################
 if __name__ == '__main__':
-  ### Running environment detection
-  PY2 = sys.version_info[0] == 2
   ### Application constants ###
-  appVer += ('-Py2' if PY2 else '-Py3')
   appName = 'yandex-disk-indicator'
   appHomeName = 'yd-tools'
   installDir = os.path.join(os.sep, 'usr', 'share', appHomeName)
@@ -813,10 +806,7 @@ if __name__ == '__main__':
   # Store original LANG environment
   origLANG = os.getenv('LANG')
   try:                        # Try to load translation
-    if PY2:                   # unicode flag required in python2.7 for UTF-8 support
-      gettext.translation(appName, '/usr/share/locale', fallback=True).install(unicode=True)
-    else:                     # python3 works with Unicode without any trick
-      gettext.translation(appName, '/usr/share/locale', fallback=True).install()
+    gettext.translation(appName, '/usr/share/locale', fallback=True).install()
     debugPrint("Localization for %s is activated" % origLANG)
   except:
     _ = str                   # use English (as writtenss in code)
