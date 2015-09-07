@@ -3,7 +3,6 @@ usr/share/locale/ru/LC_MESSAGES/yandex-disk-indicator.mo usr/share/locale/ru/LC_
 usr/share/locale/el/LC_MESSAGES/yandex-disk-indicator.mo usr/share/locale/el/LC_MESSAGES/
 usr/share/applications/Yandex.Disk.desktop usr/share/applications/
 usr/share/applications/Yandex.Disk-indicator.desktop usr/share/applications/
-usr/share/glib-2.0/schemas/apps.yandex-disk-indicator.gschema.xml usr/share/glib-2.0/schemas/
 usr/share/yd-tools/ya-setup usr/share/yd-tools/
 usr/share/yd-tools/IndicatorDebug_ON.sh usr/share/yd-tools/
 usr/share/yd-tools/IndicatorDebug_OFF.sh usr/share/yd-tools/

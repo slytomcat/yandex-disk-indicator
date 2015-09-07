@@ -167,6 +167,7 @@ def daemonErrorDialog(err):   # Show error messages according to the error
     retCode = subprocess.call([os.path.join(installDir,'ya-setup')])
   else:
     retCode = 0 if err == 'NONET' else 1
+  dialog.destroy()
   return retCode              # 0 when error is not critical or fixed (daemon has been configured)
 
 def openAbout(widget):          # Show About window
@@ -862,6 +863,12 @@ if __name__ == '__main__':
     activateActions()
   writeConfigFile(appCofigFile, appConfig)
   
+  ### Application Indicator ###
+  ## Icons ##
+  yandexDiskIcon = os.path.join(installDir, 'icons', 'yd-128.png')            # logo
+  updateIconTheme()           # Define the rest icons paths according to current theme
+  iconAnimationTimer = 0      # Define the icon animation timer variable
+  
   ### Yandex.Disk daemon ###
   # Yandex.Disk configuration file path
   daemonConfigFile = os.path.join(userHome, '.config', 'yandex-disk', 'config.cfg')
@@ -878,25 +885,24 @@ if __name__ == '__main__':
   # Set initial statuses
   newStatus = lastStatus = currentStatus
   lastItems = '*'             # Reset lastItems in order to update menu in handleEvent()
-  ### On-screen notifications ###
-  Notify.init(appName)        # Initialize notification engine
-  notifier = Notify.Notification()
-  ### Application Indicator ###
-  ## Icons ##
-  yandexDiskIcon = os.path.join(installDir, 'icons', 'yd-128.png')            # logo
-  updateIconTheme()           # Define the rest icons paths according to current theme
-  iconAnimationTimer = 0      # Define the icon animation timer variable
+  
   ## Indicator ##
   ind = appIndicator.Indicator.new("yandex-disk", icon_pause,
                                    appIndicator.IndicatorCategory.APPLICATION_STATUS)
   ind.set_status(appIndicator.IndicatorStatus.ACTIVE)
   ind.set_menu(renderMenu())  # Prepare and attach menu to indicator
   updateIcon()                # Update indicator icon according to current status
-  ### Timer triggered event staff ###
-  watchTimer = 0              # Timer source variable
+  
+  ### On-screen notifications ###
+  Notify.init(appName)        # Initialize notification engine
+  notifier = Notify.Notification()
+  
   ### Initial menu actualisation ###
+  # Timer triggered event staff #
+  watchTimer = 0              # Timer source variable
   handleEvent(True)           # True value will update info and create the watch timer for 2 sec
   updateStartStop(newStatus != 'none')
+  
   ### File updates watcher ###
   class EventHandler(pyinotify.ProcessEvent):   # Event handler class for iNotifier
     def process_IN_MODIFY(self, event):

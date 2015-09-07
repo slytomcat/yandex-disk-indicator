@@ -8,7 +8,7 @@ cp ../../tools/IndicatorDebug_ON.sh usr/share/yd-tools/
 cp ../../tools/IndicatorDebug_OFF.sh usr/share/yd-tools/
 cp ../../Yandex.Disk-indicator.desktop usr/share/applications/
 cp ../../Yandex.Disk.desktop usr/share/applications/
-cp ../../readme usr/share/yd-tools/icons/
+cp ../../icons/readme usr/share/yd-tools/icons/
 cp ../../icons/yd-128.png usr/share/yd-tools/icons/
 cp ../../icons/yd-128_g.png usr/share/yd-tools/icons/
 cp ../../icons/dark/yd-busy1.png usr/share/yd-tools/icons/dark/

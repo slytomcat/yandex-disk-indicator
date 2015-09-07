@@ -31,7 +31,7 @@ rm usr/share/locale/ru/LC_MESSAGES/yandex-disk-indicator.mo
 rm usr/share/locale/el/LC_MESSAGES/yandex-disk-indicator.mo
 rm usr/share/applications/Yandex.Disk.desktop
 rm usr/share/applications/Yandex.Disk-indicator.desktop
-
 rm -r debian/yd-tools*
+rm debian/files
 cd ..
 rm yd-tools_*

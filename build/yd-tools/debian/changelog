@@ -5,4 +5,4 @@ yd-tools (1.4.2) precise; urgency=medium
    -- Application setting storage changed from dconf database to file ~/.config/yd-tools/yandex-disk-indicator.conf
    -- User icon themes in ~/.config/yd-tools/icons/ are used when they are exists or defaul icons from /usr/share/yd-tools/icons are used.
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Fri, 4 Sep 2015 23:54:48 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Mon, 7 Sep 2015 16:30:28 +0300

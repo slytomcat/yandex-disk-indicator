@@ -22,6 +22,8 @@ then
 fi
 
 if [ -e "/usr/share/glib-2.0/schemas/apps.yandex-disk-indicator.gschema.xml" ]
+then
     rm /usr/share/glib-2.0/schemas/apps.yandex-disk-indicator.gschema.xml
     glib-compile-schemas /usr/share/glib-2.0/schemas
+fi
 exit 0
