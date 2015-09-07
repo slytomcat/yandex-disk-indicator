@@ -178,7 +178,7 @@ def openAbout(widget):          # Show About window
   aboutWindow.set_icon(logo)
   aboutWindow.set_program_name(_('Yandex.Disk indicator'))
   aboutWindow.set_version(_('Version ') + appVer)
-  aboutWindow.set_copyright('Copyright ' + unichr(0x00a9) + ' 2013-' + 
+  aboutWindow.set_copyright('Copyright ' + u'©' + ' 2013-' +   # u'\u00a9'
                             datetime.datetime.now().strftime("%Y") + '\nSly_tom_cat')
   aboutWindow.set_comments(_('Yandex.Disk indicator \n(Grive Tools was used as example)'))
   aboutWindow.set_license(
@@ -540,7 +540,7 @@ def updateMenuInfo():                           # Update information in menu
         # with replaced underscore (to disable menu acceleration feature of GTK menu).
         widget = Gtk.MenuItem.new_with_label(
                    (filePath[: 20] + '...' + filePath[-27: ] if len(filePath) > 50 else
-                    filePath).replace('_', u'ˍ'))
+                    filePath).replace('_', u'ˍ'))  # u"\u02CD"
         if os.path.exists(pathsList[-1]):
           widget.set_sensitive(True)            # It can be opened
           widget.connect("activate", openLast, len(pathsList) - 1)
