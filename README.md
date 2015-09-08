@@ -8,3 +8,5 @@ Code assumes that
 - settings (apps.yandex-disk-indicator.gschema.xml) are applied via gconf. schemas_update script can be used to update settings after coping .xml file to /usr/share/glib-2.0/schemas/ folder 
 
 build - everything that need to build the .deb package or source.changes file. Additional tools are requered: devscripts, debhelper and dput (if you want to uplodd package, for example, to launcpad PPA).
+
+Note: Persice version (Python2) is on hold (no improvements, only bug fixes). All updates available in master branch (Pythom3) but Python3 version doesn't work on 12.04.
