@@ -2,5 +2,5 @@
 # -*- makefile -*-
 
 %:
-	dh $@ --with python2
+	dh $@
 

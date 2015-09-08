@@ -4,11 +4,11 @@ ServiceTypes=all/allfiles
 MimeType=all/all;
 Actions=UnpublishFromYandex;
 X-KDE-Priority=TopLevel
-X-KDE-Icon=/opt/yd-tools/icons/yd-128_g.png
+X-KDE-Icon=/usr/share/yd-tools/icons/yd-128_g.png
 X-KDE-ServiceTypes=KonqPopupMenu/Plugin
 Name=unpublish.desktop
 
 [Desktop Action UnpublishFromYandex]
 Name=Убрать из публикации через Яндекс.Диск
-Icon=/opt/yd-tools/icons/yd-128_g.png
-Exec=zenity --info --window-icon=/opt/yd-tools/icons/yd-128_g.png --ok-label="Закрыть" --title="Yandex.Disk" --text="Убрать из публикации через Yandex.disk: `yandex-disk unpublish %F`"
+Icon=/usr/share/yd-tools/icons/yd-128_g.png
+Exec=zenity --info --window-icon=/usr/share/yd-tools/icons/yd-128_g.png --ok-label="Закрыть" --title="Yandex.Disk" --text="Убрать из публикации через Yandex.disk: `yandex-disk unpublish %F`"

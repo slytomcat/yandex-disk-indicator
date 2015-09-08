@@ -4,11 +4,11 @@ ServiceTypes=all/allfiles
 MimeType=all/all;
 Actions=PublishToYandex;
 X-KDE-Priority=TopLevel
-X-KDE-Icon=/opt/yd-tools/icons/yd-128.png
+X-KDE-Icon=/usr/share/yd-tools/icons/yd-128.png
 X-KDE-ServiceTypes=KonqPopupMenu/Plugin
 Name=publish.desktop
 
 [Desktop Action PublishToYandex]
 Name=Опубликовать через Яндекс.Диск
-Icon=/opt/yd-tools/icons/yd-128.png
+Icon=/usr/share/yd-tools/icons/yd-128.png
 Exec=yandex-disk publish %F | xclip -filter -selection clipboard; zenity --info --window-icon=/opt/yd-tools/icons/yd-128.png --title="Yandex.Disk" --ok-label="Закрыть" --text="Ссылка на файл: %F скопирована в буфер обмена." 

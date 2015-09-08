@@ -1,6 +1,6 @@
 #!/bin/bash
 #### Author: Snow Dimon ####
 #### Website: snowdimon.ru ####
-zenity --info --window-icon=/opt/yd-tools/icons/yd-128_g.png --ok-label="Закрыть" --title="Yandex.Disk" --text="$*
+zenity --info --window-icon=/usr/share/yd-tools/icons/yd-128_g.png --ok-label="Закрыть" --title="Yandex.Disk" --text="$*
  `yandex-disk unpublish "$*"`"
 
