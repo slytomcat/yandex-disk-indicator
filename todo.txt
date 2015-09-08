@@ -33,6 +33,7 @@ DAEMON-INSTALL_STORY: (ON HOLD)
 Результат: нет
 
 ______FIXED issues:_____
+- BUG_FIX с окном About - конструктор этого диалога не есть названия.
 - Окончательно перейти на Python3 ибо городить огород над совместимостью с Python2 уже сильно напрягает :( Однако это означает заморозку версии для Ubuntu 12.04 Precise (т. к. под precise нет библиотеки pinotify для Python3). см. PY-2_PERCISE_STORY
 - переделал сохранение настроек согласно концепции USER_LOCAL_SETTINGS + настраиваемые пользователем иконки
 FIXED 1.4.2 master, realize + launcpad

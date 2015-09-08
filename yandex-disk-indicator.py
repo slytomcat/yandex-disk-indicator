@@ -172,7 +172,7 @@ def daemonErrorDialog(err):   # Show error messages according to the error
 
 def openAbout(widget):          # Show About window
   widget.set_sensitive(False)   # Disable menu item
-  aboutWindow = Gtk.AboutDialog(_('Yandex.Disk indicator'))
+  aboutWindow = Gtk.AboutDialog()
   logo = GdkPixbuf.Pixbuf.new_from_file(yandexDiskIcon)
   aboutWindow.set_logo(logo)
   aboutWindow.set_icon(logo)
