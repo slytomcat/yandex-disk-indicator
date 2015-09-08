@@ -2,5 +2,6 @@ yd-tools (1.4.3) trusty; urgency=medium
 
   * Changes:
    -- switch to python3
+   -- fix bug in about dialogue
 
  -- Sly_tom_cat <slytomcat@mail.ru>  Tue, 9 Sep 2015 00:03:31 +0300
