@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.4.4'
+appVer = '1.5.0'
 #
 #  Copyright 2014 Sly_tom_cat <slytomcat@mail.ru>
 #  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
@@ -375,30 +375,36 @@ def openPreferences(menu_widget):           # Preferences Window
   autostart_d_check_button.set_active(appConfig[key])
   autostart_d_check_button.connect("toggled", onCheckButtonToggled, autostart_d_check_button, key)
   optionsBox.add(autostart_d_check_button)
+  frame = Gtk.Frame()
+  frame.set_label(_("NOTE! You have to reload daemon to activate following settings"))
+  frame.set_border_width(6)
+  optionsBox.add(frame)
+  labeledBox = Gtk.VBox(homogeneous=True, spacing=5)
+  frame.add(labeledBox)
   key = 'read-only'                         # Option Read-Only    # daemon config
   readOnly_check_button = Gtk.CheckButton(
                             _('Read-Only: Do not upload locally changed files to Yandex.Disk'))
   readOnly_check_button.set_tooltip_text(
     _("Locally changed files will be renamed if a newer version of this file appear in " +
-      "Yandex.Disk. \n NOTE! You have to reload daemon to activate this setting"))
+      "Yandex.Disk."))
   readOnly_check_button.set_active(daemonConfig[key])
   readOnly_check_button.connect("toggled", onCheckButtonToggled, readOnly_check_button, key)
-  optionsBox.add(readOnly_check_button)
+  labeledBox.add(readOnly_check_button)
   key = 'overwrite'                         # Option Overwrite    # daemon config
   overwrite_check_button = Gtk.CheckButton(_('Overwrite locally changed files by files' +
                                              ' from Yandex.Disk (in read-only mode)'))
   overwrite_check_button.set_tooltip_text(
     _("Locally changed files will be overwritten if a newer version of this file appear " +
-      "in Yandex.Disk. \n NOTE! You have to reload daemon to activate this setting"))
+      "in Yandex.Disk."))
   overwrite_check_button.set_active(daemonConfig[key])
   overwrite_check_button.set_sensitive(daemonConfig['read-only'])
   overwrite_check_button.connect("toggled", onCheckButtonToggled, overwrite_check_button, key)
-  optionsBox.add(overwrite_check_button)
+  labeledBox.add(overwrite_check_button)
   # Excude folders list
-  exListButton = Gtk.Button(_('Exclude folders List'))
-  exListButton.set_tooltip_text(_("NOTE! You have to reload daemon to activate this setting"))
+  exListButton = Gtk.Button(_('Excluded folders List'))
+  exListButton.set_tooltip_text(_("Folders in the list will not be synchronized."))
   exListButton.connect("clicked", excludeDirsList)
-  optionsBox.add(exListButton)
+  labeledBox.add(exListButton)
 
   # --- End of Daemon start options tab --- add it to notebook
   pref_notebook.append_page(optionsBox, Gtk.Label(_('Daemon options')))
