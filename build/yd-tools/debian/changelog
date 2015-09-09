@@ -1,7 +1,7 @@
-yd-tools (1.4.3) trusty; urgency=medium
+yd-tools (1.5.0) trusty; urgency=medium
 
   * Changes:
-   -- switch to python3
-   -- fix bug in about dialogue
+   -- added support for --excude-dirs daemon start option.
+   -- config file read/write procedured now support lists of values for a key
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Tue, 9 Sep 2015 00:03:31 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Tue, 9 Sep 2015 19:55:34 +0300

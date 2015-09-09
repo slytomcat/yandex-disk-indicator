@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.4.3'
+appVer = '1.5.0'
 #
 #  Copyright 2014 Sly_tom_cat <slytomcat@mail.ru>
 #  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
@@ -80,19 +80,6 @@ def quitApplication(widget):
   debugPrint("Timers are closed")
   appExit()
 
-def openLast(widget, index):  # Open last synchronized item
-  global pathsList
-  openPath(widget, pathsList[index])
-
-def openPath(widget, path):  # Open path
-  debugPrint('Opening %s' % path)
-  if os.path.exists(path):
-    try:    os.startfile(path)
-    except: subprocess.call(['xdg-open', path])
-
-def openInBrowser(widget, url):
-  openNewBrowser(url)
-
 def iNotifyHandler():  # iNotify working routine (called by timer)
   global iNotifier
   while iNotifier.check_events():
@@ -100,49 +87,77 @@ def iNotifyHandler():  # iNotify working routine (called by timer)
     iNotifier.process_events()
   return True
 
-def setDefault(settings, key, val):
+def setDefault(settings, key, val):  # Workaround for not working setdefault for OreredDict class
   try:
     return settings[key]
   except:
     settings[key] = val
     return val
 
-def readConfigFile(configFile):   # Read config file to dict (returned value)
+def readConfigFile(configFile):                 # Read config file to dict (returned value)
   config = OrderedDict()
   try:
     with open(configFile) as cf:
-      for ln in cf:               # Parse lines remove quotes if they are used
-        if ln[0] != '#':          # Ignore comments 
-          p = ln.find('=')
-          q = ln.find('"', p)
-          if p > 0:
-            key = ln[:p]
-            val = (ln[p+1:-1] if q < 0 else ln[q+1: ln.find('"', q+1)])
-            # Convert boolean values from string representation
-            if val in ['True', 'true', 'Yes', 'yes']:
-              val = True
-            elif val in ['False', 'false', 'No', 'no']:
-              val = False
-            config[key] = val
+      for row in cf:                            # Parse lines remove quotes if they are used
+        if row[0] != '#':                       # Ignore comments
+          p = row.find('=')
+          if p > 0:                             # '=' symbol has been found
+            key = row[:p]
+            value = None
+            q2 = p
+            while True:                         # Look for quoted values behind the '=' symbol
+              q1 = row.find('"', q2+1)
+              q2 = row.find('"', q1+1)
+              if q1 > 0 and q2 > q1:            # Value withing quotes has been found
+                val = row[q1+1: q2]             # Get it without quotes
+                # Convert Boolean values from their string representation (all rest are strings)
+                if val in ['True', 'true', 'Yes', 'yes']:
+                  val = True
+                elif val in ['False', 'false', 'No', 'no']:
+                  val = False
+                if value == None:               # Is it a first value?
+                  value = val                   # Just store it
+                else:                           # It is not first value.
+                  if isinstance(value, list):   # Is it a third, fourth ... value?
+                    value.append(val)           # Just append new value to list
+                  else:                         # It is second value.
+                    value = [value, val]        # Convert value to list of values.
+              else:  # if q1 > 0...             # No (more) values found.
+                break
+            if value != None:                   # Is there at least one value were found?
+              config[key] = value               # Yes! Great! Save it.
     debugPrint('Config read: %s' % configFile)
   except:
     debugPrint('Config file read error: %s' % configFile)
   return config
 
-def writeConfigFile(configFile, confSet, boolval=['yes', 'no']):  # Write setting to config file
+def writeConfigFile(configFile, confSet,
+                    boolval=['yes', 'no']):       # Write setting to config file
+
+  def treatValue(val):
+    if isinstance(val, bool):                     # Treat Boolean
+          val = boolval[0] if val else boolval[1]
+    return '"' + val + '"'                        # Put value within quotes
+
   try:
     with open(configFile, 'wt') as cf:
-      for key, val in confSet.items():
-        if isinstance(val, bool):                                 # Treat boolean
-          val = boolval[0] if val else boolval[1]       
-        cf.write('%s="%s"\n' % (key, val)) 
+      for key, value in confSet.items():
+        if isinstance(value, list):
+          val = ''
+          value = value.copy()                    # Make copy to protect original value in dict
+          while value:
+            val += treatValue(value.pop(0)) + ',' # Collect values in comma separated list
+          val = val[:-1]                          # Remove last comma
+        else:
+          val = treatValue(value)
+        cf.write('%s=%s\n' % (key, val))
     debugPrint('Config written: %s' % configFile)
   except:
     debugPrint('Config file write error: %s' % daemonConfigFile)
 
 def daemonErrorDialog(err):   # Show error messages according to the error
   if err == 'NOCONFIG':
-    dialog = Gtk.MessageDialog(None, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK_CANCEL, 
+    dialog = Gtk.MessageDialog(None, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK_CANCEL,
                                _('Yandex.Disk Indicator: daemon start failed'))
     dialog.format_secondary_text(_('Yandex.Disk daemon failed to start because it is not' +
       ' configured properly\n  To configure it up: press OK button.\n  Press Cancel to exit.'))
@@ -207,39 +222,105 @@ def openAbout(widget):          # Show About window
   aboutWindow.destroy()
   widget.set_sensitive(True)    # Enable menu item
 
-def onCheckButtonToggled(widget, button, key):  # Handle clicks on check-buttons
-  global notificationSetting, appConfig, overwrite_check_button
-  toggleState = button.get_active()
-  if key in ['optionreadonly', 'optionoverwrite']:
-    daemonConfig[key] = toggleState             # Update daemon config
-  else:
-    appConfig[key] = toggleState                 # Update app config
-  debugPrint('Togged: %s  val: %s' % (key, str(toggleState)))
-  if key == 'theme':
-    updateIconTheme()                           # Update themeStyle
-    updateIcon()                                # Update current icon
-  elif key == 'notifications':
-    notificationSetting = toggleState           # Update notifications variable
-  elif key == 'autostartdaemon':
-    if toggleState:
-      copyFile(autoStartSource1, autoStartDestination1)
-      sendmessage(_('Yandex.Disk daemon'), _('Auto-start ON'))
-    else:
-      deleteFile(autoStartDestination1)
-      sendmessage(_('Yandex.Disk daemon'), _('Auto-start OFF'))
-  elif key == 'autostart':
-    if toggleState:
-      copyFile(autoStartSource, autoStartDestination)
-      sendmessage(_('Yandex.Disk Indicator'), _('Auto-start ON'))
-    else:
-      deleteFile(autoStartDestination)
-      sendmessage(_('Yandex.Disk Indicator'), _('Auto-start OFF'))
-  elif key == 'fmextensions':
-    activateActions()
-  elif key == 'optionreadonly':
-    overwrite_check_button.set_sensitive(toggleState)
-
 def openPreferences(menu_widget):           # Preferences Window
+
+  class excludeDirsList(Gtk.Dialog):
+    def __init__(self, parent):
+      global daemonConfig
+      Gtk.Dialog.__init__(self, title=_('Folders that are excluded from synchronization'), flags=1)
+      self.set_border_width(6)
+      self.add_button(_('Add catalogue'), Gtk.ResponseType.APPLY).connect("clicked", self.folderChoiserDialog)
+      self.add_button(_('Remove selected'), Gtk.ResponseType.REJECT).connect("clicked", self.deleteSelected)
+      self.add_button(_('Close'), Gtk.ResponseType.CLOSE).connect("clicked", self.exitFromDialog)
+      self.excludeList = Gtk.ListStore(bool , str)
+      view = Gtk.TreeView(model=self.excludeList)
+      render = Gtk.CellRendererToggle()
+      render.connect("toggled", self.lineToggled)
+      col = Gtk.TreeViewColumn(" ", render, active=0)
+      view.append_column(col)
+      col = Gtk.TreeViewColumn('Path', Gtk.CellRendererText(), text=1)
+      view.append_column(col)
+      self.get_content_area().add(view)
+      exList = daemonConfig.pop('exclude-dirs', None)
+      if isinstance(exList, list):
+        while exList:
+          self.excludeList.append([False, exList.pop(0)])
+      elif exList != None:
+        self.excludeList.append([False, exList])
+      self.show_all()
+
+    def exitFromDialog(self, widget):
+      global daemonConfig
+      exList = None
+      listIiter = self.excludeList.get_iter_first()
+      while listIiter != None:
+        if exList == None:                    # First value
+          exList = self.excludeList.get(listIiter, 1)[0]
+        elif isinstance(exList, list):        # Third, fourth ...
+          exList.append(self.excludeList.get(listIiter, 1)[0])
+        else:                                 # Second value
+          exList = [exList, self.excludeList.get(listIiter, 1)[0]]
+        listIiter = self.excludeList.iter_next(listIiter)
+      daemonConfig['exclude-dirs'] = exList   # It can be None if there is no values in list
+      self.destroy()
+
+    def lineToggled(self, widget, path):
+      self.excludeList[path][0] = not self.excludeList[path][0]
+
+    def deleteSelected(self, widget):
+      listIiter = self.excludeList.get_iter_first()
+      while listIiter != None and self.excludeList.iter_is_valid(listIiter):
+        if self.excludeList.get(listIiter, 0)[0]:
+          self.excludeList.remove(listIiter)
+        else:
+          listIiter = self.excludeList.iter_next(listIiter)
+
+    def folderChoiserDialog(self, widget):
+      global yandexDiskFolder
+      dialog = Gtk.FileChooserDialog(_('Select catalogue to add to list'), None,
+                                   Gtk.FileChooserAction.SELECT_FOLDER,
+                                   (_('Close'), Gtk.ResponseType.CANCEL,
+                                    _('Select'), Gtk.ResponseType.ACCEPT))
+      dialog.set_default_response(Gtk.ResponseType.CANCEL)
+      dialog.set_current_folder(yandexDiskFolder)
+      if dialog.run() == Gtk.ResponseType.ACCEPT:
+        res = os.path.relpath(dialog.get_filename(), start=yandexDiskFolder)
+        self.excludeList.append([False, res])
+      dialog.destroy()
+
+
+  def onCheckButtonToggled(widget, button, key):  # Handle clicks on check-buttons
+    global notificationSetting, appConfig, overwrite_check_button
+    toggleState = button.get_active()
+    if key in ['read-only', 'overwrite']:
+      daemonConfig[key] = toggleState             # Update daemon config
+    else:
+      appConfig[key] = toggleState                # Update application config
+    debugPrint('Togged: %s  val: %s' % (key, str(toggleState)))
+    if key == 'theme':
+      updateIconTheme()                           # Update themeStyle
+      updateIcon()                                # Update current icon
+    elif key == 'notifications':
+      notificationSetting = toggleState           # Update notifications variable
+    elif key == 'autostartdaemon':
+      if toggleState:
+        copyFile(autoStartSource1, autoStartDestination1)
+        sendmessage(_('Yandex.Disk daemon'), _('Auto-start ON'))
+      else:
+        deleteFile(autoStartDestination1)
+        sendmessage(_('Yandex.Disk daemon'), _('Auto-start OFF'))
+    elif key == 'autostart':
+      if toggleState:
+        copyFile(autoStartSource, autoStartDestination)
+        sendmessage(_('Yandex.Disk Indicator'), _('Auto-start ON'))
+      else:
+        deleteFile(autoStartDestination)
+        sendmessage(_('Yandex.Disk Indicator'), _('Auto-start OFF'))
+    elif key == 'fmextensions':
+      activateActions()
+    elif key == 'read-only':
+      overwrite_check_button.set_sensitive(toggleState)
+
   global appConfig, daemonConfig, overwrite_check_button
   menu_widget.set_sensitive(False)          # Disable menu item to avoid multiple preferences windows
   # Create Preferences window
@@ -294,25 +375,37 @@ def openPreferences(menu_widget):           # Preferences Window
   autostart_d_check_button.set_active(appConfig[key])
   autostart_d_check_button.connect("toggled", onCheckButtonToggled, autostart_d_check_button, key)
   optionsBox.add(autostart_d_check_button)
-  key = 'optionreadonly'                    # Option Read-Only    # daemon config
+  frame = Gtk.Frame()
+  frame.set_label(_("NOTE! You have to reload daemon to activate following settings"))
+  frame.set_border_width(6)
+  optionsBox.add(frame)
+  labeledBox = Gtk.VBox(homogeneous=True, spacing=5)
+  frame.add(labeledBox)
+  key = 'read-only'                         # Option Read-Only    # daemon config
   readOnly_check_button = Gtk.CheckButton(
                             _('Read-Only: Do not upload locally changed files to Yandex.Disk'))
   readOnly_check_button.set_tooltip_text(
-    _("Locally changed files will be renamed if a newer version of this file appear in " + 
-      "Yandex.Disk. \n NOTE! You have to reload daemon to activate this setting"))
+    _("Locally changed files will be renamed if a newer version of this file appear in " +
+      "Yandex.Disk."))
   readOnly_check_button.set_active(daemonConfig[key])
   readOnly_check_button.connect("toggled", onCheckButtonToggled, readOnly_check_button, key)
-  optionsBox.add(readOnly_check_button)
-  key = 'optionoverwrite'                   # Option Overwrite    # daemon config
-  overwrite_check_button = Gtk.CheckButton(_('Overwrite locally changed files by files' + 
+  labeledBox.add(readOnly_check_button)
+  key = 'overwrite'                         # Option Overwrite    # daemon config
+  overwrite_check_button = Gtk.CheckButton(_('Overwrite locally changed files by files' +
                                              ' from Yandex.Disk (in read-only mode)'))
   overwrite_check_button.set_tooltip_text(
-    _("Locally changed files will be overwritten if a newer version of this file appear " + 
-      "in Yandex.Disk. \n NOTE! You have to reload daemon to activate this setting"))
+    _("Locally changed files will be overwritten if a newer version of this file appear " +
+      "in Yandex.Disk."))
   overwrite_check_button.set_active(daemonConfig[key])
-  overwrite_check_button.set_sensitive(daemonConfig['optionreadonly'])
+  overwrite_check_button.set_sensitive(daemonConfig['read-only'])
   overwrite_check_button.connect("toggled", onCheckButtonToggled, overwrite_check_button, key)
-  optionsBox.add(overwrite_check_button)
+  labeledBox.add(overwrite_check_button)
+  # Excude folders list
+  exListButton = Gtk.Button(_('Excluded folders List'))
+  exListButton.set_tooltip_text(_("Folders in the list will not be synchronized."))
+  exListButton.connect("clicked", excludeDirsList)
+  labeledBox.add(exListButton)
+
   # --- End of Daemon start options tab --- add it to notebook
   pref_notebook.append_page(optionsBox, Gtk.Label(_('Daemon options')))
   preferencesWindow.show_all()
@@ -321,6 +414,8 @@ def openPreferences(menu_widget):           # Preferences Window
   daemonConfigSave()                        # Save daemon options in config file
   writeConfigFile(appCofigFile, appConfig)  # Save app appConfig
   menu_widget.set_sensitive(True)           # Enable menu item
+
+
 
 def showOutput(menu_widget):                    # Display daemon output in dialogue window
   global origLANG, workLANG, daemonOutput
@@ -332,14 +427,28 @@ def showOutput(menu_widget):                    # Display daemon output in dialo
   statusWindow.set_icon(GdkPixbuf.Pixbuf.new_from_file(yandexDiskIcon))
   statusWindow.set_border_width(6)
   statusWindow.add_button(_('Close'), Gtk.ResponseType.CLOSE)
-  textBox = Gtk.TextView()                      # Create text-box to display daemon output 
+  textBox = Gtk.TextView()                      # Create text-box to display daemon output
   textBox.get_buffer().set_text(daemonOutput)
   textBox.set_editable(False)
   statusWindow.get_content_area().add(textBox)  # Put it inside the dialogue content area
   statusWindow.show_all();  statusWindow.run();   statusWindow.destroy()
   menu_widget.set_sensitive(True)               # Enable menu item
 
+def openLast(widget, index):  # Open last synchronized item
+  global pathsList
+  openPath(widget, pathsList[index])
+
 def renderMenu():                           # Render initial menu (without any actual information)
+
+  def openPath(widget, path):  # Open path
+    debugPrint('Opening %s' % path)
+    if os.path.exists(path):
+      try:    os.startfile(path)
+      except: subprocess.call(['xdg-open', path])
+
+  def openInBrowser(widget, url):
+    openNewBrowser(url)
+
   global menu_status, menu_used, menu_free, menu_YD_daemon_stop, menu_YD_daemon_start
   global menu_last, submenu_last, pathsList, yandexDiskFolder
   menu = Gtk.Menu()                         # Create menu
@@ -377,7 +486,7 @@ def renderMenu():                           # Render initial menu (without any a
   menu.show_all()
   return menu
 
-def startYDdaemon():      # Execute 'yandex-disk start' 
+def startYDdaemon():      # Execute 'yandex-disk start'
                           # and return '' if success or error message if not
                           # ... but sometime it starts successfully with error message
   try:
@@ -388,8 +497,8 @@ def startYDdaemon():      # Execute 'yandex-disk start'
     debugPrint('Start failed:%s' % e.output)
     if e.output == '':    # probably 'os: no file'
       return 'NOTINSTALLED'
-    err = ('NONET' if 'Proxy' in e.output else 
-           'BADDAEMON' if 'daemon' in e.output else 
+    err = ('NONET' if 'Proxy' in e.output else
+           'BADDAEMON' if 'daemon' in e.output else
            'NOCONFIG')
     return err
 
@@ -432,7 +541,7 @@ def parseDaemonOutput():                   # Parse the daemon output
     syncProgress = ''
   if daemonOutput != '':
     # Look for current core status (it is always presented in output); 13 is len('core status: ')
-    startPos = daemonOutput.find('core status: ', lastPos) + 13  
+    startPos = daemonOutput.find('core status: ', lastPos) + 13
     lastPos = daemonOutput.find('\n', startPos)
     currentStatus = daemonOutput[startPos: lastPos]
     if currentStatus == 'index':          # Don't handle index status
@@ -470,10 +579,10 @@ def parseDaemonOutput():                   # Parse the daemon output
     buf = daemonOutput[startPos: ]        # save the rest
   else:
     buf = ''
-  lastItemsChanged = (lastItems != buf)   # check for changes in the list 
+  lastItemsChanged = (lastItems != buf)   # check for changes in the list
   lastItems = buf
   # Last synchronized list stored as one buffer withot splitting on individual lines/paths.
-  # It is easier to do it in the same loop where menu is being updated (in updateMenuInfo()).  
+  # It is easier to do it in the same loop where menu is being updated (in updateMenuInfo()).
   # Prepare and format information for menu
   yandexDiskStatus = _('Status: ') + YD_STATUS.get(currentStatus, _('Error')) + syncProgress
   yandexDiskSpace1 = _('Used: ') + sUsed + '/' + sTotal
@@ -501,13 +610,13 @@ def checkDaemon():               # Checks that daemon installed, configured and 
       except:
         debugPrint('yandex-disk daemon kill error')
         daemonErrorDialog('')
-        appExit()                # nonconvertible error - exit 
+        appExit()                # nonconvertible error - exit
     except:
       debugPrint("yandex-disk daemon is not running")
       msg = ''
     if msg == '' and not appConfig["startonstart"]:
       return False               # Daemon is not started and should not be started
-    else:  
+    else:
       err = startYDdaemon()      # Try to start it
       if err != '':
         if daemonErrorDialog(err) != 0:
@@ -526,15 +635,15 @@ def updateMenuInfo():                           # Update information in menu
   menu_free.set_label(yandexDiskSpace2)
   # --- Update last synchronized sub-menu ---
   if lastItemsChanged:                          # only when list of last synchronized is changed
-    for widget in submenu_last.get_children():  # clear last synchronized sub menu 
+    for widget in submenu_last.get_children():  # clear last synchronized sub menu
       submenu_last.remove(widget)
-    pathsList = []                              # clear list of file paths 
+    pathsList = []                              # clear list of file paths
     for listLine in lastItems.splitlines():
       startPos = listLine.find(": '")           # Find file path in the line
       if (startPos > 0):                        # File path was found
         filePath = listLine[startPos + 3: - 1]  # Get relative file path (skip quotes)
         pathsList.append(os.path.join(yandexDiskFolder, filePath))    # Store fill file path
-        # Make menu label as file path (shorten to 50 symbols if path length > 50 symbols), 
+        # Make menu label as file path (shorten to 50 symbols if path length > 50 symbols),
         # with replaced underscore (to disable menu acceleration feature of GTK menu).
         widget = Gtk.MenuItem.new_with_label(
                    (filePath[: 20] + '...' + filePath[-27: ] if len(filePath) > 50 else
@@ -551,7 +660,7 @@ def updateMenuInfo():                           # Update information in menu
     else:                                       # there are some items in list
       menu_last.set_sensitive(True)
     debugPrint("Sub-menu 'Last synchronized' has been updated")
-  
+
 def updateStartStop(started):   # Update daemon start and stop menu items availability
   global menu_YD_daemon_start, menu_YD_daemon_stop, menu_status
   menu_YD_daemon_start.set_sensitive(not started)
@@ -607,12 +716,12 @@ def handleEvent(triggeredBy_iNotifier): # It is main working routine.
 def updateIconTheme():    # Determine paths to icons according to current theme
   global iconThemePath, ind, icon_busy, icon_idle, icon_pause, icon_error, installDir, appCofigPath
   # Determine theme from application configuration settings
-  iconTheme = 'light' if appConfig["theme"] else 'dark' 
+  iconTheme = 'light' if appConfig["theme"] else 'dark'
   defaultIconThemePath = os.path.join(installDir, 'icons', iconTheme)
   userIconThemePath = os.path.join(appCofigPath, 'icons', iconTheme)
   # Set appropriate paths to icons
   userIcon = os.path.join(userIconThemePath, 'yd-ind-idle.png')
-  icon_idle = (userIcon if os.path.exists(userIcon) else 
+  icon_idle = (userIcon if os.path.exists(userIcon) else
                os.path.join(defaultIconThemePath, 'yd-ind-idle.png'))
   userIcon = os.path.join(userIconThemePath, 'yd-ind-pause.png')
   icon_pause = (userIcon if os.path.exists(userIcon) else
@@ -636,7 +745,7 @@ def updateIcon():                     # Change indicator icon according to new s
     ind.set_icon(icon_busy)           # Start icon animation
     seqNum = 2                        # Start animation from next icon
     # Create animation timer
-    iconAnimationTimer = GLib.timeout_add(777, iconAnimation, 'iconAnimation') 
+    iconAnimationTimer = GLib.timeout_add(777, iconAnimation, 'iconAnimation')
   else:
     if newStatus != 'busy' and iconAnimationTimer > 0:  # Not 'busy' and animation is running
       stopTimer(iconAnimationTimer)   # Stop icon animation
@@ -748,23 +857,26 @@ def activateActions():  # Install/deinstall file extensions
 
 def daemonConfigSave():  # Update daemon config file according to the configuration appConfig
   global daemonConfigFile, daemonConfig
-  fileConfig = readConfigFile(daemonConfigFile)
-  fileConfig.pop('read-only',None)            # Ignore "read-only" appConfig from file 
-  fileConfig.pop('overwrite',None)            # Ignore "overwrite" appConfig from file
-  if daemonConfig['optionreadonly']:
+  fileConfig = daemonConfig.copy()
+  if fileConfig.pop('read-only', False):
     fileConfig['read-only'] = ''
-    if daemonConfig['optionoverwrite']:
-      fileConfig['overwrite'] = ''
+  if fileConfig.pop('overwrite', False):
+    fileConfig['overwrite'] = ''
+  exList = fileConfig.pop('exclude-dirs', None)
+  if exList != None:
+    fileConfig['exclude-dirs'] = exList
   writeConfigFile(daemonConfigFile, fileConfig)
-  
+
+
 def daemonConfigRead():  # Get daemon appConfig from its config file
   global daemonConfigFile, yandexDiskFolder, daemonConfig
   yandexDiskFolder = ''
-  fileConfig = readConfigFile(daemonConfigFile)
-  if len(fileConfig) > 0:
-    yandexDiskFolder = fileConfig.get('dir', '')
-    daemonConfig['optionreadonly'] = fileConfig.get('read-only', False)
-    daemonConfig['optionoverwrite'] = fileConfig.get('overwrite', False)
+  daemonConfig = readConfigFile(daemonConfigFile)
+  if len(daemonConfig) > 0:
+    yandexDiskFolder = daemonConfig.get('dir', '')
+    daemonConfig['read-only'] = (daemonConfig.get('read-only', None) == '')
+    daemonConfig['overwrite'] = (daemonConfig.get('overwrite', None) == '')
+    daemonConfig['exclude-dirs'] = daemonConfig.get('exclude-dirs', None)
   return (yandexDiskFolder != '')
 
 ###################### MAIN LOOP #########################
@@ -777,7 +889,7 @@ if __name__ == '__main__':
   appCofigPath = os.path.join(userHome, '.config', appHomeName)
   appCofigFile = os.path.join(appCofigPath, appName + '.conf')
   # Define .desktop files locations for auto-start facility
-  autoStartSource = os.path.join(os.sep, 'usr', 'share', 'applications', 
+  autoStartSource = os.path.join(os.sep, 'usr', 'share', 'applications',
                                  'Yandex.Disk-indicator.desktop')
   autoStartDestination = os.path.join(userHome, '.config', 'autostart',
                                       'Yandex.Disk-indicator.desktop')
@@ -817,13 +929,13 @@ if __name__ == '__main__':
       This file can contain comments (lines starts with '#') and following keywords:
         autostart, startonstart, stoponexit, notifications, theme, fmextensions, autostartdaemon
         and debug (debug is not configurable from indicator preferences dialogue)
-      Dictionary appConfig stores the config settings for usage in code. Its values are saved 
+      Dictionary appConfig stores the config settings for usage in code. Its values are saved
       to config file on Preferences dialogue exit.
-      
-      Note that daemon settings "read-only" and "overwrite" are stored 
-      in ~/ .config/yandex-disk/config.cfg file. They are read in checkDaemon function 
+
+      Note that daemon settings "read-only" and "overwrite" are stored
+      in ~/ .config/yandex-disk/config.cfg file. They are read in checkDaemon function
       (in dictionary daemonConfig). Their values are saved to daemon config file also
-      on Preferences dialogue exit.        
+      on Preferences dialogue exit.
   '''
   appConfig = readConfigFile(appCofigFile)
   # Read some settings to variables, set default values and updte some values
@@ -836,7 +948,7 @@ if __name__ == '__main__':
   appConfig['autostartdaemon'] = os.path.isfile(autoStartDestination1)
   verboseDebug = setDefault(appConfig, 'debug', False)
   # Store settings to app config file (required to create default appConfig at first start)
-  if not os.path.exists(appCofigPath): 
+  if not os.path.exists(appCofigPath):
     # create app config folders in ~/.config
     try: os.makedirs(appCofigPath)
     except: pass
@@ -844,19 +956,19 @@ if __name__ == '__main__':
     except: pass
     try: os.makedirs(os.path.join(appCofigPath, 'icons', 'dark'))
     except: pass
-    # Copy icon themes description readme to user config catalogue 
+    # Copy icon themes description readme to user config catalogue
     copyFile(os.path.join(installDir, 'icons', 'readme'),
              os.path.join(appCofigPath, 'icons', 'readme'))
     ### Activate FM actions according to appConfig (as it is a first run)
     activateActions()
   writeConfigFile(appCofigFile, appConfig)
-  
+
   ### Application Indicator ###
   ## Icons ##
   yandexDiskIcon = os.path.join(installDir, 'icons', 'yd-128.png')            # logo
   updateIconTheme()           # Define the rest icons paths according to current theme
   iconAnimationTimer = 0      # Define the icon animation timer variable
-  
+
   ### Yandex.Disk daemon ###
   # Yandex.Disk configuration file path
   daemonConfigFile = os.path.join(userHome, '.config', 'yandex-disk', 'config.cfg')
@@ -873,24 +985,24 @@ if __name__ == '__main__':
   # Set initial statuses
   newStatus = lastStatus = currentStatus
   lastItems = '*'             # Reset lastItems in order to update menu in handleEvent()
-  
+
   ## Indicator ##
   ind = appIndicator.Indicator.new("yandex-disk", icon_pause,
                                    appIndicator.IndicatorCategory.APPLICATION_STATUS)
   ind.set_status(appIndicator.IndicatorStatus.ACTIVE)
   ind.set_menu(renderMenu())  # Prepare and attach menu to indicator
   updateIcon()                # Update indicator icon according to current status
-  
+
   ### On-screen notifications ###
   Notify.init(appName)        # Initialize notification engine
   notifier = Notify.Notification()
-  
+
   ### Initial menu actualisation ###
   # Timer triggered event staff #
   watchTimer = 0              # Timer source variable
   handleEvent(True)           # True value will update info and create the watch timer for 2 sec
   updateStartStop(newStatus != 'none')
-  
+
   ### File updates watcher ###
   class EventHandler(pyinotify.ProcessEvent):   # Event handler class for iNotifier
     def process_IN_MODIFY(self, event):
