@@ -96,7 +96,7 @@ def setDefault(settings, key, val):  # Workaround for not working setdefault for
 
 def readConfigFile(configFile):                 # Read config file to dict (returned value)
 
-  def store(value, newval):         # Format and store value
+  def store(value, newval):         # Convert and store value
     if newval.lower() in ['true', 'yes', 'y']:
       newval = True
     elif newval.lower() in ['false', 'no', 'n']:
@@ -106,77 +106,78 @@ def readConfigFile(configFile):                 # Read config file to dict (retu
     elif value == None:             # Is it a first value?
       value = newval                # Just store it
     else:                           # It is second value.
-      value = [value, newval]       # Convert value to list of values.
+      value = [value, newval]       # Convert scalar value to list of values.
     return value
 
-  def parseValues(row):
+  def parse(row):                                   # Search values behind the '=' symbol
     val = None
-    lp = 0                                          # Last position is '=' symbol
-    while True:                                     # Search values behind the '=' symbol
+    lp = 0                                          # Set last position on '=' symbol
+    while True:              
       q1 = row.find('"', lp+1)                      # Try to find opening quote
       q2 = row.find(',', lp+1)                      # Try to find delimiter
-      if ((q1 > 0 and q2 > 0 and q1 > q2 ) or       # ',' and '"' was found and '"' is after ','
-          (q2 > 0 and q1 < 0)):                     # or only ',' was found ('"' was not found)
+      if q2 > 0 and (q1 > q2 or q1 < 0):            # ',' was found and '"' is after ',' or 
+                                                    # or only ',' was found ('"' was not found)
         if row[lp] == '"':                          # ... after '"'
-          lp = q2                                   # move to ','
+          lp = q2                                   # move to ',' that was found
           continue                                  # Restart search
         else:                                       # row[lp] in ['=', ',']
           val = store(val, row[lp+1: q2].strip())   # Get value between last symbol and delimiter
-          lp = q2                                   # move to ','
-      elif q1 > 0:                                  # '"' was found
-        if row[lp] in['=', ',']:                    # ... after '=' or ','
+          lp = q2                                   # move to ',' that was found
+      elif q1 > 0:                                  # Opening '"' was found (',' was not found)
+        if row[lp] in [',', '=']:                   # ... after '=' or ','
           q2 = row.find('"', q1+1)                  # Try to find closing quote
           if q2 > 0:                                # Closing quote found
-            val = store(val, row[q1+1: q2])         # Get value between quotes
-            lp = q2                                 # move to '"'
+            val = store(val, row[q1+1: q2])         # Get value between quotes (don't stip it)
+            lp = q2                                 # move to ending '"'
           else:                                     # ERROR: no ending quote found for opening one
-            break                                   # stop search.
+            break                                   # Stop search.
         else:                                       # ERROR: opening '"' was found after closing '"'
-          break                                     # stop search.
+          break                                     # Stop search.
       else:                                         # Neither Opening quote nor delimiter was found
-        if row[lp] =='"':                           # ... after '"'
+        if row[lp] == '"':                          # ... after closing '"'
           break                                     # There is no (more) values, stop search
         else:                                       # ... after '=' or ','
-          val = store(val, row[lp+1:-1].strip())    # Get value between last sym. and end of string
+          val = store(val, row[lp+1: -1].strip())   # Get value between last sym. and end of string
           break                                     # There is no (more) values, stop search
     return val
 
   config = OrderedDict()
   try:
     with open(configFile) as cf:
-      for row in cf:                       # Parse lines remove quotes if they are used
-        if row[0] != '#':                  # Ignore comments
+      for row in cf:                 # Parse lines
+        if row[0] != '#':            # Ignore comments
           p = row.find('=')
-          if p > 0:                        # '=' symbol has been found
-            key = (row[:p]).strip()        # Remember key name
-            val = parseValues(row[p:])     # get value(s) form rest of row
-            if val != None:                # Is there at least one value were found?
-              config[key] = val            # Yes! Great! Save it.
+          if p > 0:                  # '=' symbol was found
+            key = (row[:p]).strip()  # Remember key name
+            if key:                  # When key is not empty
+              val = parse(row[p:])   # Get value(s) form the rest of row
+              if val != None:        # Is there at least one value were found?
+                config[key] = val    # Yes! Great! Save it.
     debugPrint('Config read: %s' % configFile)
   except:
     debugPrint('Config file read error: %s' % configFile)
   return config
 
 def writeConfigFile(configFile, confSet,
-                    boolval=['yes', 'no']):       # Write setting to config file
+                    boolval=['yes', 'no']):     # Write setting to config file
 
-  def treatValue(val):
-    if isinstance(val, bool):                     # Treat Boolean
+  def convert(val):
+    if isinstance(val, bool):  # Treat Boolean
           val = boolval[0] if val else boolval[1]
-    return '"' + val + '"'                        # Put value within quotes
+    return '"' + val + '"'     # Put value within quotes
 
   try:
     with open(configFile, 'wt') as cf:
       for key, value in confSet.items():
-        if isinstance(value, list):               # Value is list
+        if isinstance(value, list):             # Value is list
           val = ''
-          value = value.copy()                    # Make copy to protect original value in dict
+          value = value.copy()                  # Make copy to protect original value in dict
           while value:
-            val += treatValue(value.pop(0)) + ',' # Collect values in comma separated list
-          val = val[:-1]                          # Remove last comma
-        else:                                     # Value is scalar
-          val = treatValue(value)
-        cf.write('%s=%s\n' % (key, val))          # Write key/value string in config
+            val += convert(value.pop(0)) + ','  # Collect values in comma separated list
+          val = val[: -1]                       # Remove last comma
+        else:                                   # Value is scalar
+          val = convert(value)
+        cf.write('%s=%s\n' % (key, val))        # Write key/value string in config
     debugPrint('Config written: %s' % configFile)
   except:
     debugPrint('Config file write error: %s' % daemonConfigFile)
@@ -215,8 +216,7 @@ def openAbout(widget):          # Show About window
   widget.set_sensitive(False)   # Disable menu item
   aboutWindow = Gtk.AboutDialog()
   logo = GdkPixbuf.Pixbuf.new_from_file(yandexDiskIcon)
-  aboutWindow.set_logo(logo)
-  aboutWindow.set_icon(logo)
+  aboutWindow.set_logo(logo);   aboutWindow.set_icon(logo)
   aboutWindow.set_program_name(_('Yandex.Disk indicator'))
   aboutWindow.set_version(_('Version ') + appVer)
   aboutWindow.set_copyright('Copyright ' + u'\u00a9' + ' 2013-' +
@@ -269,8 +269,9 @@ def openPreferences(menu_widget):           # Preferences Window
       view.append_column(Gtk.TreeViewColumn(_('Path'), Gtk.CellRendererText(), text=1))
       self.get_content_area().add(view)
       # Populate list with paths from "exclude-dirs" property of daemon configuration
-      exList = daemonConfig.pop('exclude-dirs', None)
+      exList = daemonConfig.get('exclude-dirs', None)
       if isinstance(exList, list):      # Treat list of values
+        exList = exList.copy()          # Make a copy of the property to protect config value
         while exList:
           self.excludeList.append([False, exList.pop(0)])
       elif exList != None:              # When "exclude-dirs" is not empty and not list
@@ -349,7 +350,7 @@ def openPreferences(menu_widget):           # Preferences Window
       overwrite_check_button.set_sensitive(toggleState)
 
   # Preferences Window routine
-  global appConfig, daemonConfig, overwrite_check_button
+  global appCofigFile, appConfig, daemonConfig, overwrite_check_button
   menu_widget.set_sensitive(False)          # Disable menu item to avoid multiple windows creation
   # Create Preferences window
   preferencesWindow = Gtk.Dialog(_('Yandex.Disk-indicator and Yandex.Disk preferences'))
@@ -407,8 +408,8 @@ def openPreferences(menu_widget):           # Preferences Window
   frame.set_label(_("NOTE! You have to reload daemon to activate following settings"))
   frame.set_border_width(6)
   optionsBox.add(frame)
-  labeledBox = Gtk.VBox(homogeneous=True, spacing=5)
-  frame.add(labeledBox)
+  framedBox = Gtk.VBox(homogeneous=True, spacing=5)
+  frame.add(framedBox)
   key = 'read-only'                         # Option Read-Only    # daemon config
   readOnly_check_button = Gtk.CheckButton(
                             _('Read-Only: Do not upload locally changed files to Yandex.Disk'))
@@ -417,7 +418,7 @@ def openPreferences(menu_widget):           # Preferences Window
       "Yandex.Disk."))
   readOnly_check_button.set_active(daemonConfig[key])
   readOnly_check_button.connect("toggled", onCheckButtonToggled, readOnly_check_button, key)
-  labeledBox.add(readOnly_check_button)
+  framedBox.add(readOnly_check_button)
   key = 'overwrite'                         # Option Overwrite    # daemon config
   overwrite_check_button = Gtk.CheckButton(_('Overwrite locally changed files by files' +
                                              ' from Yandex.Disk (in read-only mode)'))
@@ -427,12 +428,12 @@ def openPreferences(menu_widget):           # Preferences Window
   overwrite_check_button.set_active(daemonConfig[key])
   overwrite_check_button.set_sensitive(daemonConfig['read-only'])
   overwrite_check_button.connect("toggled", onCheckButtonToggled, overwrite_check_button, key)
-  labeledBox.add(overwrite_check_button)
+  framedBox.add(overwrite_check_button)
   # Excude folders list
   exListButton = Gtk.Button(_('Excluded folders List'))
   exListButton.set_tooltip_text(_("Folders in the list will not be synchronized."))
   exListButton.connect("clicked", excludeDirsList)
-  labeledBox.add(exListButton)
+  framedBox.add(exListButton)
 
   # --- End of Daemon start options tab --- add it to notebook
   pref_notebook.append_page(optionsBox, Gtk.Label(_('Daemon options')))
@@ -442,8 +443,6 @@ def openPreferences(menu_widget):           # Preferences Window
   daemonConfigSave()                        # Save daemon options in config file
   writeConfigFile(appCofigFile, appConfig)  # Save app appConfig
   menu_widget.set_sensitive(True)           # Enable menu item
-
-
 
 def showOutput(menu_widget):                    # Display daemon output in dialogue window
   global origLANG, workLANG, daemonOutput
@@ -886,9 +885,10 @@ def activateActions():  # Install/deinstall file extensions
 def daemonConfigSave():  # Update daemon config file according to the configuration appConfig
   global daemonConfigFile, daemonConfig
   fileConfig = daemonConfig.copy()
-  if fileConfig.pop('read-only', False):
+  ro = fileConfig.pop('read-only', False)
+  if ro:
     fileConfig['read-only'] = ''
-  if fileConfig.pop('overwrite', False):
+  if fileConfig.pop('overwrite', False) and ro:
     fileConfig['overwrite'] = ''
   exList = fileConfig.pop('exclude-dirs', None)
   if exList != None:
@@ -902,8 +902,8 @@ def daemonConfigRead():  # Get daemon appConfig from its config file
   daemonConfig = readConfigFile(daemonConfigFile)
   if len(daemonConfig) > 0:
     yandexDiskFolder = daemonConfig.get('dir', '')
-    daemonConfig['read-only'] = (daemonConfig.get('read-only', None) == '')
-    daemonConfig['overwrite'] = (daemonConfig.get('overwrite', None) == '')
+    daemonConfig['read-only'] = (daemonConfig.get('read-only', False) == '')
+    daemonConfig['overwrite'] = (daemonConfig.get('overwrite', False) == '')
     daemonConfig['exclude-dirs'] = daemonConfig.get('exclude-dirs', None)
   return (yandexDiskFolder != '')
 
