@@ -111,9 +111,9 @@ def readConfigFile(configFile):                 # Read config file to dict (retu
               if q1 > 0 and q2 > q1:            # Value withing quotes has been found
                 val = row[q1+1: q2]             # Get it without quotes
                 # Convert Boolean values from their string representation (all rest are strings)
-                if val in ['True', 'true', 'Yes', 'yes']:
+                if val.lower() in ['true', 'yes', 'y']:
                   val = True
-                elif val in ['False', 'false', 'No', 'no']:
+                elif val.lower() in ['false', 'no', 'n']:
                   val = False
                 if value == None:               # Is it a first value?
                   value = val                   # Just store it
