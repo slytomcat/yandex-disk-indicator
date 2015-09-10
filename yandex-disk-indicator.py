@@ -95,37 +95,63 @@ def setDefault(settings, key, val):  # Workaround for not working setdefault for
     return val
 
 def readConfigFile(configFile):                 # Read config file to dict (returned value)
+
+  def store(value, newval):         # Format and store value
+    if newval.lower() in ['true', 'yes', 'y']:
+      newval = True
+    elif newval.lower() in ['false', 'no', 'n']:
+      newval = False
+    if isinstance(value, list):     # Is it a third, fourth ... value?
+      value.append(newval)          # Just append new value to list
+    elif value == None:             # Is it a first value?
+      value = newval                # Just store it
+    else:                           # It is second value.
+      value = [value, newval]       # Convert value to list of values.
+    return value
+
+  def parseValues(row):
+    val = None
+    lp = 0                                          # Last position is '=' symbol
+    while True:                                     # Search values behind the '=' symbol
+      q1 = row.find('"', lp+1)                      # Try to find opening quote
+      q2 = row.find(',', lp+1)                      # Try to find delimiter
+      if ((q1 > 0 and q2 > 0 and q1 > q2 ) or       # ',' and '"' was found and '"' is after ','
+          (q2 > 0 and q1 < 0)):                     # or only ',' was found ('"' was not found)
+        if row[lp] == '"':                          # ... after '"'
+          lp = q2                                   # move to ','
+          continue                                  # Restart search
+        else:                                       # row[lp] in ['=', ',']
+          val = store(val, row[lp+1: q2].strip())   # Get value between last symbol and delimiter
+          lp = q2                                   # move to ','
+      elif q1 > 0:                                  # '"' was found
+        if row[lp] in['=', ',']:                    # ... after '=' or ','
+          q2 = row.find('"', q1+1)                  # Try to find closing quote
+          if q2 > 0:                                # Closing quote found
+            val = store(val, row[q1+1: q2])         # Get value between quotes
+            lp = q2                                 # move to '"'
+          else:                                     # ERROR: no ending quote found for opening one
+            break                                   # stop search.
+        else:                                       # ERROR: opening '"' was found after closing '"'
+          break                                     # stop search.
+      else:                                         # Neither Opening quote nor delimiter was found
+        if row[lp] =='"':                           # ... after '"'
+          break                                     # There is no (more) values, stop search
+        else:                                       # ... after '=' or ','
+          val = store(val, row[lp+1:-1].strip())    # Get value between last sym. and end of string
+          break                                     # There is no (more) values, stop search
+    return val
+
   config = OrderedDict()
   try:
     with open(configFile) as cf:
-      for row in cf:                            # Parse lines remove quotes if they are used
-        if row[0] != '#':                       # Ignore comments
+      for row in cf:                       # Parse lines remove quotes if they are used
+        if row[0] != '#':                  # Ignore comments
           p = row.find('=')
-          if p > 0:                             # '=' symbol has been found
-            key = row[:p]
-            value = None
-            q2 = p
-            while True:                         # Look for quoted values behind the '=' symbol
-              q1 = row.find('"', q2+1)
-              q2 = row.find('"', q1+1)
-              if q1 > 0 and q2 > q1:            # Value withing quotes has been found
-                val = row[q1+1: q2]             # Get it without quotes
-                # Convert Boolean values from their string representation (all rest are strings)
-                if val.lower() in ['true', 'yes', 'y']:
-                  val = True
-                elif val.lower() in ['false', 'no', 'n']:
-                  val = False
-                if value == None:               # Is it a first value?
-                  value = val                   # Just store it
-                else:                           # It is not first value.
-                  if isinstance(value, list):   # Is it a third, fourth ... value?
-                    value.append(val)           # Just append new value to list
-                  else:                         # It is second value.
-                    value = [value, val]        # Convert value to list of values.
-              else:  # if q1 > 0...             # No (more) values found.
-                break
-            if value != None:                   # Is there at least one value were found?
-              config[key] = value               # Yes! Great! Save it.
+          if p > 0:                        # '=' symbol has been found
+            key = (row[:p]).strip()        # Remember key name
+            val = parseValues(row[p:])     # get value(s) form rest of row
+            if val != None:                # Is there at least one value were found?
+              config[key] = val            # Yes! Great! Save it.
     debugPrint('Config read: %s' % configFile)
   except:
     debugPrint('Config file read error: %s' % configFile)
@@ -142,15 +168,15 @@ def writeConfigFile(configFile, confSet,
   try:
     with open(configFile, 'wt') as cf:
       for key, value in confSet.items():
-        if isinstance(value, list):
+        if isinstance(value, list):               # Value is list
           val = ''
           value = value.copy()                    # Make copy to protect original value in dict
           while value:
             val += treatValue(value.pop(0)) + ',' # Collect values in comma separated list
           val = val[:-1]                          # Remove last comma
-        else:
+        else:                                     # Value is scalar
           val = treatValue(value)
-        cf.write('%s=%s\n' % (key, val))
+        cf.write('%s=%s\n' % (key, val))          # Write key/value string in config
     debugPrint('Config written: %s' % configFile)
   except:
     debugPrint('Config file write error: %s' % daemonConfigFile)
@@ -224,32 +250,34 @@ def openAbout(widget):          # Show About window
 
 def openPreferences(menu_widget):           # Preferences Window
 
-  class excludeDirsList(Gtk.Dialog):
+  class excludeDirsList(Gtk.Dialog):    # Excluded list dialogue class
     def __init__(self, parent):
       global daemonConfig
       Gtk.Dialog.__init__(self, title=_('Folders that are excluded from synchronization'), flags=1)
       self.set_border_width(6)
-      self.add_button(_('Add catalogue'), Gtk.ResponseType.APPLY).connect("clicked", self.folderChoiserDialog)
-      self.add_button(_('Remove selected'), Gtk.ResponseType.REJECT).connect("clicked", self.deleteSelected)
-      self.add_button(_('Close'), Gtk.ResponseType.CLOSE).connect("clicked", self.exitFromDialog)
+      self.add_button(_('Add catalogue'),
+                      Gtk.ResponseType.APPLY).connect("clicked", self.folderChoiserDialog)
+      self.add_button(_('Remove selected'),
+                      Gtk.ResponseType.REJECT).connect("clicked", self.deleteSelected)
+      self.add_button(_('Close'),
+                      Gtk.ResponseType.CLOSE).connect("clicked", self.exitFromDialog)
       self.excludeList = Gtk.ListStore(bool , str)
       view = Gtk.TreeView(model=self.excludeList)
       render = Gtk.CellRendererToggle()
       render.connect("toggled", self.lineToggled)
-      col = Gtk.TreeViewColumn(" ", render, active=0)
-      view.append_column(col)
-      col = Gtk.TreeViewColumn('Path', Gtk.CellRendererText(), text=1)
-      view.append_column(col)
+      view.append_column(Gtk.TreeViewColumn(" ", render, active=0))
+      view.append_column(Gtk.TreeViewColumn(_('Path'), Gtk.CellRendererText(), text=1))
       self.get_content_area().add(view)
+      # Populate list with paths from "exclude-dirs" property of daemon configuration
       exList = daemonConfig.pop('exclude-dirs', None)
-      if isinstance(exList, list):
+      if isinstance(exList, list):      # Treat list of values
         while exList:
           self.excludeList.append([False, exList.pop(0)])
-      elif exList != None:
+      elif exList != None:              # When "exclude-dirs" is not empty and not list
         self.excludeList.append([False, exList])
       self.show_all()
 
-    def exitFromDialog(self, widget):
+    def exitFromDialog(self, widget):   # Save list from dialogue to "exclude-dirs" property
       global daemonConfig
       exList = None
       listIiter = self.excludeList.get_iter_first()
@@ -261,13 +289,13 @@ def openPreferences(menu_widget):           # Preferences Window
         else:                                 # Second value
           exList = [exList, self.excludeList.get(listIiter, 1)[0]]
         listIiter = self.excludeList.iter_next(listIiter)
-      daemonConfig['exclude-dirs'] = exList   # It can be None if there is no values in list
+      daemonConfig['exclude-dirs'] = exList   # It can be None if the dialogue list is empty
       self.destroy()
 
-    def lineToggled(self, widget, path):
+    def lineToggled(self, widget, path):  # Line click handler, it switch row selection
       self.excludeList[path][0] = not self.excludeList[path][0]
 
-    def deleteSelected(self, widget):
+    def deleteSelected(self, widget):  # remove selected rows from list
       listIiter = self.excludeList.get_iter_first()
       while listIiter != None and self.excludeList.iter_is_valid(listIiter):
         if self.excludeList.get(listIiter, 0)[0]:
@@ -275,7 +303,7 @@ def openPreferences(menu_widget):           # Preferences Window
         else:
           listIiter = self.excludeList.iter_next(listIiter)
 
-    def folderChoiserDialog(self, widget):
+    def folderChoiserDialog(self, widget):  # Add new path to list via FileChooserDialog
       global yandexDiskFolder
       dialog = Gtk.FileChooserDialog(_('Select catalogue to add to list'), None,
                                    Gtk.FileChooserAction.SELECT_FOLDER,
@@ -287,7 +315,6 @@ def openPreferences(menu_widget):           # Preferences Window
         res = os.path.relpath(dialog.get_filename(), start=yandexDiskFolder)
         self.excludeList.append([False, res])
       dialog.destroy()
-
 
   def onCheckButtonToggled(widget, button, key):  # Handle clicks on check-buttons
     global notificationSetting, appConfig, overwrite_check_button
@@ -321,8 +348,9 @@ def openPreferences(menu_widget):           # Preferences Window
     elif key == 'read-only':
       overwrite_check_button.set_sensitive(toggleState)
 
+  # Preferences Window routine
   global appConfig, daemonConfig, overwrite_check_button
-  menu_widget.set_sensitive(False)          # Disable menu item to avoid multiple preferences windows
+  menu_widget.set_sensitive(False)          # Disable menu item to avoid multiple windows creation
   # Create Preferences window
   preferencesWindow = Gtk.Dialog(_('Yandex.Disk-indicator and Yandex.Disk preferences'))
   preferencesWindow.set_icon(GdkPixbuf.Pixbuf.new_from_file(yandexDiskIcon))
@@ -331,7 +359,7 @@ def openPreferences(menu_widget):           # Preferences Window
   pref_notebook = Gtk.Notebook()            # Create notebook for indicator and daemon options
   preferencesWindow.get_content_area().add(pref_notebook)  # Put it inside the dialog content area
   # --- Indicator preferences tab ---
-  preferencesBox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 5)
+  preferencesBox = Gtk.VBox(spacing=5)
   key = 'autostart'                         # Auto-start indicator on system start-up
   autostart_check_button = Gtk.CheckButton(
                              _('Start Yandex.Disk indicator when you start your computer'))
@@ -368,7 +396,7 @@ def openPreferences(menu_widget):           # Preferences Window
   # --- End of Indicator preferences tab --- add it to notebook
   pref_notebook.append_page(preferencesBox, Gtk.Label(_('Indicator settings')))
   # --- Daemon start options tab ---
-  optionsBox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 5)
+  optionsBox = Gtk.VBox(spacing=5)
   key = 'autostartdaemon'                   # Auto-start daemon on system start-up
   autostart_d_check_button = Gtk.CheckButton(
                                _('Start Yandex.Disk daemon when you start your computer'))
