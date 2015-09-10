@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: yd-tools\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-09-09 23:10+0300\n"
-"PO-Revision-Date: 2015-09-09 23:11+0300\n"
+"POT-Creation-Date: 2015-09-10 10:51+0300\n"
+"PO-Revision-Date: 2015-09-10 10:52+0300\n"
 "Last-Translator: Sly_tom_cat <slytomcat@mail.ru>\n"
 "Language-Team: ubuntu.ru local team <slytomcat@mail.ru>\n"
 "Language: el_GR\n"
@@ -13,7 +13,7 @@ msgstr ""
 "X-Poedit-KeywordsList: _;gettext;gettext_noop\n"
 "X-Poedit-Basepath: /home/stc/Yandex.Disk/YD-tools\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 1.7.5\n"
+"X-Generator: Poedit 1.5.4\n"
 "X-Poedit-SearchPath-0: /home/stc/Yandex.Disk/YD-tools\n"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:161
@@ -128,15 +128,15 @@ msgstr ""
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:230
 msgid "Folders that are excluded from synchronization"
-msgstr ""
+msgstr "Φάκελοι που εξαιρούνται από το συγχρονισμό"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:232
 msgid "Add catalogue"
-msgstr ""
+msgstr "Προσθέστε κατάλογο"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:233
 msgid "Remove selected"
-msgstr ""
+msgstr "Κατάργηση επιλεγμένων"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:234
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:282
@@ -149,11 +149,11 @@ msgstr "Κλείσιμο"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:280
 msgid "Select catalogue to add to list"
-msgstr ""
+msgstr "Επιλέξτε κατάλογο για να προσθέσετε στη λίστα"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:283
 msgid "Select"
-msgstr ""
+msgstr "Επιλέξτε"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:308
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:311
@@ -221,6 +221,8 @@ msgstr "Εκκίνηση υπηρεσίας Yandex.Disk κατά την εκκί
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:379
 msgid "NOTE! You have to reload daemon to activate following settings"
 msgstr ""
+"ΣΗΜΕΙΩΣΗ! Θα πρέπει να επανεκκινήσετε την υπηρεσία να ενεργοποιήσετε αυτήν "
+"τη ρύθμιση"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:386
 msgid "Read-Only: Do not upload locally changed files to Yandex.Disk"
@@ -252,7 +254,7 @@ msgstr ""
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:404
 msgid "Excluded folders List"
-msgstr ""
+msgstr "Λίστα φακέλων που εξαιρούνται"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:405
 msgid "Folders in the list will not be synchronized."
