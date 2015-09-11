@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.5.0'
+appVer = '1.5.1'
 #
 #  Copyright 2014 Sly_tom_cat <slytomcat@mail.ru>
 #  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
@@ -112,10 +112,10 @@ def readConfigFile(configFile):                 # Read config file to dict (retu
   def parse(row):                                   # Search values behind the '=' symbol
     val = None
     lp = 0                                          # Set last position on '=' symbol
-    while True:              
+    while True:
       q1 = row.find('"', lp+1)                      # Try to find opening quote
       q2 = row.find(',', lp+1)                      # Try to find delimiter
-      if q2 > 0 and (q1 > q2 or q1 < 0):            # ',' was found and '"' is after ',' or 
+      if q2 > 0 and (q1 > q2 or q1 < 0):            # ',' was found and '"' is after ',' or
                                                     # or only ',' was found ('"' was not found)
         if row[lp] == '"':                          # ... after '"'
           lp = q2                                   # move to ',' that was found
@@ -931,12 +931,9 @@ if __name__ == '__main__':
   ### Localization ###
   # Store original LANG environment
   origLANG = os.getenv('LANG')
-  try:                        # Try to load translation
-    gettext.translation(appName, '/usr/share/locale', fallback=True).install()
-    debugPrint("Localization for %s is activated" % origLANG)
-  except:
-    _ = str                   # use English (as writtenss in code)
-    debugPrint("Localization for %s was not found" % origLANG)
+  # Load translation object (or NullTranslations object when
+  # translation file not found) and define _() function.
+  gettext.translation(appName, '/usr/share/locale', fallback=True).install()
   # Set LANG environment for daemon output (it must be 'en' for correct parsing)
   workLANG = 'en_US.UTF-8'
   os.putenv('LANG', workLANG)
