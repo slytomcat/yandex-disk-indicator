@@ -41,9 +41,9 @@ class OrderedDict(ordDict):  # Redefine OrderdDict class with working setdefault
       self[key] = val
       return val
 
-class cVal():
-# Class to work with configuration value that can be None, scalar value or list of values depending
-# of number of elementary values added/stored within it. 
+class CVal():
+# Class to work with value that can be None, scalar value or list of values depending
+# of number of elementary values added within it. 
 
   def __init__(self, initialValue=None):
     self.val = initialValue   # store initial value
@@ -62,30 +62,33 @@ class cVal():
     return self.val
 
   def __iter__(self):   # cVal iterator object initialization
-    if isinstance(self.val, list):  # Is cVal a list?
+    if isinstance(self.val, list):  # Is CVal a list?
       self.index = -1
-    elif self.val == None:          # Is cVal not defined?
+    elif self.val == None:          # Is CVal not defined?
       self.index = None
-    else:                           # cVal is scalar type.
+    else:                           # CVal is scalar type.
       self.index = -2
     return self
 
   def __next__(self):   # cVal iterator support
-    if self.index == None:            # Is cVal not defined?
+    if self.index == None:            # Is CVal not defined?
       raise StopIteration             # Stop iterations
     self.index += 1
-    if self.index >= 0:               # Is cVal a list?
+    if self.index >= 0:               # Is CVal a list?
       if self.index < len(self.val):  # Is there a next element in list?
         return self.val[self.index]
       else:                           # There is no more elements in list.
         self.index = None
         raise StopIteration           # Stop iterations
-    else:                             # cVal has scalar type.
+    else:                             # CVal has scalar type.
       self.index = None               # Remember that there is no more iterations posible
       return self.val
 
 class Debug():  # Debuger class
   def __init__(self, verboseOutput=True):
+    self.switch(verboseOutput)
+
+  def switch(self, verboseOutput):
     if verboseOutput:
       self.print = self.out
     else:
@@ -99,9 +102,12 @@ class Debug():  # Debuger class
 
 class Notification():
   def __init__(self, app, mode):
+    Notify.init(app)        # Initialize notification engine
+    self.notifier = Notify.Notification()
+    self.switch(mode)
+
+  def switch(self, mode):
     if mode:
-      Notify.init(app)        # Initialize notification engine
-      self.notifier = Notify.Notification()
       self.send = self.message
     else:
       self.send = lambda t, m: None
@@ -156,7 +162,7 @@ def readConfigFile(configFile):                 # Read config file to dict (retu
     return value
 
   def parse(row):                                 # Search values behind the '=' symbol
-    val = cVal()
+    val = CVal()
     lp = 0                                        # Set last position on '=' symbol
     while True:
       q1 = row.find('"', lp+1)                    # Try to find opening quote
@@ -219,7 +225,7 @@ def writeConfigFile(configFile, confSet,
     with open(configFile, 'wt') as cf:
       for key, value in confSet.items():
         res = key + '='             # Start composing config row 
-        for val in cVal(value):     # Iterate through the value 
+        for val in CVal(value):     # Iterate through the value 
           res += encode(val) + ','  # Collect values in comma separated list
         if res[-1] == ',':
           res = res[: -1]           # Remove last comma
@@ -315,13 +321,13 @@ def openPreferences(menu_widget):           # Preferences Window
       view.append_column(Gtk.TreeViewColumn(_('Path'), Gtk.CellRendererText(), text=1))
       self.get_content_area().add(view)
       # Populate list with paths from "exclude-dirs" property of daemon configuration
-      for val in cVal(daemonConfig.get('exclude-dirs', None)):
+      for val in CVal(daemonConfig.get('exclude-dirs', None)):
         self.excludeList.append([False, val])
       self.show_all()
 
     def exitFromDialog(self, widget):  # Save list from dialogue to "exclude-dirs" property
       global daemonConfig
-      exList = cVal()
+      exList = CVal()
       listIter = self.excludeList.get_iter_first()
       while listIter != None:
         exList.add(self.excludeList.get(listIter, 1)[0])  # Store path value from dialogue list row
@@ -365,7 +371,7 @@ def openPreferences(menu_widget):           # Preferences Window
       updateIconTheme()                           # Update themeStyle
       updateIcon()                                # Update current icon
     elif key == 'notifications':
-      notify = Notification(appName, toggleState) # Update notification object
+      notify.switch(toggleState)                  # Update notification object
     elif key == 'autostartdaemon':
       if toggleState:
         copyFile(autoStartSource1, autoStartDestination1)
@@ -1028,7 +1034,7 @@ if __name__ == '__main__':
   appConfig.setdefault('fmextensions', True)
   appConfig['autostartdaemon'] = os.path.isfile(autoStartDestination1)
   # initialize debug mode from config value
-  debug = Debug(appConfig.setdefault('debug', False))   
+  debug.switch(appConfig.setdefault('debug', False))   
   if not os.path.exists(appCofigPath):
     # Create app config folders in ~/.config
     try: os.makedirs(appCofigPath)
