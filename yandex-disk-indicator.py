@@ -34,7 +34,6 @@ from webbrowser import open_new as openNewBrowser
 import os, sys, subprocess, pyinotify, fcntl, gettext, datetime
 
 def debugPrint(textToPrint):
-  global verboseDebug
   if verboseDebug:
     try:    print('%s: %s' % (datetime.datetime.now().strftime("%M:%S.%f"), textToPrint))
     except: pass
@@ -94,41 +93,104 @@ def setDefault(settings, key, val):  # Workaround for not working setdefault for
     settings[key] = val
     return val
 
-def readConfigFile(configFile):                 # Read config file to dict (returned value)
+def readConfigFile(configFile):
+  """Read config file to ordered dict.
+  Compatible with yandex-disk config.cfg file syntax.
+  
+  >>> import io   # io.StringIO emulate text file
+  
+  Config file can contain key="value" items:
+  >>> s = io.StringIO('test_key="no"', '\\n')
+  >>> print( readConfigFile(s) ); s.close()
+  OrderedDict([('test_key', False)])
+  
+  or key="value1","value2","valueN" items:
+  >>> s = io.StringIO('test_key="val1","val-2/","val 3","val,4", "val5"', '\\n')
+  >>> print( readConfigFile(s) ); s.close()
+  OrderedDict([('test_key', ['val1', 'val-2/', 'val 3', 'val,4', 'val5'])])
+  
+  Also may be contained inline comments beginning with #:
+  >>> s = io.StringIO('# test_key="val"\\n#test_key="val"', '\\n')
+  >>> print( readConfigFile(s) ); s.close()
+  OrderedDict()
+  
+  Whitespaces (\s,\t,\n, etc.) around keys removing:
+  >>> s = io.StringIO(' \\ttest_key = \\t"val"\\n', '\\n')
+  >>> print( readConfigFile(s) ); s.close()
+  OrderedDict([('test_key', 'val')])
+  
+  Keys can include whitespaces:
+  >>> s = io.StringIO('test key="val"', '\\n')
+  >>> print( readConfigFile(s) ); s.close()
+  OrderedDict([('test key', 'val')])
+  
+  WRONG:
+  Values must always be quoted:
+  >>> s = io.StringIO('test_key=val 1', '\\n')
+  >>> print( readConfigFile(s) ); s.close()
+  OrderedDict()
+  
+  Quotes around keys don't remove:
+  >>> s = io.StringIO('"test_key"="val"', '\\n')
+  >>> print( readConfigFile(s) ); s.close()
+  SyntaxError in line 1 with value: "test_key"="val" from <_io.StringIO object at ...>
+  Config file read error: <_io.StringIO object at ...>
+  OrderedDict()
+  """
   config = OrderedDict()
+  
   try:
-    with open(configFile) as cf:
-      for row in cf:                            # Parse lines remove quotes if they are used
-        if row[0] != '#':                       # Ignore comments
-          p = row.find('=')
-          if p > 0:                             # '=' symbol has been found
-            key = row[:p]
-            value = None
-            q2 = p
-            while True:                         # Look for quoted values behind the '=' symbol
-              q1 = row.find('"', q2+1)
-              q2 = row.find('"', q1+1)
-              if q1 > 0 and q2 > q1:            # Value withing quotes has been found
-                val = row[q1+1: q2]             # Get it without quotes
-                # Convert Boolean values from their string representation (all rest are strings)
-                if val.lower() in ['true', 'yes', 'y']:
-                  val = True
-                elif val.lower() in ['false', 'no', 'n']:
-                  val = False
-                if value == None:               # Is it a first value?
-                  value = val                   # Just store it
-                else:                           # It is not first value.
-                  if isinstance(value, list):   # Is it a third, fourth ... value?
-                    value.append(val)           # Just append new value to list
-                  else:                         # It is second value.
-                    value = [value, val]        # Convert value to list of values.
-              else:  # if q1 > 0...             # No (more) values found.
-                break
-            if value != None:                   # Is there at least one value were found?
-              config[key] = value               # Yes! Great! Save it.
+    if isinstance(configFile, str):
+      cf = open(configFile)   # Open file
+    else:
+      cf = configFile         # Open StringIO (for testing)
+      
+    with cf:
+      lineno = 0                                # Line counter
+      for row in cf:                            # Parse lines remove quotes in values
+        lineno += 1
+        try:                                    # Syntax check
+          row = row.strip()
+          if row[0] != '#':                       # Ignore comments
+            p = row.find('=')
+            if p > 0:                             # '=' symbol has been found
+              key = row[:p].strip()
+              if (key[0] or key[-1]) == '"':
+                raise SyntaxError({'lineno':lineno, 'text':row, 'filename':configFile})
+              else:
+                value = None
+                q2 = p
+                while True:                         # Look for quoted values behind the '=' symbol
+                  q1 = row.find('"', q2+1)
+                  q2 = row.find('"', q1+1)
+                  if q1 > 0 and q2 > q1:            # Value withing quotes has been found
+                    val = row[q1+1: q2]             # Get it without quotes
+                    # Convert Boolean values from their string representation (all rest are strings)
+                    if val.lower() in ('true', 'yes', 'y'):
+                      val = True
+                    elif val.lower() in ('false', 'no', 'n'):
+                      val = False
+                    if value == None:               # Is it a first value?
+                      value = val                   # Just store it
+                    else:                           # It is not first value.
+                      if isinstance(value, list):   # Is it a third, fourth ... value?
+                        value.append(val)           # Just append new value to list
+                      else:                         # It is second value.
+                        value = [value, val]        # Convert value to list of values.
+                  else:  # if q1 > 0...             # No (more) values found.
+                    break
+                if value != None:                   # Is there at least one value were found?
+                  config[key] = value               # Yes! Great! Save it.
+                else:
+                  raise SyntaxError({'lineno':lineno, 'text':row, 'filename':configFile})
+            else:
+              raise SyntaxError({'lineno':lineno, 'text':row, 'filename':configFile})
+        except SyntaxError as err:
+          print( '''SyntaxError in line {lineno} with value: '{text}' from "{filename}"'''.format(**err.args[0]) )
+          # raise
     debugPrint('Config read: %s' % configFile)
   except:
-    debugPrint('Config file read error: %s' % configFile)
+    print('Config file read error: %s' % configFile)
   return config
 
 def writeConfigFile(configFile, confSet,
@@ -881,6 +943,13 @@ def daemonConfigRead():  # Get daemon appConfig from its config file
 
 ###################### MAIN LOOP #########################
 if __name__ == '__main__':
+  if len(sys.argv) > 1:
+    if sys.argv[1] == '-t': # Testing; may be trailing -v (see doctest documentation)
+      import doctest
+      verboseDebug = False
+      doctest.testmod(optionflags=doctest.ELLIPSIS)
+      os._exit(0)
+  
   ### Application constants ###
   appName = 'yandex-disk-indicator'
   appHomeName = 'yd-tools'
