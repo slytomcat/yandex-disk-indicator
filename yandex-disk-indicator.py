@@ -232,7 +232,7 @@ class Preferences(Gtk.Dialog):          # Preferences Window
     self.destroy()
     
   def onButtonToggled(self, parent, button, key):  # Handle clicks on check-buttons
-    global notificationSetting, appConfig, overwrite_check_button, daemon
+    global notificationSetting, appConfig, overwrite_check_button, daemon, icon
     toggleState = button.get_active()
     if key in ['read-only', 'overwrite']:
       daemon.config[key] = toggleState             # Update daemon config
@@ -240,8 +240,8 @@ class Preferences(Gtk.Dialog):          # Preferences Window
       appConfig[key] = toggleState                # Update application config
     debug.print('Togged: %s  val: %s' % (key, str(toggleState)))
     if key == 'theme':
-      updateIconTheme()                           # Update themeStyle
-      updateIcon()                                # Update current icon
+      icon.updateTheme()                           # Update themeStyle
+      icon.update()                                # Update current icon
     elif key == 'notifications':
       notify.switch(toggleState)                  # Update notification object
     elif key == 'autostartdaemon':
@@ -807,13 +807,13 @@ def handleEvent(triggeredBy_iNotifier): # It is main working routine.
   It can be called by timer (triggeredBy_iNotifier=False)
   or by iNonifier (triggeredBy_iNotifier=True)
   '''
-  global daemon, watchTimer, timerTriggeredCount, menu
+  global daemon, watchTimer, timerTriggeredCount, menu, icon
   daemon.updateStatus()             # Get the latest status data from daemon
   debug.print(('iNonify ' if triggeredBy_iNotifier else 'Timer   ') +
               daemon.lastStatus + ' -> ' + daemon.status)
   menu.updateInfo()                  # Update information in menu
   if daemon.status != daemon.lastStatus:       # Handle status change
-    updateIcon()                    # Update icon
+    icon.update()                    # Update icon
     if daemon.lastStatus == 'none':        # Daemon has been started
       menu.updateStartStop(True)         # Change menu sensitivity
       notify.send(_('Yandex.Disk'), _('Yandex.Disk daemon has been started'))
@@ -843,59 +843,62 @@ def handleEvent(triggeredBy_iNotifier): # It is main working routine.
         timerTriggeredCount += 1    # Increase counter to increase delay in next activation.
   return True                       # True is required to continue activations by timer.
 
-def updateIconTheme():    # Determine paths to icons according to current theme
-  global iconThemePath, ind, icon_busy, icon_idle, icon_pause, icon_error, installDir, appCofigPath
-  # Determine theme from application configuration settings
-  iconTheme = 'light' if appConfig["theme"] else 'dark'
-  defaultIconThemePath = os.path.join(installDir, 'icons', iconTheme)
-  userIconThemePath = os.path.join(appCofigPath, 'icons', iconTheme)
-  # Set appropriate paths to icons
-  userIcon = os.path.join(userIconThemePath, 'yd-ind-idle.png')
-  icon_idle = (userIcon if os.path.exists(userIcon) else
-               os.path.join(defaultIconThemePath, 'yd-ind-idle.png'))
-  userIcon = os.path.join(userIconThemePath, 'yd-ind-pause.png')
-  icon_pause = (userIcon if os.path.exists(userIcon) else
-                os.path.join(defaultIconThemePath, 'yd-ind-pause.png'))
-  userIcon = os.path.join(userIconThemePath, 'yd-ind-error.png')
-  icon_error = (userIcon if os.path.exists(userIcon) else
-                os.path.join(defaultIconThemePath, 'yd-ind-error.png'))
-  userIcon = os.path.join(userIconThemePath, 'yd-busy1.png')
-  if os.path.exists(userIcon):
-    icon_busy = userIcon
-    iconThemePath = userIconThemePath
-  else:
-    icon_busy = os.path.join(defaultIconThemePath, 'yd-busy1.png')
-    iconThemePath = defaultIconThemePath
+class AppIcon(object):
+  def __init__(self):
+    self.updateTheme()
+    self.animationTimer = 0      # Define the icon animation timer variable
 
-def updateIcon():                     # Change indicator icon according to new status
-  global daemon, icon_busy, icon_idle, icon_pause
-  global icon_error, iconAnimationTimer, seqNum, ind
-
-  if daemon.status == 'busy':         # Just entered into 'busy' status
-    ind.set_icon(icon_busy)           # Start icon animation
-    seqNum = 2                        # Start animation from next icon
-    # Create animation timer
-    iconAnimationTimer = GLib.timeout_add(777, iconAnimation, 'iconAnimation')
-  else:
-    if daemon.status != 'busy' and iconAnimationTimer > 0:  # Not 'busy' and animation is running
-      stopTimer(iconAnimationTimer)   # Stop icon animation
-      iconAnimationTimer = 0
-    # --- Set icon for non-animated statuses ---
-    if daemon.status == 'idle':
-      ind.set_icon(icon_idle)
-    elif daemon.status == 'error':
-      ind.set_icon(icon_error)
-    else:                             # newStatus is 'none' or 'paused'
-      ind.set_icon(icon_pause)
-
-def iconAnimation(widget):   # Changes busy icon by loop (triggered by iconAnimationTimer)
-  global seqNum, ind, iconThemePath
-  seqFile = 'yd-busy' + str(seqNum) + '.png'
-  ind.set_icon(os.path.join(iconThemePath, seqFile))
-  # calculate next icon number
-  seqNum = seqNum % 5 + 1    # 5 icons in loop (1-2-3-4-5-1-2-3...)
-  return True                # True required to continue triggering by timer
-
+  def updateTheme(self):    # Determine paths to icons according to current theme
+    global ind, installDir, appCofigPath
+    # Determine theme from application configuration settings
+    iconTheme = 'light' if appConfig["theme"] else 'dark'
+    defaultIconThemePath = os.path.join(installDir, 'icons', iconTheme)
+    userIconThemePath = os.path.join(appCofigPath, 'icons', iconTheme)
+    # Set appropriate paths to icons
+    userIcon = os.path.join(userIconThemePath, 'yd-ind-idle.png')
+    self.idle = (userIcon if os.path.exists(userIcon) else
+                 os.path.join(defaultIconThemePath, 'yd-ind-idle.png'))
+    userIcon = os.path.join(userIconThemePath, 'yd-ind-pause.png')
+    self.pause = (userIcon if os.path.exists(userIcon) else
+                  os.path.join(defaultIconThemePath, 'yd-ind-pause.png'))
+    userIcon = os.path.join(userIconThemePath, 'yd-ind-error.png')
+    self.error = (userIcon if os.path.exists(userIcon) else
+                  os.path.join(defaultIconThemePath, 'yd-ind-error.png'))
+    userIcon = os.path.join(userIconThemePath, 'yd-busy1.png')
+    if os.path.exists(userIcon):
+      self.busy = userIcon
+      self.themePath = userIconThemePath
+    else:
+      self.busy = os.path.join(defaultIconThemePath, 'yd-busy1.png')
+      self.themePath = defaultIconThemePath
+  
+  def update(self):                     # Change indicator icon according to new status
+    global daemon, ind
+  
+    if daemon.status == 'busy':         # Just entered into 'busy' status
+      ind.set_icon(self.busy)           # Start icon animation
+      self.seqNum = 2                   # Start animation from next icon
+      # Create animation timer
+      self.animationTimer = GLib.timeout_add(777, self.animation, 'iconAnimation')
+    else:
+      if daemon.status != 'busy' and self.animationTimer > 0:  # Not 'busy' and animation is running
+        stopTimer(self.animationTimer)   # Stop icon animation
+        self.animationTimer = 0
+      # --- Set icon for non-animated statuses ---
+      if daemon.status == 'idle':
+        ind.set_icon(self.idle)
+      elif daemon.status == 'error':
+        ind.set_icon(self.error)
+      else:                             # newStatus is 'none' or 'paused'
+        ind.set_icon(self.pause)
+  
+  def animation(self, widget):           # Changes busy icon by loop (triggered by animationTimer)
+    seqFile = 'yd-busy' + str(self.seqNum) + '.png'
+    ind.set_icon(os.path.join(self.themePath, seqFile))
+    # calculate next icon number
+    self.seqNum = self.seqNum % 5 + 1    # 5 icons in loop (1-2-3-4-5-1-2-3...)
+    return True                          # True required to continue triggering by timer
+  
 def activateActions():  # Install/deinstall file extensions
   activate = appConfig["fmextensions"]
   # --- Actions for Nautilus ---
@@ -985,7 +988,6 @@ def activateActions():  # Install/deinstall file extensions
       deleteFile(os.path.join(userHome, ".kde/share/kde4/services/publish.desktop"))
       deleteFile(os.path.join(userHome," .kde/share/kde4/services/unpublish.desktop"))
 
-
 ###################### MAIN #########################
 if __name__ == '__main__':
   ### Application constants ###
@@ -1072,20 +1074,19 @@ if __name__ == '__main__':
   ### Application Indicator ###
   ## Icons ##
   yandexDiskIcon = os.path.join(installDir, 'icons', 'yd-128.png')            # logo
-  updateIconTheme()           # Define the rest icons paths according to current theme
-  iconAnimationTimer = 0      # Define the icon animation timer variable
-
+  icon = AppIcon()           # Define the rest icons paths according to current theme
+  
   ### Yandex.Disk daemon ###
   daemon = YDDaemon()
 
   ## Indicator ##
-  ind = appIndicator.Indicator.new("yandex-disk", icon_pause,
+  ind = appIndicator.Indicator.new("yandex-disk", icon.pause,
                                    appIndicator.IndicatorCategory.APPLICATION_STATUS)
   ind.set_status(appIndicator.IndicatorStatus.ACTIVE)
   menu = AppMenu()
   ind.set_menu(menu)  # Prepare and attach menu to indicator
-  updateIcon()                # Update indicator icon according to current status
-
+  icon.update()                # Update indicator icon according to current status
+  
   ### Create file updates watcher ###
   iNotify(os.path.join(daemon.yandexDiskFolder, '.sync/cli.log'), handleEvent, True)
 
