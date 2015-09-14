@@ -34,6 +34,7 @@ from webbrowser import open_new as openNewBrowser
 import os, sys, subprocess, pyinotify, fcntl, gettext, datetime
 
 class OrderedDict(ordDict):  # Redefine OrderdDict class with working setdefault
+
   def setdefault(self, key, val):  # Redefine not working setdefault method of OreredDict class
     try:
       return self[key]
@@ -43,16 +44,16 @@ class OrderedDict(ordDict):  # Redefine OrderdDict class with working setdefault
 
 class CVal(object):
 # Class to work with value that can be None, scalar value or list of values depending
-# of number of elementary values added within it. 
+# of number of elementary values added within it.
 
   def __init__(self, initialValue=None):
     self.val = initialValue   # store initial value
     self.index = None
 
-  def get(self):  # It just returns the current value of cVal
+  def get(self):          # It just returns the current value of CVal
     return self.val
 
-  def add(self, value):   # Add value without any convertion
+  def add(self, value):   # Add value
     if isinstance(self.val, list):  # Is it third, fourth ... value?
       self.val.append(value)        # Just append new value to list
     elif self.val == None:          # Is it first value?
@@ -61,7 +62,7 @@ class CVal(object):
       self.val = [self.val, value]  # Convert scalar value to list of values.
     return self.val
 
-  def __iter__(self):   # cVal iterator object initialization
+  def __iter__(self):     # CVal iterator object initialization
     if isinstance(self.val, list):  # Is CVal a list?
       self.index = -1
     elif self.val == None:          # Is CVal not defined?
@@ -70,7 +71,7 @@ class CVal(object):
       self.index = -2
     return self
 
-  def __next__(self):   # cVal iterator support
+  def __next__(self):     # CVal iterator support
     if self.index == None:            # Is CVal not defined?
       raise StopIteration             # Stop iterations
     self.index += 1
@@ -84,21 +85,22 @@ class CVal(object):
       self.index = None               # Remember that there is no more iterations posible
       return self.val
 
-class Config(OrderedDict):
-  def __init__(self, filename, load=True):
+class Config(OrderedDict):  # Configuration object
+
+  def __init__(self, filename, load=True):                # Initialize config and load it from file
     OrderedDict.__init__(self)
     self.fileName = filename
     if load:
       self.load()
 
-  def decode(self, value):    # Convert string to value before store it
+  def decode(self, value):                                # Convert string to value before store it
     if value.lower() in ['true', 'yes', 'y']:   # Convert Boolean
       value = True
     elif value.lower() in ['false', 'no', 'n']:
       value = False
     return value
-  
-  def load(self):
+
+  def load(self):                                         # load configuration form file
     """
     Reads config file to dictionalry (OrderedDict)
     Compatible with yandex-disk config.cfg file syntax.
@@ -141,7 +143,7 @@ class Config(OrderedDict):
             val.add(self.decode(row[lp+1: -1].strip()))  # Get value between last and string end
             break                                   # There is no (more) values, stop search
       return val.get()
-  
+
     try:
       with open(self.fileName) as cf:
         for row in cf:                 # Parse lines
@@ -163,22 +165,22 @@ class Config(OrderedDict):
     except:
       debug.print('Config file read error: %s' % self.fileName)
       return False
-    
-  def encode(self, val):      # Convert value to string before save it
+
+  def encode(self, val):                                  # Convert value to string before save it
     if isinstance(val, bool):  # Treat Boolean
       val = self.boolval[0] if val else self.boolval[1]
     if self.usequotes:
       val = '"' + val + '"'
     return val                 # Put value within quotes
 
-  def save(self, boolval=['yes', 'no'], usequotes=True):      # Write setting to config file
+  def save(self, boolval=['yes', 'no'], usequotes=True):  # Write configuration to file
     self.usequotes = usequotes
     self.boolval = boolval
     try:
       with open(self.fileName, 'wt') as cf:
         for key, value in self.items():
-          res = key + '='             # Start composing config row 
-          for val in CVal(value):     # Iterate through the value 
+          res = key + '='             # Start composing config row
+          for val in CVal(value):     # Iterate through the value
             res += self.encode(val) + ','  # Collect values in comma separated list
           if res[-1] == ',':
             res = res[: -1]           # Remove last comma
@@ -189,42 +191,45 @@ class Config(OrderedDict):
       debug.print('Config file write error: %s' % self.fileName)
       return False
 
-class Debug(object):  # Debuger class
-  def __init__(self, verboseOutput=True): 
+class Debug(object):  # Debugger engine
+
+  def __init__(self, verboseOutput=True):   # Initialize debug object
     self.switch(verboseOutput)
 
-  def switch(self, verboseOutput):  # Change debug mode
+  def switch(self, verboseOutput):          # Change debug mode
     if verboseOutput:
       self.print = self.out
     else:
       self.print = lambda t: None
 
-  def out(self, text):  # Debug output function
+  def out(self, text):                      # Debug output function
     try:
       print('%s: %s' % (datetime.datetime.now().strftime("%M:%S.%f"), text))
     except:
       pass
 
-class Notification(object):  # On-screen notifications
-  def __init__(self, app, mode):
+class Notification(object):  # On-screen notification object
+
+  def __init__(self, app, mode):      # Initialize notification engine
     Notify.init(app)        # Initialize notification engine
     self.notifier = Notify.Notification()
     self.switch(mode)
 
-  def switch(self, mode):   # Change show mode
+  def switch(self, mode):             # Change show mode
     if mode:
       self.send = self.message
     else:
       self.send = lambda t, m: None
-      
-  def message(self, title, message):
+
+  def message(self, title, message):  # Show on-screen notification message
     global logo
     debug.print('Message :%s' % message)
     self.notifier.update(title, message, logo)    # Update notification
     self.notifier.show()                                    # Display new notification
 
 class INotify(object):  # File change watcher
-  def __init__(self, path, handler, pram):
+
+  def __init__(self, path, handler, pram):  # initialize watcher
     class EH(pyinotify.ProcessEvent):   # Event handler class for iNotifier
       def process_IN_MODIFY(self, event):
         handler(pram)
@@ -233,17 +238,16 @@ class INotify(object):  # File change watcher
     watchMngr.add_watch(path, pyinotify.IN_MODIFY, rec = False)                    # Add watch
     self.timer = GLib.timeout_add(700, self.handler)  # Call iNotifier handler every .7 seconds
 
-  def handler(self):  # iNotify working routine (called by timer)
-    global iNotifier
+  def handler(self):                        # iNotify working routine (called by timer)
     while self.iNotifier.check_events():
       self.iNotifier.read_events()
       self.iNotifier.process_events()
     return True
 
 class Preferences(Gtk.Dialog):          # Preferences Window
-  def __init__(self, widget):
+
+  def __init__(self, widget):                      # Show preferences window
     # Preferences Window routine
-    global appConfig, daemon
     widget.set_sensitive(False)          # Disable menu item to avoid multiple windows creation
     # Create Preferences window
     Gtk.Dialog.__init__(self, _('Yandex.Disk-indicator and Yandex.Disk preferences'), flags=1)
@@ -338,9 +342,8 @@ class Preferences(Gtk.Dialog):          # Preferences Window
       appConfig.save()                 # Save app appConfig
     widget.set_sensitive(True)           # Enable menu item
     self.destroy()
-    
+
   def onButtonToggled(self, widget, button, key):  # Handle clicks on check-buttons
-    global notificationSetting, appConfig, overwrite_check_button, daemon, icon
     toggleState = button.get_active()
     if key in ['read-only', 'overwrite']:
       daemon.config[key] = toggleState             # Update daemon config
@@ -373,16 +376,16 @@ class Preferences(Gtk.Dialog):          # Preferences Window
     elif key == 'read-only':
       self.overwrite.set_sensitive(toggleState)
 
-  class excludeDirsList(Gtk.Dialog):    # Excluded list dialogue class
-    def __init__(self, widget, parent):
-      global daemon
+  class excludeDirsList(Gtk.Dialog):               # Excluded list dialogue
+
+    def __init__(self, widget, parent):   # show current list
       self.parent = parent
       Gtk.Dialog.__init__(self, title=_('Folders that are excluded from synchronization'),
                           parent=parent, flags=1)
       self.set_icon(GdkPixbuf.Pixbuf.new_from_file(logo))
       self.set_border_width(6)
       self.add_button(_('Add catalogue'),
-                      Gtk.ResponseType.APPLY).connect("clicked", self.folderChoiserDialog, self)
+                      Gtk.ResponseType.APPLY).connect("clicked", self.addFolder, self)
       self.add_button(_('Remove selected'),
                       Gtk.ResponseType.REJECT).connect("clicked", self.deleteSelected)
       self.add_button(_('Close'),
@@ -399,8 +402,7 @@ class Preferences(Gtk.Dialog):          # Preferences Window
         self.excludeList.append([False, val])
       self.show_all()
 
-    def exitFromDialog(self, widget):  # Save list from dialogue to "exclude-dirs" property
-      global daemonConfig
+    def exitFromDialog(self, widget):     # Save list from dialogue to "exclude-dirs" property
       exList = CVal()
       listIter = self.excludeList.get_iter_first()
       while listIter != None:
@@ -412,7 +414,7 @@ class Preferences(Gtk.Dialog):          # Preferences Window
     def lineToggled(self, widget, path):  # Line click handler, it switch row selection
       self.excludeList[path][0] = not self.excludeList[path][0]
 
-    def deleteSelected(self, widget):  # Remove selected rows from list
+    def deleteSelected(self, widget):     # Remove selected rows from list
       listIiter = self.excludeList.get_iter_first()
       while listIiter != None and self.excludeList.iter_is_valid(listIiter):
         if self.excludeList.get(listIiter, 0)[0]:
@@ -421,8 +423,7 @@ class Preferences(Gtk.Dialog):          # Preferences Window
         else:
           listIiter = self.excludeList.iter_next(listIiter)
 
-    def folderChoiserDialog(self, widget, parent):  # Add new path to list via FileChooserDialog
-      global daemon
+    def addFolder(self, widget, parent):  # Add new path to list via FileChooserDialog
       dialog = Gtk.FileChooserDialog(_('Select catalogue to add to list'), parent,
                                    Gtk.FileChooserAction.SELECT_FOLDER,
                                    (_('Close'), Gtk.ResponseType.CANCEL,
@@ -435,8 +436,9 @@ class Preferences(Gtk.Dialog):          # Preferences Window
         self.parent.daemonCfgUpdate = True
       dialog.destroy()
 
-class DConfig(Config):  # redefined class for daemon config 
-  def save(self):  # Update daemon config file according to the configuration appConfig
+class DConfig(Config):  # redefined class for daemon config
+
+  def save(self):  # Update daemon config file
     fileConfig = Config(self.fileName, load=False)
     for key, val in self.items():
       fileConfig[key] = val
@@ -457,10 +459,11 @@ class DConfig(Config):  # redefined class for daemon config
       self['exclude-dirs'] = self.get('exclude-dirs', None)
       return True
     else:
-      return False 
+      return False
 
-class YDDaemon(object):
-  def __init__(self):           # Check that daemon installed, configured and started 
+class YDDaemon(object):   # Yandex.Disk daemon object
+
+  def __init__(self):           # Check that daemon installed, configured and started
     if not os.path.exists('/usr/bin/yandex-disk'):
       self.ErrorDialog('NOTINSTALLED')
       appExit()                    # Daemon is not installed. Exit right now.
@@ -505,7 +508,7 @@ class YDDaemon(object):
     self.lastStatus = self.status
     self.lastBuf = '*'              # to be shure that self.lastItemsChanged = True on next time
 
-  def getOutput(self):          # Get result of 'yandex-disk status' 
+  def getOutput(self):          # Get result of 'yandex-disk status'
     try:    self.output = subprocess.check_output(['yandex-disk', 'status'], universal_newlines=True)
     except: self.output = ''     # daemon is not running or bad
     #debug.print('output = %s' % daemonOutput)
@@ -576,11 +579,12 @@ class YDDaemon(object):
           filePath = listLine[startPos + 3: - 1]  # Get relative file path (skip quotes)
           self.lastItems.append(filePath)         # Store full file path
 
-  def updateStatus(self):       # Get daemon output and update all daemon YDDaemon status variables 
+  def updateStatus(self):       # Get daemon output and update all daemon YDDaemon status variables
     self.getOutput()
     self.parseOutput()
 
   def errorDialog(self, err):   # Show error messages according to the error
+    global logo
     if err == 'NOCONFIG':
       dialog = Gtk.MessageDialog(None, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK_CANCEL,
                                  _('Yandex.Disk Indicator: daemon start failed'))
@@ -610,7 +614,7 @@ class YDDaemon(object):
     dialog.destroy()
     return retCode              # 0 when error is not critical or fixed (daemon has been configured)
 
-  def start(self):    # Execute 'yandex-disk start'
+  def start(self):              # Execute 'yandex-disk start'
     '''
     Execute 'yandex-disk start'
     and return '' if success or error message if not
@@ -627,15 +631,15 @@ class YDDaemon(object):
              'BADDAEMON' if 'daemon' in e.output else
              'NOCONFIG')
       return err
-  
-  def stop(self):     # Execute 'yandex-disk stop'
+
+  def stop(self):               # Execute 'yandex-disk stop'
     try:    msg = subprocess.check_output(['yandex-disk', 'stop'], universal_newlines=True)
     except: msg = ''
     return (msg != '')
 
 class AppMenu(Gtk.Menu):  # Menu object
+
   def __init__(self):                     # Create initial menu
-    global daemon
     Gtk.Menu.__init__(self)                   # Create menu
     self.status = Gtk.MenuItem();   self.status.connect("activate", self.showOutput)
     self.append(self.status)
@@ -670,18 +674,19 @@ class AppMenu(Gtk.Menu):  # Menu object
     about = Gtk.MenuItem(_('About'));    about.connect("activate", self.openAbout)
     self.append(about)
     self.append(Gtk.SeparatorMenuItem.new())  # -----separator--------
-    quit_app = Gtk.MenuItem(_('Quit'))
-    quit_app.connect("activate", quitApplication)
-    self.append(quit_app)
+    close = Gtk.MenuItem(_('Quit'))
+    close.connect("activate", self.close)
+    self.append(close)
     self.show_all()
     self.YD_STATUS = {'idle': _('Synchronized'), 'busy': _('Sync.: '), 'none': _('Not started'),
                       'paused': _('Paused'), 'no_net': _('Not connected'), 'error':_('Error') }
 
   def openAbout(self, widget):            # Show About window
-    widget.set_sensitive(False)         # Disable menu item
+    global logo
+    widget.set_sensitive(False)           # Disable menu item
     aboutWindow = Gtk.AboutDialog()
-    logo = GdkPixbuf.Pixbuf.new_from_file(logo)
-    aboutWindow.set_logo(logo);   aboutWindow.set_icon(logo)
+    pic = GdkPixbuf.Pixbuf.new_from_file(logo)
+    aboutWindow.set_logo(pic);   aboutWindow.set_icon(pic)
     aboutWindow.set_program_name(_('Yandex.Disk indicator'))
     aboutWindow.set_version(_('Version ') + appVer)
     aboutWindow.set_copyright('Copyright ' + u'\u00a9' + ' 2013-' +
@@ -711,24 +716,24 @@ class AppMenu(Gtk.Menu):  # Menu object
       _('   the Ubuntu.ru forum http://forum.ubuntu.ru/index.php?topic=241992)')])
     aboutWindow.run()
     aboutWindow.destroy()
-    widget.set_sensitive(True)    # Enable menu item
+    widget.set_sensitive(True)            # Enable menu item
 
   def showOutput(self, widget):           # Display daemon output in dialogue window
-    global origLANG, workLANG, deamon
-    widget.set_sensitive(False)              # Disable menu item
-    os.putenv('LANG', origLANG)                   # Restore user LANG appConfig
-    getDaemonOutput()                             # Receve daemon output in user language
-    os.putenv('LANG', workLANG)                   # Restore working LANG appConfig
+    global origLANG, workLANG
+    widget.set_sensitive(False)                   # Disable menu item
+    os.putenv('LANG', origLANG)                   # Switch to user LANG
+    daemon.getOutput()                            # Receive daemon output in user language
+    os.putenv('LANG', workLANG)                   # Restore working LANG
     statusWindow = Gtk.Dialog(_('Yandex.Disk daemon output message'))
     statusWindow.set_icon(GdkPixbuf.Pixbuf.new_from_file(logo))
     statusWindow.set_border_width(6)
     statusWindow.add_button(_('Close'), Gtk.ResponseType.CLOSE)
     textBox = Gtk.TextView()                      # Create text-box to display daemon output
-    textBox.get_buffer().set_text(daemonOutput)
+    textBox.get_buffer().set_text(daemon.output)
     textBox.set_editable(False)
     statusWindow.get_content_area().add(textBox)  # Put it inside the dialogue content area
     statusWindow.show_all();  statusWindow.run();   statusWindow.destroy()
-    widget.set_sensitive(True)               # Enable menu item
+    widget.set_sensitive(True)                    # Enable menu item
 
   def openInBrowser(self, widget, url):   # Open URL
     openNewBrowser(url)
@@ -751,12 +756,11 @@ class AppMenu(Gtk.Menu):  # Menu object
     if os.path.exists(path):
       try:    os.startfile(path)
       except: subprocess.call(['xdg-open', path])
-  
+
   def updateInfo(self):                   # Update information in menu
-    global daemon
-  
     # Update status data
-    self.status.set_label(_('Status: ') + self.YD_STATUS.get(daemon.status) + daemon.syncProgress)
+    self.status.set_label(_('Status: ') + self.YD_STATUS.get(daemon.status) +
+                          (daemon.syncProgress if daemon.status == 'busy' else ''))
     self.used.set_label(_('Used: ') + daemon.sUsed + '/' + daemon.sTotal)
     self.free.set_label(_('Free: ') + daemon.sFree + _(', trash: ') + daemon.sTrash)
     # --- Update last synchronized sub-menu ---
@@ -782,19 +786,35 @@ class AppMenu(Gtk.Menu):  # Menu object
       else:                                       # there are some items in list
         self.last.set_sensitive(True)
       debug.print("Sub-menu 'Last synchronized' has been updated")
-  
+
   def updateStartStop(self, started):     # Update daemon start and stop menu items availability
     self.daemon_start.set_sensitive(not started)
     self.daemon_stop.set_sensitive(started)
     self.status.set_sensitive(started)
 
-class AppIcon(object):  # Indicator icon 
+  def close(self, widget):                # Quit from indicator
+    global watchTimer
+
+    stopOnExit = appConfig.get("stoponexit", False)
+    debug.print('Stop daemon on exit - %s' % str(stopOnExit))
+    if stopOnExit and daemon.status != 'none':
+      stopYDdaemon()    # Stop daemon
+      debug.print('Daemon is stopped')
+    # --- Stop all timers ---
+    stopTimer(icon.animationTimer)
+    stopTimer(inotify.timer)
+    stopTimer(watchTimer)
+    debug.print("Timers are closed")
+    appExit()
+
+class AppIcon(object):  # Indicator icon
+
   def __init__(self):           # Initialize icon paths
     self.updateTheme()
     self.animationTimer = 0      # Define the icon animation timer variable
 
   def updateTheme(self):        # Determine paths to icons according to current theme
-    global ind, installDir, appConfigPath
+    global installDir, appConfigPath
     # Determine theme from application configuration settings
     iconTheme = 'light' if appConfig["theme"] else 'dark'
     defaultIconThemePath = os.path.join(installDir, 'icons', iconTheme)
@@ -816,10 +836,8 @@ class AppIcon(object):  # Indicator icon
     else:
       self.busy = os.path.join(defaultIconThemePath, 'yd-busy1.png')
       self.themePath = defaultIconThemePath
-  
+
   def update(self):             # Change indicator icon according to daemon status
-    global daemon, ind
-  
     if daemon.status == 'busy':         # Just entered into 'busy' status
       ind.set_icon(self.busy)           # Start icon animation
       self.seqNum = 2                   # Start animation from next icon
@@ -836,14 +854,14 @@ class AppIcon(object):  # Indicator icon
         ind.set_icon(self.error)
       else:                             # newStatus is 'none' or 'paused'
         ind.set_icon(self.pause)
-  
+
   def animation(self, widget):  # Changes busy icon by loop (triggered by animationTimer)
     seqFile = 'yd-busy' + str(self.seqNum) + '.png'
     ind.set_icon(os.path.join(self.themePath, seqFile))
     # calculate next icon number
     self.seqNum = self.seqNum % 5 + 1    # 5 icons in loop (1-2-3-4-5-1-2-3...)
     return True                          # True required to continue triggering by timer
-  
+
 def copyFile(source, destination):
   #debug.print("File Copy: from %s to %s" % (source, destination))
   try:    fileCopy (source, destination)
@@ -863,21 +881,6 @@ def appExit():
   lockFile.close()
   os._exit(0)
 
-def quitApplication(widget):
-  global iconAnimationTimer, iNotifierTimer, watchTimer, currentStatus, daemonConfigFile
-
-  stopOnExit = appConfig.get("stoponexit", False)
-  debug.print('Stop daemon on exit is - %s' % str(stopOnExit))
-  if stopOnExit and currentStatus != 'none':
-    stopYDdaemon()    # Stop daemon
-    debug.print('Daemon is stopped')
-  # --- Stop all timers ---
-  stopTimer(icon.animationTimer)
-  stopTimer(inotify.timer)
-  stopTimer(watchTimer)
-  debug.print("Timers are closed")
-  appExit()
-
 def handleEvent(triggeredBy_iNotifier):   # Perform status update
   '''
   It react (icon change/messages) on status change and also update
@@ -885,7 +888,7 @@ def handleEvent(triggeredBy_iNotifier):   # Perform status update
   It can be called by timer (triggeredBy_iNotifier=False)
   or by iNonifier (triggeredBy_iNotifier=True)
   '''
-  global daemon, watchTimer, timerTriggeredCount, menu, icon
+  global watchTimer, timerTriggeredCount
   daemon.updateStatus()             # Get the latest status data from daemon
   debug.print(('iNonify ' if triggeredBy_iNotifier else 'Timer   ') +
               daemon.lastStatus + ' -> ' + daemon.status)
@@ -1019,7 +1022,6 @@ if __name__ == '__main__':
   userHome = os.getenv("HOME")
   logo = os.path.join(installDir, 'icons', 'yd-128.png')
   appConfigPath = os.path.join(userHome, '.config', appHomeName)
-  appConfigFile = os.path.join(appConfigPath, appName + '.conf')
   # Define .desktop files locations for auto-start facility
   autoStartSource = os.path.join(os.sep, 'usr', 'share', 'applications',
                                  'Yandex.Disk-indicator.desktop')
@@ -1033,8 +1035,7 @@ if __name__ == '__main__':
   debug.print('%s v.%s (app_home=%s)' % (appName, appVer, installDir))
 
   ### Localization ###
-  # Store original LANG environment
-  origLANG = os.getenv('LANG')
+  origLANG = os.getenv('LANG')    # Store original LANG environment
   # Load translation object (or NullTranslations object when
   # translation file not found) and define _() function.
   gettext.translation(appName, '/usr/share/locale', fallback=True).install()
@@ -1054,20 +1055,21 @@ if __name__ == '__main__':
   lockFile.flush()
 
   ### Application configuration ###
-  ''' User configuration is stored in ~/.config/<appHomeName>/<appName>.conf file
-      This file can contain comments (lines starts with '#') and following keywords:
-        autostart, startonstart, stoponexit, notifications, theme, fmextensions, autostartdaemon
-        and debug (debug is not configurable from indicator preferences dialogue)
-      Dictionary appConfig stores the config settings for usage in code. Its values are saved
-      to config file on Preferences dialogue exit.
-
-      Note that daemon settings "read-only" and "overwrite" are stored
-      in ~/ .config/yandex-disk/config.cfg file. They are read in checkDaemon function
-      (in dictionary daemonConfig). Their values are saved to daemon config file also
-      on Preferences dialogue exit.
   '''
-  appConfig = Config(appConfigFile)
-  # Read some settings to variables, set default values and updte some values
+  User configuration is stored in ~/.config/<appHomeName>/<appName>.conf file
+  This file can contain comments (lines starts with '#') and following keywords:
+    autostart, startonstart, stoponexit, notifications, theme, fmextensions, autostartdaemon
+    and debug (debug is not configurable from indicator preferences dialogue)
+  Dictionary appConfig stores the config settings for usage in code. Its values are saved to
+  config file on Preferences dialogue exit or on application start when cofig file not exists
+
+  Note that daemon settings "read-only" and "overwrite" are stored
+  in ~/ .config/yandex-disk/config.cfg file. They are read in checkDaemon function
+  (in dictionary daemonConfig). Their values are saved to daemon config file also
+  on Preferences dialogue exit.
+  '''
+  appConfig = Config(os.path.join(appConfigPath, appName + '.conf'))
+  # Read some settings to variables, set default values and update some values
   appConfig['autostart'] = os.path.isfile(autoStartDestination)
   appConfig.setdefault('startonstart', True)
   appConfig.setdefault('stoponexit', False)
@@ -1076,7 +1078,7 @@ if __name__ == '__main__':
   appConfig.setdefault('theme', False)
   appConfig.setdefault('fmextensions', True)
   appConfig['autostartdaemon'] = os.path.isfile(autoStartDestination1)
-  # initialize debug mode from config value
+  # switch debug mode from config value
   debug.switch(appConfig.setdefault('debug', False))
   if not os.path.exists(appConfigPath):
     # Create app config folders in ~/.config
@@ -1093,11 +1095,11 @@ if __name__ == '__main__':
              os.path.join(appConfigPath, 'icons', 'readme'))
     ### Activate FM actions according to appConfig (as it is a first run)
     activateActions()
-    
+
   ### Application Indicator ###
   ## Icons ##
   icon = AppIcon()          # Initialize icon object
-  
+
   ### Yandex.Disk daemon object###
   daemon = YDDaemon()
 
@@ -1108,7 +1110,7 @@ if __name__ == '__main__':
   menu = AppMenu()
   ind.set_menu(menu)        # Prepare and attach menu to indicator
   icon.update()             # Update indicator icon according to current status
-  
+
   ### Create file updates watcher ###
   inotify = INotify(os.path.join(daemon.yandexDiskFolder, '.sync/cli.log'), handleEvent, True)
 
