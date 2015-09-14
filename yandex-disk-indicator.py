@@ -111,55 +111,69 @@ class Config(OrderedDict):  # Configuration object
     When value is a single item then key:value item in dictionalry
     In case list of items it returns key:[value, value,...] item.
     """
+    def value(line):                   # get value from beginning of line
+      if line[0] == '"':   # value is quoted
+        end = line.find('"',1)
+        if end > 0:       # ending quote found
+          val,  rest = line[1: end], line[end+1: ].strip()
+          return val,  rest
+        else:
+          #print("Wrong quoting in '%s'"%line)
+          return None, None
+      # not quoted value
+      for i in range(1, len(line)):  # Firs symbol is not in ['"', ',', ' ']
+        if line[i] in ['"', ',', ' ', '=', '#']:
+          val,  rest = self.decode(line[: i]), line[i:].strip()
+          if rest and rest[0] == '"':
+            #print("Wrong quoting in '%s'"%line)
+            return None, None
+          #print(val, '|', rest)
+          return val,  rest
+      # end of line reached: value is whole line
+      return self.decode(line), ''
 
-    def parse(row):                                 # Search values behind the '=' symbol
-      val = CVal()
-      lp = 0                                        # Set last position on '=' symbol
-      while True:
-        q1 = row.find('"', lp+1)                    # Try to find opening quote
-        q2 = row.find(',', lp+1)                    # Try to find delimiter
-        if q2 > 0 and (q1 > q2 or q1 < 0):          # ',' was found and '"' is after ',' or
-                                                    # or only ',' was found ('"' was not found)
-          if row[lp] == '"':                        # ... after '"'
-            lp = q2                                 # move to ',' that was found
-            continue                                # Restart search
-          else:                                     # row[lp] in ['=', ',']
-            val.add(self.decode(row[lp+1: q2].strip()))  # Get value between last symbol and ','
-            lp = q2                                 # move to ',' that was found
-        elif q1 > 0:                                # Opening '"' was found (',' was not found)
-          if row[lp] in [',', '=']:                 # ... after '=' or ','
-            q2 = row.find('"', q1+1)                # Try to find closing quote
-            if q2 > 0:                              # Closing quote found
-              val.add(self.decode(row[q1+1: q2]))   # Get value between quotes (don't stip it)
-              lp = q2                               # move to ending '"'
-            else:                                   # ERROR: no ending quote found for opening one
-              break                                 # Stop search.
-          else:                                     # ERROR: opening '"' was found after closing '"'
-            break                                   # Stop search.
-        else:                                       # Neither Opening quote nor delimiter was found
-          if row[lp] == '"':                        # ... after closing '"'
-            break                                   # There is no (more) values, stop search
-          else:                                     # ... after '=' or ','
-            val.add(self.decode(row[lp+1: -1].strip()))  # Get value between last and string end
-            break                                   # There is no (more) values, stop search
-      return val.get()
+    def parse(rest):                   # Search values behind the '=' symbol
+      if rest == '':
+        return None
+      res = CVal()
+      val, rest = value(rest.strip())  # Get value after '='
+      while val != None:      # val was read without error
+        res.add(val)
+        if rest == '':        # no more values
+          #print('no more values')
+          break
+        elif rest[0] == ',':
+          val, rest = value(rest[1:].strip())  # Get value after ','
+        elif rest[0] == '#':
+          #print("Inline comment in '%s'"%row)
+          break
+        else:
+          #print("No delimiter in '%s'"%row)
+          return None
+      else:
+        #print("No values specified in '%s'" % row)
+        return None
+      return res.get()
 
     try:
       with open(self.fileName) as cf:
         for row in cf:                 # Parse lines
-          if row[0] != '#':            # Ignore comments
-            p = row.find('=')
-            if p > 0:                  # '=' symbol was found
-              key = (row[:p]).strip()  # Remember key name
-              if key[0] == '"':
-                if key[-1] == '"':
-                  key = key[1: -1]     # Remove quotes adaund key
-                else:
-                  continue             # Skip row with wrong key
-              if key:                  # When key is not empty
-                val = parse(row[p:])   # Get value(s) form the rest of row
-                if val != None:        # Is there at least one value were found?
-                  self[key] = val      # Yes! Great! Save it.
+          row = row.strip()
+          #print("Line: '%s'"%row)
+          if row and row[0] != '#':    # Ignore comments and blank lines
+            key , rest = value(row)    # Get value from beginning of line
+            #print('%s|%s'%(key,rest))
+            if key and rest[0] == '=': # Correct key
+              val = parse(rest[1:])    # Parse rest
+              if val:                  # Is there a value in rest?
+                self[key] = val        # Store it.
+                #print(key, "read as" ,val)
+              else:
+                print("Syntax error in '%s'"%row)  # key without value
+            else:
+              print("Syntax error in '%s'"%row)    # wrong key
+          #else:
+          #  print("Comment or blank line in '%s'"%row)
       debug.print('Config read: %s' % self.fileName)
       return True
     except:
