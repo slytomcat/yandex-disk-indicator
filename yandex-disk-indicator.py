@@ -94,6 +94,7 @@ class Config(OrderedDict):  # Configuration object
       self.load()
 
   def decode(self, value):                                # Convert string to value before store it
+    #debug.print(value)
     if value.lower() in ['true', 'yes', 'y']:   # Convert Boolean
       value = True
     elif value.lower() in ['false', 'no', 'n']:
@@ -111,70 +112,69 @@ class Config(OrderedDict):  # Configuration object
     When value is a single item then key:value item in dictionalry
     In case list of items it returns key:[value, value,...] item.
     """
-    def value(line):                   # get value from beginning of line
-      if line[0] == '"':   # value is quoted
+    def value(line, decode=True):                    # Get value from beginning of line
+      if line[0] == '"':                # Value is quoted
         end = line.find('"',1)
-        if end > 0:       # ending quote found
-          val,  rest = line[1: end], line[end+1: ].strip()
-          return val,  rest
+        if end > 0:                     # Ending quote found
+          return (self.decode(line[1: end]) if decode else line[1: end]), line[end+1: ].strip()
         else:
-          #print("Wrong quoting in '%s'"%line)
+          #debug.print("Wrong quoting in '%s'"%line)
           return None, None
       # not quoted value
-      for i in range(1, len(line)):  # Firs symbol is not in ['"', ',', ' ']
+      for i in range(1, len(line)):     # Firs symbol is not in ['"', ',', ' ', '=', '#']
         if line[i] in ['"', ',', ' ', '=', '#']:
-          val,  rest = self.decode(line[: i]), line[i:].strip()
+          val, rest = line[: i], line[i:].strip()
           if rest and rest[0] == '"':
-            #print("Wrong quoting in '%s'"%line)
+            #debug.print("Wrong quoting in '%s'"%line)
             return None, None
-          #print(val, '|', rest)
-          return val,  rest
+          return (self.decode(val) if decode else val), rest
       # end of line reached: value is whole line
-      return self.decode(line), ''
+      return (self.decode(line.strip()) if decode else line.strip()), ''
 
-    def parse(rest):                   # Search values behind the '=' symbol
+    def parse(rest):                    # Search values behind the '=' symbol
       if rest == '':
         return None
       res = CVal()
-      val, rest = value(rest.strip())  # Get value after '='
-      while val != None:      # val was read without error
+      val, rest = value(rest.strip())           # Get value after '='
+      while val != None:                        # val was read without error
         res.add(val)
-        if rest == '':        # no more values
-          #print('no more values')
+        if rest == '':
+          #debug.print('no more values')
           break
         elif rest[0] == ',':
-          val, rest = value(rest[1:].strip())  # Get value after ','
+          val, rest = value(rest[1:].strip())   # Get value after ','
         elif rest[0] == '#':
-          #print("Inline comment in '%s'"%row)
+          #debug.print("Inline comment in '%s'"%row)
           break
         else:
-          #print("No delimiter in '%s'"%row)
+          #debug.print("No delimiter in '%s'"%row)
           return None
       else:
-        #print("No values specified in '%s'" % row)
+        #debug.print("No values specified in '%s'" % row)
         return None
       return res.get()
 
     try:
       with open(self.fileName) as cf:
-        for row in cf:                 # Parse lines
+        for row in cf:                  # Parse lines
           row = row.strip()
-          #print("Line: '%s'"%row)
-          if row and row[0] != '#':    # Ignore comments and blank lines
-            key , rest = value(row)    # Get value from beginning of line
-            #print('%s|%s'%(key,rest))
-            if key and rest[0] == '=': # Correct key
-              val = parse(rest[1:])    # Parse rest
-              if val:                  # Is there a value in rest?
-                self[key] = val        # Store it.
-                #print(key, "read as" ,val)
+          #debug.print("Line: '%s'"%row)
+          if row and row[0] != '#':     # Ignore comments and blank lines
+            key , rest = value(row, decode=False)     # Get value from beginning of line
+            #debug.print('%s|%s'%(key,rest))
+            if key and rest[0] == '=':  # Correct key
+              val = parse(rest[1:])     # Parse rest
+              if val != None:           # Is there any value in rest?
+                self[key] = val         # Store it.
+                #debug.print(key, "read as" ,val)
               else:
-                print("Syntax error in '%s'"%row)  # key without value
+                debug.print("Syntax error in '%s'"%row)   # key without value
             else:
-              print("Syntax error in '%s'"%row)    # wrong key
+              debug.print("Syntax error in '%s'"%row)     # wrong key
           #else:
           #  print("Comment or blank line in '%s'"%row)
       debug.print('Config read: %s' % self.fileName)
+      #debug.print(self)
       return True
     except:
       debug.print('Config file read error: %s' % self.fileName)
@@ -812,7 +812,7 @@ class AppMenu(Gtk.Menu):  # Menu object
     stopOnExit = appConfig.get("stoponexit", False)
     debug.print('Stop daemon on exit - %s' % str(stopOnExit))
     if stopOnExit and daemon.status != 'none':
-      stopYDdaemon()    # Stop daemon
+      daemon.stop()    # Stop daemon
       debug.print('Daemon is stopped')
     # --- Stop all timers ---
     stopTimer(icon.animationTimer)
