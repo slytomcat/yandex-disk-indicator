@@ -479,18 +479,18 @@ class YDDaemon(object):   # Yandex.Disk daemon object
     while not self.getOutput():     # Check for correct daemon response and check that it is running
       try:                          # Try to find daemon running process
         msg = subprocess.check_output(['pgrep', '-x', 'yandex-disk'], universal_newlines=True)[: -1]
-        logger.debug('yandex-disk daemon is running but NOT responding!')
+        logger.info('yandex-disk daemon is running but NOT responding!')
         # Kills the daemon(s) when it is running but not responding (HARON_CASE).
         try:                        # Try to kill all instances of daemon
           subprocess.check_call(['killall', 'yandex-disk'])
-          logger.debug('yandex-disk daemon(s) killed')
+          logger.info('yandex-disk daemon(s) killed')
           msg = ''
         except:
-          logger.debug('yandex-disk daemon kill error')
+          logger.error('yandex-disk daemon kill error')
           self.errorDialog('')
           appExit()                 # nonconvertible error - exit
       except:
-        logger.debug("yandex-disk daemon is not running")
+        logger.info("yandex-disk daemon is not running")
         msg = ''
       if msg == '' and not appConfig["startonstart"]:
         break                       # Daemon is not started and should not be started
@@ -560,10 +560,7 @@ class YDDaemon(object):   # Yandex.Disk daemon object
       lastPos = self.output.find('\n', startPos)
       self.sTrash = self.output[startPos: lastPos]
     else:  # When there is no Total: then other sizes are not presented too
-      self.sTotal = '...'
-      self.sUsed = '...'
-      self.sFree = '...'
-      self.sTrash = '...'
+      self.sTotal = self.sUsed = self.sFree = self.sTrash = '...'
     # Look for last synchronized items list
     startPos = self.output.find('Last synchronized', lastPos)
     if startPos > 0:                                # skip one line
