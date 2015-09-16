@@ -31,7 +31,7 @@ from gi.repository import Notify
 from shutil import copy as fileCopy
 from collections import OrderedDict as ordDict
 from webbrowser import open_new as openNewBrowser
-import os, sys, subprocess, pyinotify, fcntl, gettext, datetime
+import os, sys, subprocess, pyinotify, fcntl, gettext, datetime, logging
 
 class OrderedDict(ordDict):  # Redefine OrderdDict class with working setdefault
 
@@ -90,21 +90,26 @@ class CVal(object):
 
 class Config(OrderedDict):  # Configuration object
 
-  def __init__(self, filename, load=True):                # Initialize config and load it from file
+  def __init__(self, filename, load=True,
+               bools=[['true', 'yes', 'y'], ['false', 'no', 'n']],
+               boolval=['yes', 'no'], usequotes=True ):
     OrderedDict.__init__(self)
     self.fileName = filename
+    self.bools = bools             # Values to detect booleans in self.load
+    self.boolval = boolval         # Values to write booleans in self.save
+    self.usequotes = usequotes     # Use qoutes for keys and values in self.save
     if load:
       self.load()
 
   def decode(self, value):                                # Convert string to value before store it
-    #debug.print(value)
+    #logger.debug("Decoded value: '%s'"%value)
     if value.lower() in ['true', 'yes', 'y']:   # Convert Boolean
       value = True
     elif value.lower() in ['false', 'no', 'n']:
       value = False
     return value
 
-  def load(self):                                         # Load configuration form file
+  def load(self, bools=[['true', 'yes', 'y'], ['false', 'no', 'n']]):
     """
     Reads config file to dictionalry (OrderedDict)
     Compatible with yandex-disk config.cfg file syntax.
@@ -115,73 +120,67 @@ class Config(OrderedDict):  # Configuration object
     When value is a single item then key:value item in dictionalry
     In case list of items it returns key:[value, value,...] item.
     """
-    def value(line, decode=True):       # Get value from beginning of line (get word)
-      if line[0] == '"':                # Value is quoted
+    def word(line, decode=True):          # Get value(word) from beginning of line
+      if line[0] == '"':                  # Value is quoted
         end = line.find('"',1)
-        if end > 0:                     # Is ending quote exists?
-          # return word ande rest. Decode word if required.
-          return (self.decode(line[1: end]) if decode else line[1: end]), line[end+1: ].strip()
-        else:
-          #debug.print("No ending quote in '%s'"%line)
+        if end > 0:                       # Is ending quote exists?
+          val = line[1: end]              # Divide line on word without quotes and rest of line
+          rest = line[end+1: ].lstrip()   # Remove leading spaces from rest
+          return (self.decode(val) if decode else val), rest  # Decode word if required
+        else:                             # Missed ending quote
           return None, None
-      # not quoted value
-      for i in range(1, len(line)):     # Firs symbol is not in ['"', ',', ' ', '=', '#']
-        if line[i] in ['"', ',', ' ', '=', '#']:   # Is it end of word?
-          val, rest = line[: i], line[i:].strip()  # Devide line on word and rest
-          if rest and rest[0] == '"':   # Is rest starts with '"'? 
-            #debug.print("No starting quote or missed delimiter in '%s'"%line)
-            return None, None
-          return (self.decode(val) if decode else val), rest
-      # end of line reached: value is whole rest of line
-      return (self.decode(line) if decode else line), ''
-
-    def parse(rest):                    # Search values behind the '=' symbol
-      if rest == '':                            # If string empty...
-        return None                             # ...no values can be found
-      res = CVal()
-      val, rest = value(rest.strip())           # Get first value after '='
-      while val != None:                        # value was get without error
-        res.add(val)                            # Store value in result
-        if rest == '':
-          #debug.print('No more values')
-          break
-        elif rest[0] == ',':                    # Is next symbol ','? 
-          val, rest = value(rest[1:].strip())   # Get value after ','
-        elif rest[0] == '#':                    # Is next symbol '#'? 
-          #debug.print("In-line comment in '%s'"%row)
-          break
-        else:
-          #debug.print("No delimiter in '%s'"%row)
-          return None
-      else:
-        #debug.print("No values specified in '%s'" % row)
-        return None
-      return res.get()
+      else:                               # Not quoted value
+        for i in range(1, len(line)):     # Firs symbol is not in ['"', ',', ' ', '=', '#']
+          if line[i] in ['"', ',', ' ', '=', '#']:    # Is it end of word?
+            val = line[: i]               # Divide line on word and rest
+            rest =  line[i:].lstrip()     # Remove leading spaces from rest
+            if rest and rest[0] == '"':   # Is rest starts with '"'?
+              return None, None           # Missed starting quote or delimiter
+            # Return word without quotes and rest line. Decode word if required.
+            return (self.decode(val) if decode else val), rest
+        # End of line reached: value is the whole line. Decode it if required.
+        return (self.decode(line) if decode else line), ''
 
     try:
+      index = 0                                           # Comments index
       with open(self.fileName) as cf:
-        for row in cf:                  # Parse lines
+        for row in cf:                                    # Parse config file lines
           row = row.strip()
-          #debug.print("Line: '%s'"%row)
-          if row and row[0] != '#':     # Ignore comments and blank lines
-            key , rest = value(row, decode=False)     # Get value from beginning of line
-            #debug.print('%s|%s'%(key,rest))
-            if key and rest[0] == '=':  # Correct key
-              val = parse(rest[1:])     # Parse rest
-              if val != None:           # Is there any value in rest?
-                self[key] = val         # Store it.
-                #debug.print(key, "read as" ,val)
+          logger.debug("Line: '%s'"%row)
+          if row and row[0] != '#':                       # Don't parse comments and blank lines
+            key , rest = word(row, decode=False)          # Get key name from beginning of line
+            if key and rest[0] == '=':                    # Is it a correct key?
+              rest = rest[1:].lstrip()                    # Parse rest line (after '=')
+              if rest != '':                              # If rest not empty
+                result = CVal()                           # Result buffer
+                val, rest = word(rest)                    # Get first value after '='
+                while val != None:                        # value was get without error
+                  result.add(val)                         # Store value in result
+                  if rest == '':
+                    break                                 # No more values
+                  elif rest[0] == ',':                    # Is next symbol ','?
+                    val, rest = word(rest[1:].lstrip())   # Get value after ','
+                  else:
+                    val = None                            # No delimiter or missed quote
+                else:                                     # Some error occur while parsing after '='
+                  result = CVal(None)                     # Reset result buffer
+                result = result.get()
+                if result != None:                        # Is there any value in result buffer?
+                  self[key] = result                      # Store it.
+                else:
+                  logger.debug("Key with no value in '%s'" % row)
               else:
-                debug.print("Syntax error in '%s'"%row)   # key without value
+                logger.error("No value specified in '%s'"%row)
             else:
-              debug.print("Syntax error in '%s'"%row)     # wrong key
-          #else:
-          #  print("Comment or blank line in '%s'"%row)
-      debug.print('Config read: %s' % self.fileName)
-      #debug.print(self)
+              logger.error("Key error in '%s'"%row)
+          else:                                           # Store comments and blank lines
+            self['#'+str(index)] = row
+            index += 1
+            logger.debug("Comment or blank line in '%s'"%row)
+      logger.info('Config read: %s' % self.fileName)
       return True
     except:
-      debug.print('Config file read error: %s' % self.fileName)
+      logger.error('Config file read error: %s' % self.fileName)
       return False
 
   def encode(self, val):                                  # Convert value to string before save it
@@ -197,34 +196,20 @@ class Config(OrderedDict):  # Configuration object
     try:
       with open(self.fileName, 'wt') as cf:
         for key, value in self.items():
-          res = key + '='             # Start composing config row
-          for val in CVal(value):     # Iterate through the value
-            res += self.encode(val) + ','  # Collect values in comma separated list
-          if res[-1] == ',':
-            res = res[: -1]           # Remove last comma
-          cf.write(res + '\n')        # Write resulting string in file
-      debug.print('Config written: %s' % self.fileName)
+          if key[0] == '#':             # Comment or blank line
+            res = value                 # Restore such lines
+          else:
+            res = key + '='             # Start composing config row
+            for val in CVal(value):     # Iterate through the value
+              res += self.encode(val) + ','  # Collect values in comma separated list
+            if res[-1] == ',':
+              res = res[: -1]           # Remove last comma
+          cf.write(res + '\n')          # Write resulting string in file
+      logger.info('Config written: %s' % self.fileName)
       return True
     except:
-      debug.print('Config file write error: %s' % self.fileName)
+      logger.error('Config file write error: %s' % self.fileName)
       return False
-
-class Debug(object):  # Debugger engine
-
-  def __init__(self, verboseOutput=True):   # Initialize debug object
-    self.switch(verboseOutput)
-
-  def switch(self, verboseOutput):          # Change debug mode
-    if verboseOutput:
-      self.print = self.out
-    else:
-      self.print = lambda t: None
-
-  def out(self, text):                      # Debug output function
-    try:
-      print('%s: %s' % (datetime.datetime.now().strftime("%M:%S.%f"), text))
-    except:
-      pass
 
 class Notification(object):  # On-screen notification object
 
@@ -241,7 +226,7 @@ class Notification(object):  # On-screen notification object
 
   def message(self, title, message):  # Show on-screen notification message
     global logo
-    debug.print('Message :%s' % message)
+    logger.debug('Message :%s' % message)
     self.notifier.update(title, message, logo)  # Update notification
     self.notifier.show()                        # Display new notification
 
@@ -366,7 +351,7 @@ class Preferences(Gtk.Dialog):  # Preferences Window
     else:
       appConfig[key] = toggleState                  # Update application config
       self.appCfgUpdate = True
-    debug.print('Togged: %s  val: %s' % (key, str(toggleState)))
+    logger.debug('Togged: %s  val: %s' % (key, str(toggleState)))
     if key == 'theme':
       icon.updateTheme()                            # Update themeStyle
       icon.update()                                 # Update current icon
@@ -494,18 +479,18 @@ class YDDaemon(object):   # Yandex.Disk daemon object
     while not self.getOutput():     # Check for correct daemon response and check that it is running
       try:                          # Try to find daemon running process
         msg = subprocess.check_output(['pgrep', '-x', 'yandex-disk'], universal_newlines=True)[: -1]
-        debug.print('yandex-disk daemon is running but NOT responding!')
+        logger.info('yandex-disk daemon is running but NOT responding!')
         # Kills the daemon(s) when it is running but not responding (HARON_CASE).
         try:                        # Try to kill all instances of daemon
           subprocess.check_call(['killall', 'yandex-disk'])
-          debug.print('yandex-disk daemon(s) killed')
+          logger.info('yandex-disk daemon(s) killed')
           msg = ''
         except:
-          debug.print('yandex-disk daemon kill error')
+          logger.error('yandex-disk daemon kill error')
           self.errorDialog('')
           appExit()                 # nonconvertible error - exit
       except:
-        debug.print("yandex-disk daemon is not running")
+        logger.info("yandex-disk daemon is not running")
         msg = ''
       if msg == '' and not appConfig["startonstart"]:
         break                       # Daemon is not started and should not be started
@@ -517,7 +502,7 @@ class YDDaemon(object):   # Yandex.Disk daemon object
           else:
             break                   # Daemon was not started but user decided to start indicator
     else:  # while
-      debug.print('yandex-disk daemon is installed, configured and responding.')
+      logger.info('yandex-disk daemon is installed, configured and responding.')
     self.status = 'none'
     self.lastStatus = 'idle'        # Fallback status for "index" status substitution at start time
     self.lastBuf = ''
@@ -528,7 +513,7 @@ class YDDaemon(object):   # Yandex.Disk daemon object
   def getOutput(self):          # Get result of 'yandex-disk status'
     try:    self.output = subprocess.check_output(['yandex-disk', 'status'], universal_newlines=True)
     except: self.output = ''    # daemon is not running or bad
-    #debug.print('output = %s' % daemonOutput)
+    #logger.debug('output = %s' % daemonOutput)
     return (self.output != '')
 
   def parseOutput(self):        # Parse the daemon output
@@ -575,10 +560,7 @@ class YDDaemon(object):   # Yandex.Disk daemon object
       lastPos = self.output.find('\n', startPos)
       self.sTrash = self.output[startPos: lastPos]
     else:  # When there is no Total: then other sizes are not presented too
-      self.sTotal = '...'
-      self.sUsed = '...'
-      self.sFree = '...'
-      self.sTrash = '...'
+      self.sTotal = self.sUsed = self.sFree = self.sTrash = '...'
     # Look for last synchronized items list
     startPos = self.output.find('Last synchronized', lastPos)
     if startPos > 0:                                # skip one line
@@ -624,7 +606,7 @@ class YDDaemon(object):   # Yandex.Disk daemon object
     response = dialog.run()
     dialog.destroy()
     if (err == 'NOCONFIG') and (response == Gtk.ResponseType.OK):  # Launch Set-up utility
-      debug.print('starting configuration utility: %s' % os.path.join(installDir, 'ya-setup'))
+      logger.debug('starting configuration utility: %s' % os.path.join(installDir, 'ya-setup'))
       retCode = subprocess.call([os.path.join(installDir,'ya-setup')])
     else:
       retCode = 0 if err == 'NONET' else 1
@@ -638,10 +620,10 @@ class YDDaemon(object):   # Yandex.Disk daemon object
     ... but sometime it starts successfully with error message '''
     try:
       msg = subprocess.check_output(['yandex-disk', 'start'], universal_newlines=True)
-      debug.print('Start success, message: %s' % msg)
+      logger.info('Start success, message: %s' % msg)
       return ''
     except subprocess.CalledProcessError as e:
-      debug.print('Start failed:%s' % e.output)
+      logger.error('Daemon start failed:%s' % e.output)
       if e.output == '':    # probably 'os: no file'
         return 'NOTINSTALLED'
       err = ('NONET' if 'Proxy' in e.output else
@@ -769,7 +751,7 @@ class AppMenu(Gtk.Menu):  # Menu object
     self.updateStartStop(False)
 
   def openPath(self, widget, path):       # Open path
-    debug.print('Opening %s' % path)
+    logger.info('Opening %s' % path)
     if os.path.exists(path):
       try:    os.startfile(path)
       except: subprocess.call(['xdg-open', path])
@@ -790,7 +772,7 @@ class AppMenu(Gtk.Menu):  # Menu object
         widget = Gtk.MenuItem.new_with_label(
                      (filePath[: 20] + '...' + filePath[-27: ] if len(filePath) > 50 else
                       filePath).replace('_', u'\u02CD'))
-        # Make full path 
+        # Make full path
         filePath = os.path.join(daemon.yandexDiskFolder, filePath)
         if os.path.exists(filePath):
           widget.set_sensitive(True)                # If it exists then it can be opened
@@ -803,7 +785,7 @@ class AppMenu(Gtk.Menu):  # Menu object
         self.last.set_sensitive(False)
       else:                                         # There are some items in list
         self.last.set_sensitive(True)
-      debug.print("Sub-menu 'Last synchronized' has been updated")
+      logger.info("Sub-menu 'Last synchronized' has been updated")
 
   def updateStartStop(self, started):     # Update daemon start and stop menu items availability
     self.daemon_start.set_sensitive(not started)
@@ -814,15 +796,15 @@ class AppMenu(Gtk.Menu):  # Menu object
     global watchTimer
 
     stopOnExit = appConfig.get("stoponexit", False)
-    debug.print('Stop daemon on exit - %s' % str(stopOnExit))
+    logger.info('Stop daemon on exit - %s' % str(stopOnExit))
     if stopOnExit and daemon.status != 'none':
       daemon.stop()   # Stop daemon
-      debug.print('Daemon is stopped')
+      logger.info('Daemon is stopped')
     # --- Stop all timers ---
     stopTimer(icon.animationTimer)
     stopTimer(inotify.timer)
     stopTimer(watchTimer)
-    debug.print("Timers are closed")
+    logger.info("Timers are closed")
     appExit()
 
 class AppIcon(object):  # Indicator icon
@@ -881,13 +863,12 @@ class AppIcon(object):  # Indicator icon
     return True                          # True required to continue triggering by timer
 
 def copyFile(source, destination):
-  #debug.print("File Copy: from %s to %s" % (source, destination))
   try:    fileCopy (source, destination)
-  except: debug.print("File Copy Error: from %s to %s" % (source, destination))
+  except: logger.error("File Copy Error: from %s to %s" % (source, destination))
 
 def deleteFile(source):
   try:    os.remove(source)
-  except: debug.print('File Deletion Error: %s' % source)
+  except: logger.error('File Deletion Error: %s' % source)
 
 def stopTimer(timerName):
   if timerName > 0:
@@ -908,8 +889,8 @@ def handleEvent(triggeredBy_iNotifier):   # Perform status update
   '''
   global watchTimer, timerTriggeredCount
   daemon.updateStatus()                   # Get the latest status data from daemon
-  debug.print(('iNonify ' if triggeredBy_iNotifier else 'Timer   ') +
-              daemon.lastStatus + ' -> ' + daemon.status)
+  logger.info(('iNonify ' if triggeredBy_iNotifier else 'Timer   ') +
+                daemon.lastStatus + ' -> ' + daemon.status)
   menu.updateInfo()                       # Update information in menu
   if daemon.status != daemon.lastStatus:  # Handle status change
     icon.update()                         # Update icon
@@ -946,14 +927,14 @@ def activateActions():  # Install/deinstall file extensions
   activate = appConfig["fmextensions"]
   # --- Actions for Nautilus ---
   ret = subprocess.call(["dpkg -s nautilus>/dev/null 2>&1"], shell=True)
-  debug.print("Nautilus installed: %s" % str(ret == 0))
+  logger.info("Nautilus installed: %s" % str(ret == 0))
   if ret == 0:
     ver = subprocess.check_output(["lsb_release -r | sed -n '1{s/[^0-9]//g;p;q}'"], shell=True)
     if ver != '' and int(ver) < 1210:
       nautilusPath = ".gnome2/nautilus-scripts/"
     else:
       nautilusPath = ".local/share/nautilus/scripts"
-    debug.print(nautilusPath)
+    logger.debug(nautilusPath)
     if activate:        # Install actions for Nautilus
       copyFile(os.path.join(installDir, "fm-actions/Nautilus_Nemo/publish"),
                os.path.join(userHome,nautilusPath, _("Publish via Yandex.Disk")))
@@ -964,7 +945,7 @@ def activateActions():  # Install/deinstall file extensions
       deleteFile(os.path.join(userHome, nautilusPath, _("Unpublish from Yandex.disk")))
   # --- Actions for Nemo ---
   ret = subprocess.call(["dpkg -s nemo>/dev/null 2>&1"], shell=True)
-  debug.print("Nemo installed: %s" % str(ret == 0))
+  logger.info("Nemo installed: %s" % str(ret == 0))
   if ret == 0:
     if activate:        # Install actions for Nemo
       copyFile(os.path.join(installDir, "fm-actions/Nautilus_Nemo/publish"),
@@ -980,7 +961,7 @@ def activateActions():  # Install/deinstall file extensions
                               _("Unpublish from Yandex.disk")))
   # --- Actions for Thunar ---
   ret = subprocess.call(["dpkg -s thunar>/dev/null 2>&1"], shell=True)
-  debug.print("Thunar installed: %s" % str(ret == 0))
+  logger.info("Thunar installed: %s" % str(ret == 0))
   if ret == 0:
     if activate:        # Install actions for Thunar
       if subprocess.call(["grep '" + _("Publish via Yandex.Disk") + "' " +
@@ -1020,7 +1001,7 @@ def activateActions():  # Install/deinstall file extensions
                       os.path.join(userHome, ".config/Thunar/uca.xml")])
   # --- Actions for Dolphin ---
   ret = subprocess.call(["dpkg -s dolphin>/dev/null 2>&1"], shell=True)
-  debug.print("Dolphin installed: %s" % str(ret == 0))
+  logger.info("Dolphin installed: %s" % str(ret == 0))
   if ret == 0:
     if activate:        # Install actions for Dolphin
       copyFile(os.path.join(installDir, "fm-actions/Dolphin/publish.desktop"),
@@ -1048,9 +1029,8 @@ if __name__ == '__main__':
   autoStartSource1 = os.path.join(os.sep, 'usr', 'share', 'applications', 'Yandex.Disk.desktop')
   autoStartDestination1 = os.path.join(userHome, '.config', 'autostart', 'Yandex.Disk.desktop')
 
-  ### Output the version and environment information to debug stream
-  debug = Debug(True)     # Temporary allow debug output to handle initialization messeges
-  debug.print('%s v.%s (app_home=%s)' % (appName, appVer, installDir))
+  ### Output the version and environment information to console output
+  print('%s v.%s' % (appName, appVer))
 
   ### Localization ###
   origLANG = os.getenv('LANG')    # Store original LANG environment
@@ -1072,12 +1052,17 @@ if __name__ == '__main__':
   lockFile.write('%d\n' % os.getpid())
   lockFile.flush()
 
+  ### Logging ###
+  # Line:%(lineno)d
+  logging.basicConfig(format='%(asctime)-15s %(levelname)-8s %(message)s')
+  logger = logging.getLogger('')
+
   ### Application configuration ###
   '''
   User configuration is stored in ~/.config/<appHomeName>/<appName>.conf file
   This file can contain comments (lines starts with '#') and following keywords:
     autostart, startonstart, stoponexit, notifications, theme, fmextensions, autostartdaemon
-    and debug (debug is not configurable from indicator preferences dialogue)
+    and loglevel (loglevel is not configurable from indicator preferences dialogue)
   Dictionary appConfig stores the config settings for usage in code. Its values are saved to
   config file on Preferences dialogue exit or on application start when cofig file not exists
 
@@ -1088,16 +1073,16 @@ if __name__ == '__main__':
   '''
   appConfig = Config(os.path.join(appConfigPath, appName + '.conf'))
   # Read some settings to variables, set default values and update some values
+  # Set logger level from config value
+  logger.setLevel(level=int(appConfig.setdefault('loglevel', '30')))
   appConfig['autostart'] = os.path.isfile(autoStartDestination)
   appConfig.setdefault('startonstart', True)
   appConfig.setdefault('stoponexit', False)
-  # Setup on-screen notifications from config value
+  # Setup on-screen notification settings from config value
   notify = Notification(appName, appConfig.setdefault('notifications', True))
   appConfig.setdefault('theme', False)
   appConfig.setdefault('fmextensions', True)
   appConfig['autostartdaemon'] = os.path.isfile(autoStartDestination1)
-  # switch debug mode from config value
-  debug.switch(appConfig.setdefault('debug', False))
   if not os.path.exists(appConfigPath):
     # Create app config folders in ~/.config
     try: os.makedirs(appConfigPath)

@@ -1,4 +1,4 @@
-### **![yandex-disk-indicator](https://github.com/slytomcat/yandex-disk-indicator/blob/master/icons/yd-128.png)**
+﻿### **![yandex-disk-indicator](https://github.com/slytomcat/yandex-disk-indicator/blob/master/icons/yd-128.png)**
 # yandex-disk-indicator
 Desktop panel indicator for YandexDisk CLI client for Linux
 
@@ -9,4 +9,4 @@ Code assumes that:
 - compiled language files (translations/*.mo) are located in the system depended folders (i.e. usr/share/locale/{LANG}/LC_MESSAGES/ in Linux)
 - indicator settings (from v.1.4.2) are stored in ~/.config/yd-tools/yandex-disk-indicator.conf (file is automatically created on the first start).
 
-build - everything that need to build the .deb package or source.changes file. Additional tools are requered: devscripts, debhelper and dput (if you want to uplodd package, for example, to launcpad PPA).
+build - everything that need to build the .deb package or source.changes file (only change key for signatures). Additional tools are required: devscripts, debhelper and dput (if you want to upload package, for example, to launcpad PPA).
