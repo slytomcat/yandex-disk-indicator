@@ -1,7 +1,9 @@
-yd-tools (1.5.0) trusty; urgency=medium
+yd-tools (1.5.1) trusty; urgency=medium
 
   * Changes:
-   -- added support for --excude-dirs daemon start option.
-   -- config file read/write procedured now support lists of values for one key
+   -- Most of code refactored with OOP concept (to simplify future code support)
+   -- Big optimization of config reading facility
+   -- Debugging output (inherited from grive-tools) changed to standard logging module (allows to use several levels of messages output and can be configured to save messages to file)
+   
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Tue, 9 Sep 2015 19:55:34 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Wed, 16 Sep 2015 20:39:16 +0300
