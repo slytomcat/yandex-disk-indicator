@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.5.1'
+appVer = '1.5.2'
 #
 #  Copyright 2014 Sly_tom_cat <slytomcat@mail.ru>
 #  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
@@ -47,8 +47,8 @@ class CVal(object):
 # of number of elementary values added to it.
 
   def __init__(self, initialValue=None):
-    self.val = initialValue   # store initial value
-    self.index = None
+    self.val = initialValue         # store initial value
+    self.index = None               # set index value (need for iter finctionality)
 
   def get(self):          # It just returns the current value of CVal
     return self.val
@@ -72,14 +72,14 @@ class CVal(object):
     return self
 
   def __next__(self):     # CVal iterator support
-    if self.index == None:            # Is CVal not defined?
+    if self.index == None:            # Is CVal not defined or it is a second call for scalar value?
       raise StopIteration             # Stop iterations
     self.index += 1
     if self.index >= 0:               # Is CVal a list?
       if self.index < len(self.val):  # Is there a next element in list?
         return self.val[self.index]
       else:                           # There is no more elements in list.
-        self.index = None
+        self.index = None             # End of list reached
         raise StopIteration           # Stop iterations
     else:                             # CVal has scalar type.
       self.index = None               # Remember that there is no more iterations posible
