@@ -3,7 +3,7 @@
 Desktop panel indicator for YandexDisk CLI client for Linux
 
 Code assumes that:
-- yandex-disk-indicator is placed in /usr/bin and marked as executable (chmod a+x ...)
+- yandex-disk-indicator.py is copied to /usr/bin/yandex-disk-indicator and marked as executable (chmod a+x ...)
 - fm-actions/ and icons/ folders, ya-setup files are located in /usr/share/yd-tools
 - *.desktop files should be placed in /usr/share/applications folder
 - compiled language files (translations/*.mo) are located in the system depended folders (i.e. usr/share/locale/{LANG}/LC_MESSAGES/ in Linux)
