@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.5.2'
+appVer = '1.5.3'
 #
 #  Copyright 2014 Sly_tom_cat <slytomcat@mail.ru>
 #  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
@@ -455,7 +455,7 @@ class DConfig(Config):  # redefined class for daemon config
     exList = fileConfig.pop('exclude-dirs', None)
     if exList != None:
       dirs = ''
-      for i in exList:
+      for i in CVal(exList):
         dirs += i + ','
       dirs = dirs[:-1]
       fileConfig['exclude-dirs'] = dirs

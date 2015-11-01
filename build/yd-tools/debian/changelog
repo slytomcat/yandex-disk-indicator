@@ -1,4 +1,4 @@
-yd-tools (1.5.2) trusty; urgency=medium
+yd-tools (1.5.3) trusty; urgency=medium
 
   * Changes:
    -- fix for --excude-dirs option value syntax.
