@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.5.1'
+appVer = '1.5.2'
 #
 #  Copyright 2014 Sly_tom_cat <slytomcat@mail.ru>
 #  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
@@ -82,7 +82,7 @@ class CVal(object):
         self.index = None
         raise StopIteration           # Stop iterations
     else:                             # CVal has scalar type.
-      self.index = None               # Remember that there is no more iterations posible
+      self.index = None               # Remember that there is no more posible iterations
       return self.val
 
   def __str__(self):      # String representation of CVal
@@ -109,74 +109,77 @@ class Config(OrderedDict):  # Configuration object
       value = False
     return value
 
+  def word(self, line, dc=True):                          # Get first value(word) from beginning of line
+    if line[0] == '"':                  # Is value quoted?
+      end = line.find('"', 1)           # Find ending quote
+      if end > 0:                       # Is ending quote exists?
+        val = line[1: end]              # Divide line on word without quotes and rest of line
+        rest = line[end+1: ].lstrip()   # Remove leading spaces from rest
+        return (self.decode(val) if dc else val), rest  # Decode word if required
+      else:                             # Error: Missed ending quote
+        return None, None
+    else:                               # Not quoted value.
+      for i in range(len(line)):
+        if line[i] in ['"', ',', ' ', '=', '#']:  # Is it end of word?
+          val = line[: i]               # Divide line on word and rest
+          rest =  line[i:].lstrip()     # Remove leading spaces from rest
+          if not val:                   # Is value empty?
+            return None, None           # Error: Missed value
+          if rest and rest[0] == '"':   # Is rest starts with '"'?
+            return None, None           # Error: Missed starting quote or delimiter
+          # Return word and rest line. Decode word if required.
+          return (self.decode(val) if dc else val), rest
+      # End of line reached: value is the whole line. Decode it if required.
+      return (self.decode(line) if dc else line), ''
+
+  def getValue(self, rest):                               # Get value(s) from string after '='
+    result = CVal()                               # Result buffer
+    val, rest = self.word(rest)                   # Get first value after '='
+    while val != None:                            # Value was get without error
+      result.add(val)                             # Store value in result
+      if rest == '':
+        break                                     # No more values
+      elif rest[0] == ',':                        # Is next symbol ','?
+        val, rest = self.word(rest[1:].lstrip())  # Get value after ','
+      else:
+        val = None                                # No delimiter or missed quote
+    else:                                         # Some error occur while parsing after '='
+      result = CVal(None)                         # Reset result buffer
+    return result.get()
+                
   def load(self, bools=[['true', 'yes', 'y'], ['false', 'no', 'n']]):
     """
-    Reads config file to dictionalry (OrderedDict)
-    Compatible with yandex-disk config.cfg file syntax.
-    Config file conains key=value rows
-    Key can be quoted or not.
-    Value can be one item or list of comma-separated items
-    Each value item can be quoted or not
-    When value is a single item then key:value item in dictionalry
-    In case list of items it returns key:[value, value,...] item.
+    Reads config file to dictionalry (OrderedDict).
+    Config file shoud conain key=value rows.
+    Key can be quoted or not. 
+    Value can be one item or list of comma-separated items. Each value item can be quoted or not.
+    When value is a single item then it creates key:value item in dictionalry
+    When value is a list of items it creates key:[value, value,...] dictionary's item.
     """
-    def word(line, decode=True):          # Get value(word) from beginning of line
-      if line[0] == '"':                  # Value is quoted
-        end = line.find('"',1)
-        if end > 0:                       # Is ending quote exists?
-          val = line[1: end]              # Divide line on word without quotes and rest of line
-          rest = line[end+1: ].lstrip()   # Remove leading spaces from rest
-          return (self.decode(val) if decode else val), rest  # Decode word if required
-        else:                             # Missed ending quote
-          return None, None
-      else:                               # Not quoted value
-        for i in range(1, len(line)):     # Firs symbol is not in ['"', ',', ' ', '=', '#']
-          if line[i] in ['"', ',', ' ', '=', '#']:    # Is it end of word?
-            val = line[: i]               # Divide line on word and rest
-            rest =  line[i:].lstrip()     # Remove leading spaces from rest
-            if rest and rest[0] == '"':   # Is rest starts with '"'?
-              return None, None           # Missed starting quote or delimiter
-            # Return word without quotes and rest line. Decode word if required.
-            return (self.decode(val) if decode else val), rest
-        # End of line reached: value is the whole line. Decode it if required.
-        return (self.decode(line) if decode else line), ''
-
     try:
-      index = 0                                           # Comments index
+      index = 0                                           # Comment lines index
       with open(self.fileName) as cf:
         for row in cf:                                    # Parse config file lines
           row = row.strip()
           logger.debug("Line: '%s'"%row)
           if row and row[0] != '#':                       # Don't parse comments and blank lines
-            key , rest = word(row, decode=False)          # Get key name from beginning of line
+            key , rest = self.word(row, False)            # Get key name from beginning of line
             if key and rest[0] == '=':                    # Is it a correct key?
               rest = rest[1:].lstrip()                    # Parse rest line (after '=')
-              if rest != '':                              # If rest not empty
-                result = CVal()                           # Result buffer
-                val, rest = word(rest)                    # Get first value after '='
-                while val != None:                        # value was get without error
-                  result.add(val)                         # Store value in result
-                  if rest == '':
-                    break                                 # No more values
-                  elif rest[0] == ',':                    # Is next symbol ','?
-                    val, rest = word(rest[1:].lstrip())   # Get value after ','
-                  else:
-                    val = None                            # No delimiter or missed quote
-                else:                                     # Some error occur while parsing after '='
-                  result = CVal(None)                     # Reset result buffer
-                result = result.get()
+              if rest:                                    # If rest not empty
+                result = self.getValue(rest)
                 if result != None:                        # Is there any value in result buffer?
                   self[key] = result                      # Store it.
                 else:
-                  logger.debug("Key with no value in '%s'" % row)
+                  logger.error("Error in value in '%s'" % row)
               else:
-                logger.error("No value specified in '%s'"%row)
+                logger.error("No value specified in '%s'" % row)
             else:
-              logger.error("Key error in '%s'"%row)
+              logger.error("Key error in '%s'" % row)
           else:                                           # Store comments and blank lines
             self['#'+str(index)] = row
             index += 1
-            logger.debug("Comment or blank line in '%s'"%row)
+            logger.debug("Comment or blank line in '%s'" % row)
       logger.info('Config read: %s' % self.fileName)
       return True
     except:
@@ -226,7 +229,7 @@ class Notification(object):  # On-screen notification object
 
   def message(self, title, message):  # Show on-screen notification message
     global logo
-    logger.debug('Message :%s' % message)
+    logger.debug('Message: %s | %s' % (title, message))
     self.notifier.update(title, message, logo)  # Update notification
     self.notifier.show()                        # Display new notification
 
@@ -451,7 +454,11 @@ class DConfig(Config):  # redefined class for daemon config
       fileConfig['overwrite'] = ''
     exList = fileConfig.pop('exclude-dirs', None)
     if exList != None:
-      fileConfig['exclude-dirs'] = exList
+      dirs = ''
+      for i in exList:
+        dirs += i + ','
+      dirs = dirs[:-1]
+      fileConfig['exclude-dirs'] = dirs
     fileConfig.save()
 
   def load(self):  # Get daemon appConfig from its config file
@@ -459,7 +466,11 @@ class DConfig(Config):  # redefined class for daemon config
       # Convert values
       self['read-only'] = (self.get('read-only', False) == '')
       self['overwrite'] = (self.get('overwrite', False) == '')
-      self['exclude-dirs'] = self.get('exclude-dirs', None)
+      exDirs = self.get('exclude-dirs', None)
+      if exDirs is None:
+        self['exclude-dirs'] = None
+      else:
+        self['exclude-dirs'] = self.getValue(exDirs)
       return True
     else:
       return False
@@ -1075,6 +1086,12 @@ if __name__ == '__main__':
   # Read some settings to variables, set default values and update some values
   # Set logger level from config value
   logger.setLevel(level=int(appConfig.setdefault('loglevel', '30')))
+  ''' Log level can be set to:
+    10 - for all messages
+    20 - for all messages except debugging messages
+    30 - for all messages except debugging and info messages
+    40 - for all messages except debugging, info and warning messages
+    50 - for critical messages only (don't show error, warning, info and error messages)'''
   appConfig['autostart'] = os.path.isfile(autoStartDestination)
   appConfig.setdefault('startonstart', True)
   appConfig.setdefault('stoponexit', False)

@@ -1,7 +1,6 @@
-yd-tools (1.5.0) trusty; urgency=medium
+yd-tools (1.5.2) trusty; urgency=medium
 
   * Changes:
-   -- added support for --excude-dirs daemon start option.
-   -- config file read/write procedured now support lists of values for one key
+   -- fix for --excude-dirs option value syntax.
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Tue, 9 Sep 2015 19:55:34 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Sun, 1 Nov 2015 23:15:41 +0300
