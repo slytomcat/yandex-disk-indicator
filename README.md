@@ -10,3 +10,5 @@ Code assumes that:
 - indicator settings are stored in ~/.config/yd-tools/yandex-disk-indicator.conf (file is automatically created on the first start).
 
 build - everything that need to build the .deb package or source.changes file (only change key for signatures). Additional tools are required: devscripts, debhelper and dput (if you want to upload package, for example, to launcpad PPA).
+
+Ubuntu deb packages available from LaunchPad PPA: https://launchpad.net/~slytomcat/+archive/ubuntu/ppa
