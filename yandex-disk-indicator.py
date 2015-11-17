@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.5.3'
+appVer = '1.5.4'
 #
 #  Copyright 2014 Sly_tom_cat <slytomcat@mail.ru>
 #  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
@@ -47,8 +47,8 @@ class CVal(object):
 # of number of elementary values added to it.
 
   def __init__(self, initialValue=None):
-    self.val = initialValue   # store initial value
-    self.index = None
+    self.val = initialValue         # store initial value
+    self.index = None               # set index value (need for iter finctionality)
 
   def get(self):          # It just returns the current value of CVal
     return self.val
@@ -72,14 +72,14 @@ class CVal(object):
     return self
 
   def __next__(self):     # CVal iterator support
-    if self.index == None:            # Is CVal not defined?
+    if self.index == None:            # Is CVal not defined or it is a second call for scalar value?
       raise StopIteration             # Stop iterations
     self.index += 1
     if self.index >= 0:               # Is CVal a list?
       if self.index < len(self.val):  # Is there a next element in list?
         return self.val[self.index]
       else:                           # There is no more elements in list.
-        self.index = None
+        self.index = None             # End of list reached
         raise StopIteration           # Stop iterations
     else:                             # CVal has scalar type.
       self.index = None               # Remember that there is no more posible iterations
@@ -146,12 +146,12 @@ class Config(OrderedDict):  # Configuration object
     else:                                         # Some error occur while parsing after '='
       result = CVal(None)                         # Reset result buffer
     return result.get()
-                
+
   def load(self, bools=[['true', 'yes', 'y'], ['false', 'no', 'n']]):
     """
     Reads config file to dictionalry (OrderedDict).
     Config file shoud conain key=value rows.
-    Key can be quoted or not. 
+    Key can be quoted or not.
     Value can be one item or list of comma-separated items. Each value item can be quoted or not.
     When value is a single item then it creates key:value item in dictionalry
     When value is a list of items it creates key:[value, value,...] dictionary's item.
@@ -488,8 +488,9 @@ class YDDaemon(object):   # Yandex.Disk daemon object
         appExit()                   # User hasn't configured daemon. Exit right now.
     self.yandexDiskFolder = self.config.get('dir', '')
     while not self.getOutput():     # Check for correct daemon response and check that it is running
-      try:                          # Try to find daemon running process
-        msg = subprocess.check_output(['pgrep', '-x', 'yandex-disk'], universal_newlines=True)[: -1]
+      try:                          # Try to find daemon running process owned by current user
+        msg = subprocess.check_output(['pgrep', '-x', 'yandex-disk', '-u$USER'],
+                                      universal_newlines=True)[: -1]
         logger.info('yandex-disk daemon is running but NOT responding!')
         # Kills the daemon(s) when it is running but not responding (HARON_CASE).
         try:                        # Try to kill all instances of daemon
@@ -1052,17 +1053,6 @@ if __name__ == '__main__':
   workLANG = 'en_US.UTF-8'
   os.putenv('LANG', workLANG)
 
-  ### Check for already running instance of the indicator application ###
-  lockFileName = '/tmp/' + appName + '.lock'
-  try:
-    lockFile = open(lockFileName, 'w')                      # Open lock file for write
-    fcntl.flock(lockFile, fcntl.LOCK_EX | fcntl.LOCK_NB)    # Try to acquire exclusive lock
-  except:                                                   # File is already locked
-    sys.exit(_('Yandex.Disk Indicator instance already running\n' +
-               '(file /tmp/%s.lock is locked by another process)') % appName)
-  lockFile.write('%d\n' % os.getpid())
-  lockFile.flush()
-
   ### Logging ###
   # Line:%(lineno)d
   logging.basicConfig(format='%(asctime)-15s %(levelname)-8s %(message)s')
@@ -1080,8 +1070,7 @@ if __name__ == '__main__':
   Note that daemon settings "read-only" and "overwrite" are stored
   in ~/ .config/yandex-disk/config.cfg file. They are read in checkDaemon function
   (in dictionary daemonConfig). Their values are saved to daemon config file also
-  on Preferences dialogue exit.
-  '''
+  on Preferences dialogue exit.'''
   appConfig = Config(os.path.join(appConfigPath, appName + '.conf'))
   # Read some settings to variables, set default values and update some values
   # Set logger level from config value
@@ -1100,7 +1089,8 @@ if __name__ == '__main__':
   appConfig.setdefault('theme', False)
   appConfig.setdefault('fmextensions', True)
   appConfig['autostartdaemon'] = os.path.isfile(autoStartDestination1)
-  if not os.path.exists(appConfigPath):
+  if not os.path.exists(appConfigPath):   # Is i first run?
+    print('Info: Probably it is a first run.')
     # Create app config folders in ~/.config
     try: os.makedirs(appConfigPath)
     except: pass
@@ -1115,6 +1105,22 @@ if __name__ == '__main__':
              os.path.join(appConfigPath, 'icons', 'readme'))
     ### Activate FM actions according to appConfig (as it is a first run)
     activateActions()
+
+  ### Check for already running instance of the indicator application ###
+  lockFileName = os.path.join(appConfigPath, 'pid')
+  logger.debug('Lock file is:%s'%lockFileName)
+  try:
+    if os.path.exists(lockFileName):
+      lockFile = open(lockFileName, 'r+')                   # Open lock file for read/write
+    else:
+      lockFile = open(lockFileName, 'w')                    # Open lock file for write
+    fcntl.flock(lockFile, fcntl.LOCK_EX | fcntl.LOCK_NB)    # Try to acquire exclusive lock
+    logger.debug('Lock file succesfully locked.')
+  except:                                                   # File is already locked
+    sys.exit(_('Yandex.Disk Indicator instance already running\n' +
+               '(file %s is locked by another process)') % lockFileName)
+  lockFile.write('%d\n' % os.getpid())
+  lockFile.flush()
 
   ### Application Indicator ###
   ## Icons ##

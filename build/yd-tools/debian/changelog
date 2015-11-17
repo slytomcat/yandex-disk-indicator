@@ -1,6 +1,6 @@
-yd-tools (1.5.3) trusty; urgency=medium
+yd-tools (1.5.4) trusty; urgency=medium
 
   * Changes:
-   -- fix for --excude-dirs option value syntax.
+   -- Lock file moved to user home (from /tmp/ to ~/.config/yd-tools/pid).
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Sun, 1 Nov 2015 23:15:41 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Mon, 16 Nov 2015 18:44:25 +0300
