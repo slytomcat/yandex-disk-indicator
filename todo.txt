@@ -45,6 +45,8 @@ DAEMON-INSTALL_STORY: (ON HOLD)
 Результат: нет
 
 ______FIXED issues:_____
+- Multi-user feature added
+FIXED 1.4.3a Precise + launcpad
 - BUGFIX - ошибка при открытии окна About (конструктор диалога не ест названия окна).
 - переделал сохранение настроек согласно концепции USER_LOCAL_SETTINGS + настраиваемые пользователем иконки
 FIXED 1.4.2 master, realize + launcpad
