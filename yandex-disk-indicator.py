@@ -495,7 +495,8 @@ def checkDaemon():               # Checks that daemon installed, configured and 
       appExit()                  # User hasn't configured daemon. Exit right now.
   while not getDaemonOutput():   # Check for correct daemon response (also check that it is running)
     try:                         # Try to find daemon running process
-      msg = subprocess.check_output(['pgrep', '-x', 'yandex-disk'], universal_newlines=True)[: -1]
+      msg = subprocess.check_output(['pgrep', '-x', 'yandex-disk', '-u$USER'],
+                                    universal_newlines=True)[: -1]
       debugPrint('yandex-disk daemon is running but NOT responding!')
       # Kills the daemon(s) when it is running but not responding (HARON_CASE).
       try:                       # Try to kill all instances of daemon
@@ -788,20 +789,9 @@ if __name__ == '__main__':
   autoStartSource1 = os.path.join(os.sep, 'usr', 'share', 'applications', 'Yandex.Disk.desktop')
   autoStartDestination1 = os.path.join(userHome, '.config', 'autostart', 'Yandex.Disk.desktop')
 
-  ### Check for already running instance of the indicator application ###
-  lockFileName = '/tmp/' + appName + '.lock'
-  try:
-    lockFile = open(lockFileName, 'w')                      # Open lock file for write
-    fcntl.flock(lockFile, fcntl.LOCK_EX | fcntl.LOCK_NB)    # Try to acquire exclusive lock
-  except:                                                   # File is already locked
-    sys.exit(_('Yandex.Disk Indicator instance already running\n' +
-               '(file /tmp/%s.lock is locked by another process)') % appName)
-  lockFile.write('%d\n' % os.getpid())
-  lockFile.flush()
-
   ### Output the version and environment information to debug stream
   verboseDebug = True     # Temporary allow debug output to handle exeptions
-  debugPrint('%s v.%s (app_home=%s)' % (appName, appVer, installDir))
+  debugPrint('%s v.%s' % (appName, appVer))
 
   ### Localization ###
   # Store original LANG environment
@@ -849,7 +839,20 @@ if __name__ == '__main__':
              os.path.join(appCofigPath, 'icons', 'readme'))
     ### Activate FM actions according to appConfig (as it is a first run)
     activateActions()
-  writeConfigFile(appCofigFile, appConfig)
+    writeConfigFile(appCofigFile, appConfig)
+  ### Check for already running instance of the indicator application ###
+  lockFileName = os.path.join(appCofigPath, 'pid')
+  try:
+    if os.path.exists(lockFileName):
+      lockFile = open(lockFileName, 'r+')
+    else:
+      lockFile = open(lockFileName, 'w')                      # Open lock file for write
+    fcntl.flock(lockFile, fcntl.LOCK_EX | fcntl.LOCK_NB)    # Try to acquire exclusive lock
+  except:                                                   # File is already locked
+    sys.exit(_('Yandex.Disk Indicator instance already running\n' +
+               '(file %s is locked by another process)') % lockFileName)
+  lockFile.write('%d\n' % os.getpid())
+  lockFile.flush()
 
   ### Application Indicator ###
   ## Icons ##

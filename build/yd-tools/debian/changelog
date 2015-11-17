@@ -1,9 +1,6 @@
-yd-tools (1.4.2a) precise; urgency=medium
+yd-tools (1.4.3a) precise; urgency=medium
 
   * Changes:
-   -- Daemon config read/update procedure has optimized 
-   -- Application setting storage changed from dconf database to file ~/.config/yd-tools/yandex-disk-indicator.conf
-   -- User icon themes in ~/.config/yd-tools/icons/ are used when they are exists or defaul icons from /usr/share/yd-tools/icons are used.
-   -- Bug fix in About dialogue
+   -- Multi-user feachure added - indicator can be run for several users in the same time.
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Mon, 7 Sep 2015 16:30:28 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Mon, 17 Nov 2015 22:26:45 +0300
