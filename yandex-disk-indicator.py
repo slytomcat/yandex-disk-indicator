@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.4.2'
+appVer = '1.4.4a'
 #
 #  Fixed Python2 version for Ubuntu persice. Only bug fixes.
 #

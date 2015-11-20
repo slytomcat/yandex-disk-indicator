@@ -1,6 +1,6 @@
-yd-tools (1.4.3a) precise; urgency=medium
+yd-tools (1.4.4a) precise; urgency=medium
 
   * Changes:
-   -- Multi-user feachure added - indicator can be run for several users in the same time.
+   -- DEB scripts updated.
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Mon, 17 Nov 2015 22:26:45 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Mon, 20 Nov 2015 11:26:14 +0300
