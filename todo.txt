@@ -1,5 +1,5 @@
 ﻿________TO DO__________
-
+- исправить в preinst скрипте работу с файлом блокировки.
 ________TO DO (ON HOLD)__________
 - DAEMON-INSTALL_STORY — solution 5??? - on hold
 
@@ -26,10 +26,9 @@ DAEMON-INSTALL_STORY: (ON HOLD)
 
 ______FIXED issues:_____
 - preinst script changed: убрал из скрипта DEB пакета код по удалению dconf схемы настроек.
-FIXED dev
-- Multi-user feature added
-FIXED 1.5.4 Precise, realize + launcpad
-- попробовал реализовать multi-user: переместил lock файл из /tmp/ в /home/<user>/.config/yd-tools/pid
+FIXED dev, master
+- добавил поддержку multi-user: переместил lock файл из /tmp/ в /home/<user>/.config/yd-tools/pid
+FIXED 1.5.4 master, precise, realize + launcpad
 - Реализовал уродский синтаксис для значения exclude-dirs: сначала в ковычках, а потом (внутри) значения через запятую - ну не уроды ли в яндыксе работают такой корявый синтаксис в конфигах использовать!!!!
 FIXED 1.5.2 master, realize + launcpad
 - Добавил возможность сохранять пустые строки и комментирии при записи конфигурационного файла.
