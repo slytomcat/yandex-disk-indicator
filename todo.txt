@@ -26,7 +26,8 @@ DAEMON-INSTALL_STORY: (ON HOLD)
 
 ______FIXED issues:_____
 - preinst script changed: убрал из скрипта DEB пакета код по удалению dconf схемы настроек.
-FIXED dev, master
+- preinst и prerm скрипты: изменен код по поиску и убиению индикаторов.
+FIXED 1.5.5 dev, master
 - добавил поддержку multi-user: переместил lock файл из /tmp/ в /home/<user>/.config/yd-tools/pid
 FIXED 1.5.4 master, precise, realize + launcpad
 - Реализовал уродский синтаксис для значения exclude-dirs: сначала в ковычках, а потом (внутри) значения через запятую - ну не уроды ли в яндыксе работают такой корявый синтаксис в конфигах использовать!!!!
