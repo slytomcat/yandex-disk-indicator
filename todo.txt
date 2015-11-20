@@ -26,6 +26,7 @@ DAEMON-INSTALL_STORY: (ON HOLD)
 
 ______FIXED issues:_____
 - preinst script changed: убрал из скрипта DEB пакета код по удалению dconf схемы настроек.
+- preinst и prerm скрипты: изменен код по поиску и убиению индикаторов.
 FIXED dev
 - Multi-user feature added
 FIXED 1.5.4 Precise, realize + launcpad

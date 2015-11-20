@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.5.4'
+appVer = '1.5.5'
 #
 #  Copyright 2014 Sly_tom_cat <slytomcat@mail.ru>
 #  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
@@ -887,7 +887,6 @@ def stopTimer(timerName):
     GLib.source_remove(timerName)
 
 def appExit():
-  lockFile.write('')
   fcntl.flock(lockFile, fcntl.LOCK_UN)
   lockFile.close()
   os._exit(0)
