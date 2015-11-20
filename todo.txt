@@ -1,5 +1,4 @@
 ﻿________TO DO__________
-- убрать из preinst скрипта DEB пакета код по удалению dconf схемы настроек (в одном из будущих релизов).
 
 
 ________CANCELED ISSUES (as only bag fixes will be issued for persice version)________
@@ -45,6 +44,9 @@ DAEMON-INSTALL_STORY: (ON HOLD)
 Результат: нет
 
 ______FIXED issues:_____
+- исправления в скриптах DEB пакета, отражающие последние изменения в работе индикатора (Mult-user). 
+- убрал из preinst скрипта DEB пакета код по удалению dconf схемы настроек.
+FIXED 1.4.4a Precise + launcpad
 - Multi-user feature added
 FIXED 1.4.3a Precise + launcpad
 - BUGFIX - ошибка при открытии окна About (конструктор диалога не ест названия окна).
