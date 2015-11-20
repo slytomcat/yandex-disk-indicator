@@ -1,5 +1,5 @@
 ﻿________TO DO__________
-- исправить в preinst скрипте работу с файлом блокировки.
+
 ________TO DO (ON HOLD)__________
 - DAEMON-INSTALL_STORY — solution 5??? - on hold
 
