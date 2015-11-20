@@ -1,5 +1,4 @@
 ﻿________TO DO__________
-- убрать из preinst скрипта DEB пакета код по удалению dconf схемы настроек (в одном из будущих релизов).
 
 ________TO DO (ON HOLD)__________
 - DAEMON-INSTALL_STORY — solution 5??? - on hold
@@ -26,6 +25,10 @@ DAEMON-INSTALL_STORY: (ON HOLD)
 Результат: нет
 
 ______FIXED issues:_____
+- preinst script changed: убрал из скрипта DEB пакета код по удалению dconf схемы настроек.
+FIXED dev
+- Multi-user feature added
+FIXED 1.5.4 Precise, realize + launcpad
 - попробовал реализовать multi-user: переместил lock файл из /tmp/ в /home/<user>/.config/yd-tools/pid
 - Реализовал уродский синтаксис для значения exclude-dirs: сначала в ковычках, а потом (внутри) значения через запятую - ну не уроды ли в яндыксе работают такой корявый синтаксис в конфигах использовать!!!!
 FIXED 1.5.2 master, realize + launcpad
