@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.5.5'
+appVer = '1.5.6'
 #
 #  Copyright 2014 Sly_tom_cat <slytomcat@mail.ru>
 #  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
@@ -103,9 +103,9 @@ class Config(OrderedDict):  # Configuration object
 
   def decode(self, value):                                # Convert string to value before store it
     #logger.debug("Decoded value: '%s'"%value)
-    if value.lower() in ['true', 'yes', 'y']:   # Convert Boolean
+    if value.lower() in self.bools[0]:
       value = True
-    elif value.lower() in ['false', 'no', 'n']:
+    elif value.lower() in self.bools[1]:
       value = False
     return value
 
@@ -120,7 +120,7 @@ class Config(OrderedDict):  # Configuration object
         return None, None
     else:                               # Not quoted value.
       for i in range(len(line)):
-        if line[i] in ['"', ',', ' ', '=', '#']:  # Is it end of word?
+        if line[i] in ['"', ',', ' ', '=']:   # Is it end of word?
           val = line[: i]               # Divide line on word and rest
           rest =  line[i:].lstrip()     # Remove leading spaces from rest
           if not val:                   # Is value empty?
@@ -144,7 +144,7 @@ class Config(OrderedDict):  # Configuration object
       else:
         val = None                                # No delimiter or missed quote
     else:                                         # Some error occur while parsing after '='
-      result = CVal(None)                         # Reset result buffer
+      return None                                 
     return result.get()
 
   def load(self, bools=[['true', 'yes', 'y'], ['false', 'no', 'n']]):
@@ -156,6 +156,7 @@ class Config(OrderedDict):  # Configuration object
     When value is a single item then it creates key:value item in dictionalry
     When value is a list of items it creates key:[value, value,...] dictionary's item.
     """
+    self.bools = bools
     try:
       index = 0                                           # Comment lines index
       with open(self.fileName) as cf:
@@ -199,15 +200,17 @@ class Config(OrderedDict):  # Configuration object
     try:
       with open(self.fileName, 'wt') as cf:
         for key, value in self.items():
-          if key[0] == '#':             # Comment or blank line
-            res = value                 # Restore such lines
+          if key[0] == '#':                   # Comment or blank line
+            res = value                       # Restore such lines
           else:
-            res = key + '='             # Start composing config row
-            for val in CVal(value):     # Iterate through the value
-              res += self.encode(val) + ','  # Collect values in comma separated list
+            if self.usequotes:
+              key = '"' + key + '"'
+            res = key + '='                   # Start composing config row
+            for val in CVal(value):           # Iterate through the value
+              res += self.encode(val) + ','   # Collect values in comma separated list
             if res[-1] == ',':
-              res = res[: -1]           # Remove last comma
-          cf.write(res + '\n')          # Write resulting string in file
+              res = res[: -1]                 # Remove last comma
+          cf.write(res + '\n')                # Write resulting string in file
       logger.info('Config written: %s' % self.fileName)
       return True
     except:
@@ -481,8 +484,8 @@ class YDDaemon(object):   # Yandex.Disk daemon object
     if not os.path.exists('/usr/bin/yandex-disk'):
       self.ErrorDialog('NOTINSTALLED')
       appExit()                     # Daemon is not installed. Exit right now.
-    self.configFile = os.path.join(userHome, '.config', 'yandex-disk', 'config.cfg')
-    self.config = DConfig(self.configFile, load=False)
+    self.config = DConfig(os.path.join(userHome, '.config', 'yandex-disk', 'config.cfg'),
+                          load=False)
     while not self.config.load():   # Try to read Yandex.Disk configuration file
       if self.errorDialog('NOCONFIG') != 0:
         appExit()                   # User hasn't configured daemon. Exit right now.
@@ -778,7 +781,7 @@ class AppMenu(Gtk.Menu):  # Menu object
     if daemon.lastItemsChanged:                     # Only when list of last synchronized is changed
       for widget in self.lastItems.get_children():  # Clear last synchronized sub-menu
         self.lastItems.remove(widget)
-      for filePath in daemon.lastItems:             # Create new sub-menu
+      for filePath in daemon.lastItems:             # Create new sub-menu items
         # Make menu label as file path (shorten to 50 symbols if path length > 50 symbols),
         # with replaced underscore (to disable menu acceleration feature of GTK menu).
         widget = Gtk.MenuItem.new_with_label(
