@@ -238,14 +238,14 @@ class Notification(object):   # On-screen notification object
 
 class INotify(object):        # File change watcher
 
-  def __init__(self, path, handler, pram):  # Initialize watcher
+  def __init__(self, path, handler, par):   # Initialize watcher
     class EH(pyinotify.ProcessEvent):       # Event handler class for iNotifier
       def process_IN_MODIFY(self, event):
-        handler(pram)
+        handler(par)
     watchMngr = pyinotify.WatchManager()                                # Create watch manager
     self.iNotifier = pyinotify.Notifier(watchMngr, EH(), timeout=0.5)   # Create PyiNotifier
     watchMngr.add_watch(path, pyinotify.IN_MODIFY, rec = False)         # Add watch
-    self.timer = GLib.timeout_add(700, self.handler)  # Call iNotifier handler every .7 seconds
+    self.timer = Timer(700, self.handler)   # Call iNotifier handler every .7 seconds
 
   def handler(self):                        # iNotify working routine (called by timer)
     while self.iNotifier.check_events():
@@ -817,9 +817,9 @@ class Menu(Gtk.Menu):         # Menu object
       daemon.stop()   # Stop daemon
       logger.info('Daemon is stopped')
     # --- Stop all timers ---
-    stopTimer(icon.animationTimer)
-    stopTimer(inotify.timer)
-    stopTimer(watchTimer)
+    icon.timer.stop()
+    inotify.timer.stop()
+    watchTimer.stop()
     logger.info("Timers are closed")
     appExit()
 
@@ -827,7 +827,7 @@ class Icon(object):           # Indicator icon
 
   def __init__(self):     # Initialize icon paths
     self.updateTheme()
-    self.animationTimer = 0   # Define the icon animation timer variable
+    self.timer = Timer(777, self.animation, None, False)  # Create the icon animation object
 
   def updateTheme(self):  # Determine paths to icons according to current theme
     global installDir, configPath
@@ -856,13 +856,11 @@ class Icon(object):           # Indicator icon
   def update(self):       # Change indicator icon according to daemon status
     if daemon.status == 'busy':         # Just entered into 'busy' status
       ind.set_icon(self.busy)           # Start icon animation
-      self.seqNum = 2                   # Start animation from next icon
-      # Create animation timer
-      self.animationTimer = GLib.timeout_add(777, self.animation)
+      self.seqNum = 2                   # Next icon for animation
+      self.timer.start(777)             # Start animation timer
     else:
-      if daemon.status != 'busy' and self.animationTimer > 0:  # Not 'busy' and animation is running
-        stopTimer(self.animationTimer)  # Stop icon animation
-        self.animationTimer = 0
+      if daemon.status != 'busy' and self.timer.active:  # Not 'busy' and animation is running
+        self.timer.stop()               # Stop icon animation
       # --- Set icon for non-animated statuses ---
       if daemon.status == 'idle':
         ind.set_icon(self.idle)
@@ -879,25 +877,61 @@ class Icon(object):           # Indicator icon
     return True                          # True required to continue triggering by timer
 
 class LockFile(object):       # LockFile object
-  def __init__(self):
+
+  def __init__(self, fileName):
     ### Check for already running instance of the indicator application in user space ###
-    self.fileName = os.path.join(configPath, 'pid')
+    self.fileName = fileName
     logger.debug('Lock file is:%s' % self.fileName)
-    try:
-      if os.path.exists(self.fileName):
-        self.lockFile = open(self.fileName, 'r+')                   # Open lock file for read/write
-      else:
-        self.lockFile = open(self.fileName, 'w')                    # Open lock file for write
+    try:                      # Open lock file for write
+      self.lockFile = (open(self.fileName, 'r+') if os.path.exists(self.fileName) else
+                       open(self.fileName, 'w'))                    
       fcntl.flock(self.lockFile, fcntl.LOCK_EX | fcntl.LOCK_NB)    # Try to acquire exclusive lock
       logger.debug('Lock file succesfully locked.')
     except:                                                   # File is already locked
-      sys.exit(_('Yandex.Disk Indicator instance already running\n' +
-                 '(file %s is locked by another process)') % self.fileName)
+      sys.exit(_('%s instance is already running\n' +
+                 '(file %s is locked by another process)') % (appName, self.fileName))
     self.lockFile.write('%d\n' % os.getpid())
     self.lockFile.flush()
+
   def release(self):
     fcntl.flock(self.lockFile, fcntl.LOCK_UN)
     self.lockFile.close()
+
+class Timer(object):          # Timer object
+
+  def __init__(self, interval, handler, par = None, start = True):
+    self.interval = interval          # Timer interval (ms)
+    self.handler = handler            # Handler function
+    self.par = par                    # Parameter of handler function
+    self.active = False               # Current activity status
+    if start:
+      self.start()                    # Start timer if requered
+    
+  def start(self, interval = None):   # Start inactive timer or update if it is active 
+    if interval is None:
+      interval = self.interval
+    if not self.active:
+      if self.par is None:
+        self.timer = GLib.timeout_add(interval, self.handler)
+      else:
+        self.timer =  GLib.timeout_add(interval, self.handler, self.par)
+      self.active = True
+      logger.debug('timer started %s %s' %(self.timer, interval))
+    else:
+      self.update(interval)
+
+  def update(self, interval):         # Update interval (restart active, not start if inactive)
+    if interval != self.interval:
+      self.interval = interval
+      if self.active:
+        self.stop()
+        self.start()
+      
+  def stop(self):                     # Stop active timer
+    if self.active:
+      logger.debug('timer to stop %s %s' %(self.timer, self.interval))
+      GLib.source_remove(self.timer)
+      self.active = False
 
 def copyFile(source, destination):
   try:    fileCopy (source, destination)
@@ -907,25 +941,21 @@ def deleteFile(source):
   try:    os.remove(source)
   except: logger.error('File Deletion Error: %s' % source)
 
-def stopTimer(timerName):
-  if timerName > 0:
-    GLib.source_remove(timerName)
-
 def appExit():
   flock.release()
   os._exit(0)
 
-def handleEvent(triggeredBy_iNotifier):   # Perform status update
+def handleEvent(via_iNotifier):   # Perform status update
   '''
   It handles daemon status changes by updating icon, creting messages and also update
   status information in menu (status, sizes and list of last synchronized items).
-  It can be called by timer (when triggeredBy_iNotifier=False) or by iNonifier
-  (when triggeredBy_iNotifier=True)
+  It can be called by timer (when via_iNotifier=False) or by iNonifier
+  (when via_iNotifier=True)
   '''
-  global watchTimer, timerTriggeredCount
+  global timerCnt, watchTimer
   daemon.updateStatus()                   # Get the latest status data from daemon
-  logger.info(('iNonify ' if triggeredBy_iNotifier else 'Timer   ') +
-                daemon.lastStatus + ' -> ' + daemon.status)
+  logger.info(('iNonify ' if via_iNotifier else 'Timer   ') +
+              daemon.lastStatus + ' -> ' + daemon.status)
   menu.updateInfo()                       # Update information in menu
   if daemon.status != daemon.lastStatus:  # Handle status change
     icon.update()                         # Update icon
@@ -946,16 +976,14 @@ def handleEvent(triggeredBy_iNotifier):   # Perform status update
     else:                                 # newStatus = 'error' or 'no-net'
       notify.send(_('Yandex.Disk'), _('Synchronization ERROR'))
   # --- Handle timer delays ---
-  if triggeredBy_iNotifier:               # True means that it is called by iNonifier
-    stopTimer(watchTimer)                 # Recreate timer with 2 sec interval.
-    watchTimer = GLib.timeout_add_seconds(2, handleEvent, False)
-    timerTriggeredCount = 0               # reset counter as it was triggered not by timer
+  if via_iNotifier:                       # True means that it is called by iNonifier
+    watchTimer.update(2000)               # Set timer interval to 2 sec.
+    timerCnt = 0                          # reset counter as it was triggered not by timer
   else:                                   # It called by timer
     if daemon.status != 'busy':           # in 'busy' keep update interval (2 sec.)
-      if timerTriggeredCount < 9:         # increase interval up to 10 sec (2 + 8)
-        stopTimer(watchTimer)             # Recreate watch timer.
-        watchTimer = GLib.timeout_add_seconds(2 + timerTriggeredCount, handleEvent, False)
-        timerTriggeredCount += 1          # Increase counter to increase delay in next activation.
+      if timerCnt < 9:                    # increase interval up to 10 sec (2 + 8)
+        watchTimer.update((2 + timerCnt)*1000)   # Update timer interval.
+        timerCnt += 1                     # Increase counter to increase delay in next activation.
   return True                             # True is required to continue activations by timer.
 
 def activateActions():  # Install/deinstall file extensions
@@ -1118,7 +1146,7 @@ if __name__ == '__main__':
   config.setdefault('fmextensions', True)
   config['autostartdaemon'] = os.path.isfile(autoStartDaemonDst)
   if not os.path.exists(configPath):   # Is i first run?
-    print('Info: Probably it is a first run.')
+    print('Info: No config, probably it is a first run.')
     # Create app config folders in ~/.config
     try: os.makedirs(configPath)
     except: pass
@@ -1135,13 +1163,13 @@ if __name__ == '__main__':
     activateActions()
 
   ### Check for already running instance of the indicator application in user space ###
-  flock = LockFile()
+  flock = LockFile(os.path.join(configPath, 'pid'))
 
   ### Application Indicator ###
   ## Icons ##
-  icon = Icon()          # Initialize icon object
+  icon = Icon()             # Initialize icon object
 
-  ### Yandex.Disk daemon object###
+  ### Yandex.Disk daemon connection object ###
   daemon = YDDaemon()       # Initialize daemon connector
 
   ## Indicator ##
@@ -1157,8 +1185,8 @@ if __name__ == '__main__':
 
   ### Initial menu actualisation ###
   # Timer triggered event staff #
-  watchTimer = 0            # Timer source variable
-  handleEvent(True)         # update menu info and create the watch timer for 2 sec. interval
+  watchTimer = Timer(2000, handleEvent, False)   # Timer object
+  handleEvent(True)                              # Update menu info on initialization
   menu.updateStartStop()
 
   ### Start GTK Main loop ###
