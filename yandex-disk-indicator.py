@@ -827,7 +827,7 @@ class Icon(object):           # Indicator icon
 
   def __init__(self):     # Initialize icon paths
     self.updateTheme()
-    self.timer = Timer(777, self.animation, None, False)  # Create the icon animation object
+    self.timer = Timer(777, self.animation, start=False)  # Create the icon animation object
 
   def updateTheme(self):  # Determine paths to icons according to current theme
     global installDir, configPath
@@ -854,6 +854,7 @@ class Icon(object):           # Indicator icon
       self.themePath = defaultIconThemePath
 
   def update(self):       # Change indicator icon according to daemon status
+    global ind
     if daemon.status == 'busy':         # Just entered into 'busy' status
       ind.set_icon(self.busy)           # Start icon animation
       self.seqNum = 2                   # Next icon for animation
@@ -914,7 +915,7 @@ class Timer(object):          # Timer object
       if self.par is None:
         self.timer = GLib.timeout_add(interval, self.handler)
       else:
-        self.timer =  GLib.timeout_add(interval, self.handler, self.par)
+        self.timer = GLib.timeout_add(interval, self.handler, self.par)
       self.active = True
       logger.debug('timer started %s %s' %(self.timer, interval))
     else:
