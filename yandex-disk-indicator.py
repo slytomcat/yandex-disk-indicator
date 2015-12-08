@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.5.6'
+appVer = '1.5.7'
 #
 #  Copyright 2014+ Sly_tom_cat <slytomcat@mail.ru>
 #  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
@@ -568,11 +568,11 @@ class Menu(Gtk.Menu):         # Menu object
     err = daemon.start()        # Try to start yandex-disk daemon
     if err != '':
       daemon.errorDialog(err)   # Hangle the starting error
-    self.updateStartStop()      # Change the menu items sensitivity
+    self.updateSSS()            # Change the menu items sensitivity
 
   def stopDaemon(self, widget):           # Stop daemon
     daemon.stop()           
-    self.updateStartStop()      # Change the menu items sensitivity
+    self.updateSSS()            # Change the menu items sensitivity
 
   def openPath(self, widget, path):       # Open path
     logger.info('Opening %s' % path)
@@ -713,6 +713,7 @@ class Menu(Gtk.Menu):         # Menu object
 
       def __init__(self, widget, parent):   # show current list
         self.parent = parent
+        self.changed = False
         Gtk.Dialog.__init__(self, title=_('Folders that are excluded from synchronization'),
                             parent=parent, flags=1)
         self.set_icon(GdkPixbuf.Pixbuf.new_from_file(logo))
@@ -736,13 +737,15 @@ class Menu(Gtk.Menu):         # Menu object
         self.show_all()
 
       def exitFromDialog(self, widget):     # Save list from dialogue to "exclude-dirs" property
-        exList = CVal()
-        listIter = self.excludeList.get_iter_first()
-        while listIter != None:
-          exList.add(self.excludeList.get(listIter, 1)[0])  # Store path value from dialogue list rows
-          listIter = self.excludeList.iter_next(listIter)
-        daemon.config['exclude-dirs'] = exList.get()        # Save collected value
-        self.destroy()                                      # Close dialogue
+        if self.changed:
+          exList = CVal()                                     # Store path value from dialogue rows
+          listIter = self.excludeList.get_iter_first()
+          while listIter != None:
+            exList.add(self.excludeList.get(listIter, 1)[0])
+            listIter = self.excludeList.iter_next(listIter)
+          daemon.config['exclude-dirs'] = exList.get()        # Save collected value
+          self.parent.daemonCfgUpdate = True                  # Inform parent about changed list
+        self.destroy()                                        # Close dialogue
 
       def lineToggled(self, widget, path):  # Line click handler, it switch row selection
         self.excludeList[path][0] = not self.excludeList[path][0]
@@ -752,7 +755,7 @@ class Menu(Gtk.Menu):         # Menu object
         while listIiter != None and self.excludeList.iter_is_valid(listIiter):
           if self.excludeList.get(listIiter, 0)[0]:
             self.excludeList.remove(listIiter)
-            self.parent.daemonCfgUpdate = True
+            self.changed = True
           else:
             listIiter = self.excludeList.iter_next(listIiter)
 
@@ -766,10 +769,10 @@ class Menu(Gtk.Menu):         # Menu object
         if dialog.run() == Gtk.ResponseType.ACCEPT:
           res = os.path.relpath(dialog.get_filename(), start=daemon.yandexDiskFolder)
           self.excludeList.append([False, res])
-          self.parent.daemonCfgUpdate = True
+          self.changed = True
         dialog.destroy()
 
-  def updateInfo(self):                   # Update information in menu
+  def update(self):                       # Update information in menu
     # Update status data
     self.status.set_label(_('Status: ') + self.YD_STATUS.get(daemon.status) +
                           (daemon.syncProgress if daemon.status == 'busy' else ''))
@@ -800,7 +803,7 @@ class Menu(Gtk.Menu):         # Menu object
         self.last.set_sensitive(True)
       logger.info("Sub-menu 'Last synchronized' has been updated")
 
-  def updateStartStop(self):              # Update daemon start and stop menu items availability
+  def updateSSS(self):                    # Update daemon start, stop & status menu availability
     started = daemon.status != 'none'
     self.daemon_start.set_sensitive(not started)
     self.daemon_stop.set_sensitive(started)
@@ -955,11 +958,11 @@ def handleEvent(byNotifier):  # Perform status update
   daemon.updateStatus()                   # Get the latest status data from daemon
   logger.info(('iNonify ' if byNotifier else 'Timer   ') +
               daemon.lastStatus + ' -> ' + daemon.status)
-  menu.updateInfo()                       # Update information in menu
+  menu.update()                           # Update information in menu
   if daemon.status != daemon.lastStatus:  # Handle status change
     icon.update()                         # Update icon
     if daemon.lastStatus == 'none':       # Daemon has been started
-      menu.updateStartStop()              # Change menu sensitivity
+      menu.updateSSS()                    # Change menu sensitivity
       notify.send(_('Yandex.Disk'), _('Yandex.Disk daemon has been started'))
     if daemon.status == 'busy':           # Just entered into 'busy'
       notify.send(_('Yandex.Disk'), _('Synchronization started'))
@@ -970,7 +973,7 @@ def handleEvent(byNotifier):  # Perform status update
       if daemon.lastStatus != 'none':     # ...not from 'none' status
         notify.send(_('Yandex.Disk'), _('Synchronization has been paused'))
     elif daemon.status == 'none':         # Just entered into 'none' from some another status
-      menu.updateStartStop()              # Change menu sensitivity as daemon not started
+      menu.updateSSS()                    # Change menu sensitivity as daemon not started
       notify.send(_('Yandex.Disk'), _('Yandex.Disk daemon has been stopped'))
     else:                                 # newStatus = 'error' or 'no-net'
       notify.send(_('Yandex.Disk'), _('Synchronization ERROR'))
@@ -1186,7 +1189,7 @@ if __name__ == '__main__':
   # Timer triggered event staff #
   wTimer = Timer(2000, handleEvent, False)    # Timer object
   handleEvent(True)                           # Update menu info on initialization
-  menu.updateStartStop()
+  menu.updateSSS()
 
   ### Start GTK Main loop ###
   Gtk.main()
