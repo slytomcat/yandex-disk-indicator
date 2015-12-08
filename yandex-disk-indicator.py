@@ -51,7 +51,7 @@ class CVal(object):
       self.val = value              # Just store value
     else:                           # It is the second value.
       self.val = [self.val, value]  # Convert scalar value to list of values.
-    return self.val
+    return self.val                 # Return current value
 
   def __iter__(self):     # CVal iterator object initialization
     if isinstance(self.val, list):  # Is CVal a list?
@@ -253,7 +253,7 @@ class INotify(object):        # File change watcher
       self.iNotifier.process_events()
     return True
 
-class YDDaemon(object):       # Yandex.Disk daemon object
+class YDDaemon(object):       # Yandex.Disk daemon interface object
 
   class DConfig(Config):        # Redefined class for daemon config
 
@@ -985,7 +985,7 @@ def handleEvent(byNotifier):  # Perform status update
         tCnt += 1                         # Increase counter to increase delay in next activation.
   return True                             # True is required to continue activations by timer.
 
-def activateActions():  # Install/deinstall file extensions
+def activateActions():        # Install/deinstall file extensions
   activate = config["fmextensions"]
   # --- Actions for Nautilus ---
   ret = subprocess.call(["dpkg -s nautilus>/dev/null 2>&1"], shell=True)
