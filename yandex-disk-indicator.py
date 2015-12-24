@@ -546,16 +546,16 @@ class Menu(Gtk.Menu):         # Menu object
     widget.set_sensitive(True)            # Enable menu item
 
   def showOutput(self, widget):           # Display daemon output in dialogue window
-    global origLANG, workLANG
+    global lang
     widget.set_sensitive(False)                         # Disable menu item
     statusWindow = Gtk.Dialog(_('Yandex.Disk daemon output message'))
     statusWindow.set_icon(GdkPixbuf.Pixbuf.new_from_file(logo))
     statusWindow.set_border_width(6)
     statusWindow.add_button(_('Close'), Gtk.ResponseType.CLOSE)
     textBox = Gtk.TextView()                            # Create text-box to display daemon output
-    os.putenv('LANG', origLANG)                         # Switch to user LANG
+    lang.orig()                                         # Switch to user LANG
     textBox.get_buffer().set_text(daemon.getOutput())   # Set test to daemon output in user language
-    os.putenv('LANG', workLANG)                         # Restore working LANG
+    lang.work()                                         # Restore working LANG
     textBox.set_editable(False)
     statusWindow.get_content_area().add(textBox)        # Put it inside the dialogue content area
     statusWindow.show_all();  statusWindow.run();   statusWindow.destroy()
@@ -935,6 +935,23 @@ class Timer(object):          # Timer object
       GLib.source_remove(self.timer)
       self.active = False
 
+class Language(object):
+
+  def __init__(self):
+    self.origLANG = os.getenv('LANG')    # Store original LANG environment
+    self.workLANG = 'en_US.UTF-8'
+    # Load translation object (or NullTranslations object when
+    # translation file not found) and define _() function.
+    gettext.translation(appName, '/usr/share/locale', fallback=True).install()
+    # Set LANG environment for daemon output (it must be 'en' for correct parsing)
+    self.work()
+
+  def orig(self):
+    os.putenv('LANG', self.origLANG)
+
+  def work(self):
+    os.putenv('LANG', self.workLANG)
+
 def copyFile(source, destination):
   try:    fileCopy (source, destination)
   except: logger.error("File Copy Error: from %s to %s" % (source, destination))
@@ -1097,13 +1114,7 @@ if __name__ == '__main__':
   print('%s v.%s' % (appName, appVer))
 
   ### Localization ###
-  origLANG = os.getenv('LANG')    # Store original LANG environment
-  # Load translation object (or NullTranslations object when
-  # translation file not found) and define _() function.
-  gettext.translation(appName, '/usr/share/locale', fallback=True).install()
-  # Set LANG environment for daemon output (it must be 'en' for correct parsing)
-  workLANG = 'en_US.UTF-8'
-  os.putenv('LANG', workLANG)
+  lang = Language()
 
   ### Logging ###
   # Line:%(lineno)d
