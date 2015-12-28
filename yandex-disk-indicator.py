@@ -891,7 +891,7 @@ class LockFile(object):       # LockFile object
       logger.debug('Lock file succesfully locked.')
     except:                                                       # File is already locked
       sys.exit(_('The indicator instance is already running.\n'+
-                 '(file %s is locked by another process)') % self.fileName))
+                 '(file %s is locked by another process)') % self.fileName)
     self.lockFile.write('%d\n' % os.getpid())
     self.lockFile.flush()
 
