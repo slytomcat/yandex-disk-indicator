@@ -1,8 +1,6 @@
-yd-tools (1.6.0) trusty; urgency=medium
+yd-tools (1.6.1) trusty; urgency=medium
 
   * Changes:
-   -- Logging level now can be set via command line option '-l<n>' where <n> - one of the possible logging levels (10, 20, 30, 40 or 50)
-   -- Removed loglevel parameter from the application configuration file
-   -- Minor code changes 
+   -- fix of translations 
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Mon, 28 Dec 2015 17:05:48 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Mon, 29 Dec 2015 00:41:28 +0300

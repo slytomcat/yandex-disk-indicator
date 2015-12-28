@@ -26,6 +26,8 @@ DAEMON-INSTALL_STORY: (ON HOLD)
 Результат: нет
 
 ______FIXED issues:_____
+- Слетели несколько переводов
+FIXED 1.6.1 dev, master, realize + launcpad
 - Logging level via command line: Уровень отладки устанавливается через параметр запуска из командной строки -l<n>, где <n> - один из уровней отладки: 10, 20, 30, 40 или 50. Параметр loglevel убран из конфигурационного файла. 
 FIXED 1.6.0 dev, master, realize + launcpad
 - preinst script changed: убрал из скрипта DEB пакета код по удалению dconf схемы настроек.
