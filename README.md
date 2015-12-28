@@ -8,15 +8,10 @@ Options:
  -l\<n\>   Set logging level to value \<n\>.
  
          Logging level value can be:
- 
             10 - to show all messages (DEBUG)
- 
             20 - to show all messages except debugging messages (INFO)
-
             30 - to show all messages except debugging and info messages (WARNING)
-
             40 - to show only error and critical messages (ERROR)
-
             50 - to show critical messages only (CRITICAL)
 
 Ubuntu deb packages available from LaunchPad PPA: https://launchpad.net/~slytomcat/+archive/ubuntu/ppa
