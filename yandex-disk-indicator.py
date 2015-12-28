@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.6.0'
+appVer = '1.6.1'
 #
 #  Copyright 2014+ Sly_tom_cat <slytomcat@mail.ru>
 #  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
@@ -890,8 +890,8 @@ class LockFile(object):       # LockFile object
       fcntl.flock(self.lockFile, fcntl.LOCK_EX | fcntl.LOCK_NB)   # Try to acquire exclusive lock
       logger.debug('Lock file succesfully locked.')
     except:                                                       # File is already locked
-      sys.exit(_('%s instance is already running\n' +
-                 '(file %s is locked by another process)') % (appName, self.fileName))
+      sys.exit(_('The indicator instance is already running.\n'+
+                 '(file %s is locked by another process)') % self.fileName))
     self.lockFile.write('%d\n' % os.getpid())
     self.lockFile.flush()
 
