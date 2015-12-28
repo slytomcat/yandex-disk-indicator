@@ -1,6 +1,6 @@
-yd-tools (1.6.1) trusty; urgency=medium
+yd-tools (1.6.2) trusty; urgency=medium
 
   * Changes:
-   -- fix of translations 
+   -- fix  
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Mon, 29 Dec 2015 00:41:28 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Mon, 29 Dec 2015 01:18:45 +0300
