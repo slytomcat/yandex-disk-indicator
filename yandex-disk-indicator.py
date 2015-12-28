@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.5.7'
+appVer = '1.6.0'
 #
 #  Copyright 2014+ Sly_tom_cat <slytomcat@mail.ru>
 #  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
@@ -109,7 +109,7 @@ class Config(OrderedDict):    # Configuration object
       value = False
     return value
 
-  def word(self, line, dc=True):                          # Get first value(word) from beginning of line
+  def word(self, line, dc=True):                          # Get first word from beginning of line
     if line[0] == '"':                  # Is value quoted?
       end = line.find('"', 1)           # Find ending quote
       if end > 0:                       # Is ending quote exists?
@@ -571,7 +571,7 @@ class Menu(Gtk.Menu):         # Menu object
     self.updateSSS()            # Change the menu items sensitivity
 
   def stopDaemon(self, widget):           # Stop daemon
-    daemon.stop()           
+    daemon.stop()
     self.updateSSS()            # Change the menu items sensitivity
 
   def openPath(self, widget, path):       # Open path
@@ -805,9 +805,9 @@ class Menu(Gtk.Menu):         # Menu object
 
   def updateSSS(self):                    # Update daemon start, stop & status menu availability
     started = daemon.status != 'none'
-    self.daemon_start.set_sensitive(not started)
     self.daemon_stop.set_sensitive(started)
     self.status.set_sensitive(started)
+    self.daemon_start.set_sensitive(not started)
 
   def close(self, widget):                # Quit from indicator
     global wTimer
@@ -828,7 +828,7 @@ class Icon(object):           # Indicator icon
   def __init__(self):     # Initialize icon paths
     self.updateTheme()
     # Create timer object for the icon animation
-    self.timer = Timer(777, self.animation, start=False)  
+    self.timer = Timer(777, self.animation, start=False)
 
   def updateTheme(self):  # Determine paths to icons according to current theme
     global installDir, configPath
@@ -886,7 +886,7 @@ class LockFile(object):       # LockFile object
     logger.debug('Lock file is:%s' % self.fileName)
     try:                                                          # Open lock file for write
       self.lockFile = (open(self.fileName, 'r+') if os.path.exists(self.fileName) else
-                       open(self.fileName, 'w'))                    
+                       open(self.fileName, 'w'))
       fcntl.flock(self.lockFile, fcntl.LOCK_EX | fcntl.LOCK_NB)   # Try to acquire exclusive lock
       logger.debug('Lock file succesfully locked.')
     except:                                                       # File is already locked
@@ -908,8 +908,8 @@ class Timer(object):          # Timer object
     self.active = False               # Current activity status
     if start:
       self.start()                    # Start timer if requered
-    
-  def start(self, interval = None):   # Start inactive timer or update if it is active 
+
+  def start(self, interval = None):   # Start inactive timer or update if it is active
     if interval is None:
       interval = self.interval
     if not self.active:
@@ -928,14 +928,14 @@ class Timer(object):          # Timer object
       if self.active:
         self.stop()
         self.start()
-      
+
   def stop(self):                     # Stop active timer
     if self.active:
       logger.debug('timer to stop %s %s' %(self.timer, self.interval))
       GLib.source_remove(self.timer)
       self.active = False
 
-class Language(object):
+class Language(object):       # Language object
 
   def __init__(self):
     self.origLANG = os.getenv('LANG')    # Store original LANG environment
@@ -945,11 +945,12 @@ class Language(object):
     gettext.translation(appName, '/usr/share/locale', fallback=True).install()
     # Set LANG environment for daemon output (it must be 'en' for correct parsing)
     self.work()
+    logger.info('User LANG is '+self.origLANG)
 
-  def orig(self):
+  def orig(self):  # Set original user language
     os.putenv('LANG', self.origLANG)
 
-  def work(self):
+  def work(self):  # Set working language for daemon output correct parsing
     os.putenv('LANG', self.workLANG)
 
 def copyFile(source, destination):
@@ -1094,6 +1095,7 @@ def activateActions():        # Install/deinstall file extensions
       deleteFile(os.path.join(userHome, ".kde/share/kde4/services/publish.desktop"))
       deleteFile(os.path.join(userHome," .kde/share/kde4/services/unpublish.desktop"))
 
+
 ###################### MAIN #########################
 if __name__ == '__main__':
   ### Application constants ###
@@ -1113,13 +1115,29 @@ if __name__ == '__main__':
   ### Output the version and environment information to console output
   print('%s v.%s' % (appName, appVer))
 
-  ### Localization ###
-  lang = Language()
-
   ### Logging ###
-  # Line:%(lineno)d
+  '''
+  Logging level can be set via command line parameter:
+    -l<n>     where n is one of the logging levels: 10, 20, 30, 40 or 50 (see below)
+  Logging level can be:
+    10 - to show all messages (DEBUG)
+    20 - to show all messages except debugging messages (INFO)
+    30 - to show all messages except debugging and info messages (WARNING)
+    40 - to show all messages except debugging, info and warning messages (ERROR)
+    50 - to show critical messages only (CRITICAL) '''
+
   logging.basicConfig(format='%(asctime)-15s %(levelname)-8s %(message)s')
   logger = logging.getLogger('')
+  # Check command line arguments for logging level options
+  logger.setLevel(30)
+  for opt in sys.argv[1:]:
+    if opt[:2] == '-l':
+      logger.setLevel(int(opt[2:]))
+
+  logger.info('Logging level: '+str(logger.getEffectiveLevel()))
+
+  ### Localization ###
+  lang = Language()
 
   ### Application configuration ###
   '''
@@ -1127,8 +1145,8 @@ if __name__ == '__main__':
   This file can contain comments (line starts with '#') and config values in
   form: key=value[,value[,value ...]] where keys and values can be quoted ("...") or not.
   The following key words are reserved for configuration:
-    autostart, startonstart, stoponexit, notifications, theme, fmextensions, autostartdaemon
-    and loglevel (loglevel is not configurable from indicator preferences dialogue).
+    autostart, startonstart, stoponexit, notifications, theme, fmextensions and autostartdaemon.
+
   The dictionary 'config' stores the config settings for usage in code. Its values are saved to
   config file on the Menu.Preferences dialogue exit or on application start when cofig
   file is not exists.
@@ -1140,16 +1158,6 @@ if __name__ == '__main__':
   '''
   config = Config(os.path.join(configPath, appName + '.conf'))
   # Read some settings to variables, set default values and update some values
-  # Set logger level from config value
-  logger.setLevel(level=int(config.setdefault('loglevel', '30')))
-  '''
-  Log level can be set to:
-    10 - for all messages
-    20 - for all messages except debugging messages
-    30 - for all messages except debugging and info messages
-    40 - for all messages except debugging, info and warning messages
-    50 - for critical messages only (don't show error, warning, info and error messages)
-  '''
   config['autostart'] = os.path.isfile(autoStartIndDst)
   config.setdefault('startonstart', True)
   config.setdefault('stoponexit', False)
