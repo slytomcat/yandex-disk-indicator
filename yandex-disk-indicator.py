@@ -1123,7 +1123,7 @@ if __name__ == '__main__':
     10 - to show all messages (DEBUG)
     20 - to show all messages except debugging messages (INFO)
     30 - to show all messages except debugging and info messages (WARNING)
-    40 - to show all messages except debugging, info and warning messages (ERROR)
+    40 - to show only error and critical messages (ERROR)
     50 - to show critical messages only (CRITICAL) '''
 
   logging.basicConfig(format='%(asctime)-15s %(levelname)-8s %(message)s')
