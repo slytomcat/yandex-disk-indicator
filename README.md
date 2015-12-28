@@ -2,10 +2,11 @@
 # yandex-disk-indicator
 Desktop panel indicator for YandexDisk CLI client for Linux
 
-Usage: yandex-disk-indicator [-l<n>]
+Usage: yandex-disk-indicator [-l\<n\>]
 
 Options:
- -l<n>   Set logging level to value <n>.
+ -l\<n\>   Set logging level to value \<n\>.
+ 
          Logging level value can be:
             10 - to show all messages (DEBUG)
             20 - to show all messages except debugging messages (INFO)
