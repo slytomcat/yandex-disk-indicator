@@ -1077,6 +1077,26 @@ def activateActions():        # Install/deinstall file extensions
       deleteFile(os.path.join(userHome, ".kde/share/kde4/services/publish.desktop"))
       deleteFile(os.path.join(userHome," .kde/share/kde4/services/unpublish.desktop"))
 
+  # actions for Pantheon-files
+  ret = subprocess.call(["dpkg -s pantheon-files>/dev/null 2>&1"], shell=True)
+  logger.info("Pantheon-files installed: %s" % str(ret == 0))
+  if ret == 0:
+    path_to_contractors = "/usr/share/contractor/"
+    if activate:        # Install actions for Pantheon-files
+      contractor_for_publish = os.path.join(installDir, "fm-actions/pantheon-files/yandex-disk-indicator-publish.contract")
+      contractor_for_unpublish = os.path.join(installDir, "fm-actions/pantheon-files/yandex-disk-indicator-unpublish.contract")
+      res = subprocess.call(["gksudo", "-D", "yd-tools", "cp", contractor_for_publish, 
+                                                               contractor_for_unpublish, 
+                                                               path_to_contractors])
+      if res != 0:
+        logger.error("Cannot enable actions for Pantheon-files")
+    else:               # Remove actions for Pantheon-files
+      res = subprocess.call(["gksudo", "-D", "yd-tools", "rm", 
+                             os.path.join(path_to_contractors, "yandex-disk-indicator-publish.contract"),
+                             os.path.join(path_to_contractors, "yandex-disk-indicator-unpublish.contract")])
+      if res != 0:
+        logger.error("Cannot disable actions for Pantheon-files")
+
 ###################### MAIN #########################
 if __name__ == '__main__':
   ### Application constants ###
