@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.6.1'
+appVer = '1.6.3'
 #
 #  Copyright 2014+ Sly_tom_cat <slytomcat@mail.ru>
 #  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
@@ -539,6 +539,7 @@ class Menu(Gtk.Menu):         # Menu object
       _(' - Chibiko (zenogears@jabber.ru) - deb package creation assistance'),
       _(' - RingOV (ringov@mail.ru) - localization assistance'),
       _(' - GreekLUG team (https://launchpad.net/~greeklug) - Greek translation'),
+      _(' - Eldar Fahreev (fahreeve@yandex.ru) - FM actions for Pantheon-files'),
       _(' - And to all other people who contributed to this project through'),
       _('   the Ubuntu.ru forum http://forum.ubuntu.ru/index.php?topic=241992)')])
     aboutWindow.run()
