@@ -3,8 +3,6 @@ Upstream-Name: yd-tools
 Upstream-Contact: Sly_tom_cat, <slytomcat@mail.ru>
 Files: opt/yd-tools/yandexDiskIndicator.py
 Copyright: 2014, Sly_tom_cat, <slytomcat@mail.ru>
-Files: opt/yd-tools/ya-setup
-Copyright: 2014, Author: Snow Dimon, <snowdimon.ru>
 License: GPL-3
  GNU GENERAL PUBLIC LICENSE
  Version 3, 29 June 2007
