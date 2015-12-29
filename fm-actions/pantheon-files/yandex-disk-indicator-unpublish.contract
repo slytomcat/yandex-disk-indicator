@@ -1,0 +1,7 @@
+[Contractor Entry]
+Name=Unublish via Yandex.Disk
+Name[ru]=Убрать из публикации через Яндекс.Диск
+Icon=publish-via-yandex.disk
+Description=Publish via Yandex.Disk
+MimeType=!inode;
+Exec=/usr/share/yd-tools/fm-actions/pantheon-files/unpublish.sh %F

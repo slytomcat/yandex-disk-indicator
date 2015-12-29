@@ -705,9 +705,9 @@ class Menu(Gtk.Menu):         # Menu object
           deleteFile(autoStartIndDst)
           notify.send(_('Yandex.Disk Indicator'), _('Auto-start OFF'))
       elif key == 'fmextensions':
-        if not activateActions():
-          daemon.config[key] = not toggleState
-          button.set_active(not toggleState)
+        if not activateActions():                     # when activation/deactivation is not success
+          daemon.config[key] = not toggleState        # revert back settings
+          button.set_active(not toggleState)          # and check-button status
       elif key == 'read-only':
         self.overwrite.set_sensitive(toggleState)
 
@@ -1128,8 +1128,33 @@ def activateActions():        # Install/deinstall file extensions
       except:
         result = False
 
-  return result
+  # actions for Pantheon-files
+  ret = subprocess.call(["dpkg -s pantheon-files>/dev/null 2>&1"], shell=True)
+  logger.info("Pantheon-files installed: %s" % str(ret == 0))
+  if ret == 0:
+    path_to_contractors = "/usr/share/contractor/"
+    if activate:        # Install actions for Pantheon-files
+      contractor_for_publish = os.path.join(installDir, "fm-actions/pantheon-files/yandex-disk-indicator-publish.contract")
+      contractor_for_unpublish = os.path.join(installDir, "fm-actions/pantheon-files/yandex-disk-indicator-unpublish.contract")
+      res = subprocess.call(["gksudo", "-D", "yd-tools", "cp", contractor_for_publish,
+                                                               contractor_for_unpublish,
+                                                               path_to_contractors])
+      if res != 0:
+        logger.error("Cannot enable actions for Pantheon-files")
+        result = False
+      else:
+        result = True
+    else:               # Remove actions for Pantheon-files
+      res = subprocess.call(["gksudo", "-D", "yd-tools", "rm",
+                             os.path.join(path_to_contractors, "yandex-disk-indicator-publish.contract"),
+                             os.path.join(path_to_contractors, "yandex-disk-indicator-unpublish.contract")])
+      if res != 0:
+        logger.error("Cannot disable actions for Pantheon-files")
+        result = False
+      else:
+        result = True
 
+  return result
 
 ###################### MAIN #########################
 if __name__ == '__main__':
