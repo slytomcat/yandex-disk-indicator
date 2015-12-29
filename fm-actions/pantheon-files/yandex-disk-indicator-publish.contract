@@ -1,0 +1,7 @@
+[Contractor Entry]
+Name=Publish via Yandex.Disk
+Name[ru]=Опубликовать через Яндекс.Диск
+Icon=publish-via-yandex.disk
+Description=Publish via Yandex.Disk
+MimeType=!inode;
+Exec=/usr/share/yd-tools/fm-actions/pantheon-files/publish.sh %F
