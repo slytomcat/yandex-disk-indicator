@@ -705,7 +705,9 @@ class Menu(Gtk.Menu):         # Menu object
           deleteFile(autoStartIndDst)
           notify.send(_('Yandex.Disk Indicator'), _('Auto-start OFF'))
       elif key == 'fmextensions':
-        activateActions()
+        if not activateActions():
+          daemon.config[key] = not toggleState
+          button.set_active(not toggleState)
       elif key == 'read-only':
         self.overwrite.set_sensitive(toggleState)
 
@@ -1019,38 +1021,53 @@ def activateActions():        # Install/deinstall file extensions
       nautilusPath = ".local/share/nautilus/scripts"
     logger.debug(nautilusPath)
     if activate:        # Install actions for Nautilus
-      copyFile(os.path.join(installDir, "fm-actions/Nautilus_Nemo/publish"),
-               os.path.join(userHome,nautilusPath, _("Publish via Yandex.Disk")))
-      copyFile(os.path.join(installDir, "fm-actions/Nautilus_Nemo/unpublish"),
-               os.path.join(userHome, nautilusPath, _("Unpublish from Yandex.disk")))
+      try:
+        copyFile(os.path.join(installDir, "fm-actions/Nautilus_Nemo/publish"),
+                 os.path.join(userHome,nautilusPath, _("Publish via Yandex.Disk")))
+        copyFile(os.path.join(installDir, "fm-actions/Nautilus_Nemo/unpublish"),
+                 os.path.join(userHome, nautilusPath, _("Unpublish from Yandex.disk")))
+        result = True
+      except:
+        result = False
     else:               # Remove actions for Nautilus
-      deleteFile(os.path.join(userHome, nautilusPath, _("Publish via Yandex.Disk")))
-      deleteFile(os.path.join(userHome, nautilusPath, _("Unpublish from Yandex.disk")))
+      try:
+        deleteFile(os.path.join(userHome, nautilusPath, _("Publish via Yandex.Disk")))
+        deleteFile(os.path.join(userHome, nautilusPath, _("Unpublish from Yandex.disk")))
+        result = True
+      except:
+        result = False
   # --- Actions for Nemo ---
   ret = subprocess.call(["dpkg -s nemo>/dev/null 2>&1"], shell=True)
   logger.info("Nemo installed: %s" % str(ret == 0))
   if ret == 0:
     if activate:        # Install actions for Nemo
-      copyFile(os.path.join(installDir, "fm-actions/Nautilus_Nemo/publish"),
-               os.path.join(userHome, ".local/share/nemo/scripts",
-                            _("Publish via Yandex.Disk")))
-      copyFile(os.path.join(installDir, "fm-actions/Nautilus_Nemo/unpublish"),
-               os.path.join(userHome, ".local/share/nemo/scripts",
-                            _("Unpublish from Yandex.disk")))
-    else:               # Remove actions for Nemo
-      deleteFile(os.path.join(userHome, ".gnome2/nemo-scripts",
+      try:
+        copyFile(os.path.join(installDir, "fm-actions/Nautilus_Nemo/publish"),
+                 os.path.join(userHome, ".local/share/nemo/scripts",
                               _("Publish via Yandex.Disk")))
-      deleteFile(os.path.join(userHome, ".gnome2/nemo-scripts",
-                              _("Unpublish from Yandex.disk")))
+        copyFile(os.path.join(installDir, "fm-actions/Nautilus_Nemo/unpublish"),
+                 os.path.join(userHome, ".local/share/nemo/scripts",
+                            _("Unpublish from Yandex.disk")))
+        result = True
+      except:
+        result = False
+    else:               # Remove actions for Nemo
+      try:
+        deleteFile(os.path.join(userHome, ".gnome2/nemo-scripts", _("Publish via Yandex.Disk")))
+        deleteFile(os.path.join(userHome, ".gnome2/nemo-scripts", _("Unpublish from Yandex.disk")))
+        result = True
+      except:
+        result = False
   # --- Actions for Thunar ---
   ret = subprocess.call(["dpkg -s thunar>/dev/null 2>&1"], shell=True)
   logger.info("Thunar installed: %s" % str(ret == 0))
   if ret == 0:
     if activate:        # Install actions for Thunar
-      if subprocess.call(["grep '" + _("Publish via Yandex.Disk") + "' " +
-                          os.path.join(userHome, ".config/Thunar/uca.xml") + " >/dev/null 2>&1"],
-                         shell=True) != 0:
-        subprocess.call(["sed", "-i", "s/<\/actions>/<action><icon>folder-publicshare<\/icon>" +
+      try:
+        if subprocess.call(["grep '" + _("Publish via Yandex.Disk") + "' " +
+                            os.path.join(userHome, ".config/Thunar/uca.xml") + " >/dev/null 2>&1"],
+                           shell=True) != 0:
+          subprocess.call(["sed", "-i", "s/<\/actions>/<action><icon>folder-publicshare<\/icon>" +
                          '<name>"' + _("Publish via Yandex.Disk") +
                          '"<\/name><command>yandex-disk publish %f | xclip -filter -selection' +
                          ' clipboard; zenity --info ' +
@@ -1061,10 +1078,10 @@ def activateActions():        # Install/deinstall file extensions
                          '<directories\/><audio-files\/><image-files\/><other-files\/>' +
                          "<text-files\/><video-files\/><\/action><\/actions>/g",
                         os.path.join(userHome, ".config/Thunar/uca.xml")])
-      if subprocess.call(["grep '" + _("Unpublish from Yandex.disk") + "' " +
-                          os.path.join(userHome,".config/Thunar/uca.xml") + " >/dev/null 2>&1"],
-                          shell=True) != 0:
-        subprocess.call(["sed", "-i", "s/<\/actions>/<action><icon>folder<\/icon><name>\"" +
+        if subprocess.call(["grep '" + _("Unpublish from Yandex.disk") + "' " +
+                            os.path.join(userHome,".config/Thunar/uca.xml") + " >/dev/null 2>&1"],
+                            shell=True) != 0:
+          subprocess.call(["sed", "-i", "s/<\/actions>/<action><icon>folder<\/icon><name>\"" +
                          _("Unpublish from Yandex.disk") +
                          '"<\/name><command>zenity --info ' +
                          '--window-icon=\/usr\/share\/yd-tools\/icons\/yd-128_g.png --ok-label="' +
@@ -1075,25 +1092,43 @@ def activateActions():        # Install/deinstall file extensions
                          '<directories\/><audio-files\/><image-files\/><other-files\/>' +
                          "<text-files\/><video-files\/><\/action><\/actions>/g",
                         os.path.join(userHome, ".config/Thunar/uca.xml")])
+        result = True
+      except:
+        result = False
     else:               # Remove actions for Thunar
-      subprocess.call(["sed", "-i", "s/<action><icon>.*<\/icon><name>\"" +
-                       _("Publish via Yandex.Disk") + "\".*<\/action>//",
-                      os.path.join(userHome,".config/Thunar/uca.xml")])
-      subprocess.call(["sed", "-i", "s/<action><icon>.*<\/icon><name>\"" +
-                       _("Unpublish from Yandex.disk") + "\".*<\/action>//",
-                      os.path.join(userHome, ".config/Thunar/uca.xml")])
+      try:
+        subprocess.call(["sed", "-i", "s/<action><icon>.*<\/icon><name>\"" +
+                         _("Publish via Yandex.Disk") + "\".*<\/action>//",
+                        os.path.join(userHome,".config/Thunar/uca.xml")])
+        subprocess.call(["sed", "-i", "s/<action><icon>.*<\/icon><name>\"" +
+                         _("Unpublish from Yandex.disk") + "\".*<\/action>//",
+                        os.path.join(userHome, ".config/Thunar/uca.xml")])
+        result = True
+      except:
+        result = False
+
   # --- Actions for Dolphin ---
   ret = subprocess.call(["dpkg -s dolphin>/dev/null 2>&1"], shell=True)
   logger.info("Dolphin installed: %s" % str(ret == 0))
   if ret == 0:
     if activate:        # Install actions for Dolphin
-      copyFile(os.path.join(installDir, "fm-actions/Dolphin/publish.desktop"),
-               os.path.join(userHome, ".kde/share/kde4/services/publish.desktop"))
-      copyFile(os.path.join(installDir, "fm-actions/Dolphin/unpublish.desktop"),
-               os.path.join(userHome, ".kde/share/kde4/services/unpublish.desktop"))
+      try:
+        copyFile(os.path.join(installDir, "fm-actions/Dolphin/publish.desktop"),
+                 os.path.join(userHome, ".kde/share/kde4/services/publish.desktop"))
+        copyFile(os.path.join(installDir, "fm-actions/Dolphin/unpublish.desktop"),
+                 os.path.join(userHome, ".kde/share/kde4/services/unpublish.desktop"))
+        result = True
+      except:
+        result = False
     else:               # Remove actions for Dolphin
-      deleteFile(os.path.join(userHome, ".kde/share/kde4/services/publish.desktop"))
-      deleteFile(os.path.join(userHome," .kde/share/kde4/services/unpublish.desktop"))
+      try:
+        deleteFile(os.path.join(userHome, ".kde/share/kde4/services/publish.desktop"))
+        deleteFile(os.path.join(userHome," .kde/share/kde4/services/unpublish.desktop"))
+        result = True
+      except:
+        result = False
+
+  return result
 
 
 ###################### MAIN #########################
