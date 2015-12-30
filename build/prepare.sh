@@ -33,8 +33,7 @@ cp ../../fm-actions/Dolphin/unpublish.desktop usr/share/yd-tools/fm-actions/Dolp
 chmod -R u+rw *
 chmod -R go-w *
 chmod a+x debian/rules
-chmod a+x debian/prerm
-chmod a+x debian/preinst
+chmod a+x debian/pre*
 chmod a+x usr/share/yd-tools/*
 chmod a+x usr/share/yd-tools/fm-actions/Nautilus_Nemo/*
 chmod a+x usr/share/yd-tools/fm-actions/Dolphin/*

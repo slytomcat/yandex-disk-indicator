@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.5.7'
+appVer = '1.6.3'
 #
 #  Copyright 2014+ Sly_tom_cat <slytomcat@mail.ru>
 #  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
@@ -109,7 +109,7 @@ class Config(OrderedDict):    # Configuration object
       value = False
     return value
 
-  def word(self, line, dc=True):                          # Get first value(word) from beginning of line
+  def word(self, line, dc=True):                          # Get first word from beginning of line
     if line[0] == '"':                  # Is value quoted?
       end = line.find('"', 1)           # Find ending quote
       if end > 0:                       # Is ending quote exists?
@@ -539,6 +539,7 @@ class Menu(Gtk.Menu):         # Menu object
       _(' - Chibiko (zenogears@jabber.ru) - deb package creation assistance'),
       _(' - RingOV (ringov@mail.ru) - localization assistance'),
       _(' - GreekLUG team (https://launchpad.net/~greeklug) - Greek translation'),
+      _(' - Eldar Fahreev (fahreeve@yandex.ru) - FM actions for Pantheon-files'),
       _(' - And to all other people who contributed to this project through'),
       _('   the Ubuntu.ru forum http://forum.ubuntu.ru/index.php?topic=241992)')])
     aboutWindow.run()
@@ -546,16 +547,16 @@ class Menu(Gtk.Menu):         # Menu object
     widget.set_sensitive(True)            # Enable menu item
 
   def showOutput(self, widget):           # Display daemon output in dialogue window
-    global origLANG, workLANG
+    global lang
     widget.set_sensitive(False)                         # Disable menu item
     statusWindow = Gtk.Dialog(_('Yandex.Disk daemon output message'))
     statusWindow.set_icon(GdkPixbuf.Pixbuf.new_from_file(logo))
     statusWindow.set_border_width(6)
     statusWindow.add_button(_('Close'), Gtk.ResponseType.CLOSE)
     textBox = Gtk.TextView()                            # Create text-box to display daemon output
-    os.putenv('LANG', origLANG)                         # Switch to user LANG
+    lang.orig()                                         # Switch to user LANG
     textBox.get_buffer().set_text(daemon.getOutput())   # Set test to daemon output in user language
-    os.putenv('LANG', workLANG)                         # Restore working LANG
+    lang.work()                                         # Restore working LANG
     textBox.set_editable(False)
     statusWindow.get_content_area().add(textBox)        # Put it inside the dialogue content area
     statusWindow.show_all();  statusWindow.run();   statusWindow.destroy()
@@ -571,7 +572,7 @@ class Menu(Gtk.Menu):         # Menu object
     self.updateSSS()            # Change the menu items sensitivity
 
   def stopDaemon(self, widget):           # Stop daemon
-    daemon.stop()           
+    daemon.stop()
     self.updateSSS()            # Change the menu items sensitivity
 
   def openPath(self, widget, path):       # Open path
@@ -705,7 +706,9 @@ class Menu(Gtk.Menu):         # Menu object
           deleteFile(autoStartIndDst)
           notify.send(_('Yandex.Disk Indicator'), _('Auto-start OFF'))
       elif key == 'fmextensions':
-        activateActions()
+        if not activateActions():                     # when activation/deactivation is not success
+          daemon.config[key] = not toggleState        # revert back settings
+          button.set_active(not toggleState)          # and check-button status
       elif key == 'read-only':
         self.overwrite.set_sensitive(toggleState)
 
@@ -805,9 +808,9 @@ class Menu(Gtk.Menu):         # Menu object
 
   def updateSSS(self):                    # Update daemon start, stop & status menu availability
     started = daemon.status != 'none'
-    self.daemon_start.set_sensitive(not started)
     self.daemon_stop.set_sensitive(started)
     self.status.set_sensitive(started)
+    self.daemon_start.set_sensitive(not started)
 
   def close(self, widget):                # Quit from indicator
     global wTimer
@@ -828,7 +831,7 @@ class Icon(object):           # Indicator icon
   def __init__(self):     # Initialize icon paths
     self.updateTheme()
     # Create timer object for the icon animation
-    self.timer = Timer(777, self.animation, start=False)  
+    self.timer = Timer(777, self.animation, start=False)
 
   def updateTheme(self):  # Determine paths to icons according to current theme
     global installDir, configPath
@@ -886,12 +889,12 @@ class LockFile(object):       # LockFile object
     logger.debug('Lock file is:%s' % self.fileName)
     try:                                                          # Open lock file for write
       self.lockFile = (open(self.fileName, 'r+') if os.path.exists(self.fileName) else
-                       open(self.fileName, 'w'))                    
+                       open(self.fileName, 'w'))
       fcntl.flock(self.lockFile, fcntl.LOCK_EX | fcntl.LOCK_NB)   # Try to acquire exclusive lock
       logger.debug('Lock file succesfully locked.')
     except:                                                       # File is already locked
-      sys.exit(_('%s instance is already running\n' +
-                 '(file %s is locked by another process)') % (appName, self.fileName))
+      sys.exit(_('The indicator instance is already running.\n'+
+                 '(file %s is locked by another process)') % self.fileName)
     self.lockFile.write('%d\n' % os.getpid())
     self.lockFile.flush()
 
@@ -908,8 +911,8 @@ class Timer(object):          # Timer object
     self.active = False               # Current activity status
     if start:
       self.start()                    # Start timer if requered
-    
-  def start(self, interval = None):   # Start inactive timer or update if it is active 
+
+  def start(self, interval = None):   # Start inactive timer or update if it is active
     if interval is None:
       interval = self.interval
     if not self.active:
@@ -928,12 +931,30 @@ class Timer(object):          # Timer object
       if self.active:
         self.stop()
         self.start()
-      
+
   def stop(self):                     # Stop active timer
     if self.active:
       logger.debug('timer to stop %s %s' %(self.timer, self.interval))
       GLib.source_remove(self.timer)
       self.active = False
+
+class Language(object):       # Language object
+
+  def __init__(self):
+    self.origLANG = os.getenv('LANG')    # Store original LANG environment
+    self.workLANG = 'en_US.UTF-8'
+    # Load translation object (or NullTranslations object when
+    # translation file not found) and define _() function.
+    gettext.translation(appName, '/usr/share/locale', fallback=True).install()
+    # Set LANG environment for daemon output (it must be 'en' for correct parsing)
+    self.work()
+    logger.info('User LANG is '+self.origLANG)
+
+  def orig(self):  # Set original user language
+    os.putenv('LANG', self.origLANG)
+
+  def work(self):  # Set working language for daemon output correct parsing
+    os.putenv('LANG', self.workLANG)
 
 def copyFile(source, destination):
   try:    fileCopy (source, destination)
@@ -1001,38 +1022,53 @@ def activateActions():        # Install/deinstall file extensions
       nautilusPath = ".local/share/nautilus/scripts"
     logger.debug(nautilusPath)
     if activate:        # Install actions for Nautilus
-      copyFile(os.path.join(installDir, "fm-actions/Nautilus_Nemo/publish"),
-               os.path.join(userHome,nautilusPath, _("Publish via Yandex.Disk")))
-      copyFile(os.path.join(installDir, "fm-actions/Nautilus_Nemo/unpublish"),
-               os.path.join(userHome, nautilusPath, _("Unpublish from Yandex.disk")))
+      try:
+        copyFile(os.path.join(installDir, "fm-actions/Nautilus_Nemo/publish"),
+                 os.path.join(userHome,nautilusPath, _("Publish via Yandex.Disk")))
+        copyFile(os.path.join(installDir, "fm-actions/Nautilus_Nemo/unpublish"),
+                 os.path.join(userHome, nautilusPath, _("Unpublish from Yandex.disk")))
+        result = True
+      except:
+        result = False
     else:               # Remove actions for Nautilus
-      deleteFile(os.path.join(userHome, nautilusPath, _("Publish via Yandex.Disk")))
-      deleteFile(os.path.join(userHome, nautilusPath, _("Unpublish from Yandex.disk")))
+      try:
+        deleteFile(os.path.join(userHome, nautilusPath, _("Publish via Yandex.Disk")))
+        deleteFile(os.path.join(userHome, nautilusPath, _("Unpublish from Yandex.disk")))
+        result = True
+      except:
+        result = False
   # --- Actions for Nemo ---
   ret = subprocess.call(["dpkg -s nemo>/dev/null 2>&1"], shell=True)
   logger.info("Nemo installed: %s" % str(ret == 0))
   if ret == 0:
     if activate:        # Install actions for Nemo
-      copyFile(os.path.join(installDir, "fm-actions/Nautilus_Nemo/publish"),
-               os.path.join(userHome, ".local/share/nemo/scripts",
-                            _("Publish via Yandex.Disk")))
-      copyFile(os.path.join(installDir, "fm-actions/Nautilus_Nemo/unpublish"),
-               os.path.join(userHome, ".local/share/nemo/scripts",
-                            _("Unpublish from Yandex.disk")))
-    else:               # Remove actions for Nemo
-      deleteFile(os.path.join(userHome, ".gnome2/nemo-scripts",
+      try:
+        copyFile(os.path.join(installDir, "fm-actions/Nautilus_Nemo/publish"),
+                 os.path.join(userHome, ".local/share/nemo/scripts",
                               _("Publish via Yandex.Disk")))
-      deleteFile(os.path.join(userHome, ".gnome2/nemo-scripts",
-                              _("Unpublish from Yandex.disk")))
+        copyFile(os.path.join(installDir, "fm-actions/Nautilus_Nemo/unpublish"),
+                 os.path.join(userHome, ".local/share/nemo/scripts",
+                            _("Unpublish from Yandex.disk")))
+        result = True
+      except:
+        result = False
+    else:               # Remove actions for Nemo
+      try:
+        deleteFile(os.path.join(userHome, ".gnome2/nemo-scripts", _("Publish via Yandex.Disk")))
+        deleteFile(os.path.join(userHome, ".gnome2/nemo-scripts", _("Unpublish from Yandex.disk")))
+        result = True
+      except:
+        result = False
   # --- Actions for Thunar ---
   ret = subprocess.call(["dpkg -s thunar>/dev/null 2>&1"], shell=True)
   logger.info("Thunar installed: %s" % str(ret == 0))
   if ret == 0:
     if activate:        # Install actions for Thunar
-      if subprocess.call(["grep '" + _("Publish via Yandex.Disk") + "' " +
-                          os.path.join(userHome, ".config/Thunar/uca.xml") + " >/dev/null 2>&1"],
-                         shell=True) != 0:
-        subprocess.call(["sed", "-i", "s/<\/actions>/<action><icon>folder-publicshare<\/icon>" +
+      try:
+        if subprocess.call(["grep '" + _("Publish via Yandex.Disk") + "' " +
+                            os.path.join(userHome, ".config/Thunar/uca.xml") + " >/dev/null 2>&1"],
+                           shell=True) != 0:
+          subprocess.call(["sed", "-i", "s/<\/actions>/<action><icon>folder-publicshare<\/icon>" +
                          '<name>"' + _("Publish via Yandex.Disk") +
                          '"<\/name><command>yandex-disk publish %f | xclip -filter -selection' +
                          ' clipboard; zenity --info ' +
@@ -1043,10 +1079,10 @@ def activateActions():        # Install/deinstall file extensions
                          '<directories\/><audio-files\/><image-files\/><other-files\/>' +
                          "<text-files\/><video-files\/><\/action><\/actions>/g",
                         os.path.join(userHome, ".config/Thunar/uca.xml")])
-      if subprocess.call(["grep '" + _("Unpublish from Yandex.disk") + "' " +
-                          os.path.join(userHome,".config/Thunar/uca.xml") + " >/dev/null 2>&1"],
-                          shell=True) != 0:
-        subprocess.call(["sed", "-i", "s/<\/actions>/<action><icon>folder<\/icon><name>\"" +
+        if subprocess.call(["grep '" + _("Unpublish from Yandex.disk") + "' " +
+                            os.path.join(userHome,".config/Thunar/uca.xml") + " >/dev/null 2>&1"],
+                            shell=True) != 0:
+          subprocess.call(["sed", "-i", "s/<\/actions>/<action><icon>folder<\/icon><name>\"" +
                          _("Unpublish from Yandex.disk") +
                          '"<\/name><command>zenity --info ' +
                          '--window-icon=\/usr\/share\/yd-tools\/icons\/yd-128_g.png --ok-label="' +
@@ -1057,25 +1093,41 @@ def activateActions():        # Install/deinstall file extensions
                          '<directories\/><audio-files\/><image-files\/><other-files\/>' +
                          "<text-files\/><video-files\/><\/action><\/actions>/g",
                         os.path.join(userHome, ".config/Thunar/uca.xml")])
+        result = True
+      except:
+        result = False
     else:               # Remove actions for Thunar
-      subprocess.call(["sed", "-i", "s/<action><icon>.*<\/icon><name>\"" +
-                       _("Publish via Yandex.Disk") + "\".*<\/action>//",
-                      os.path.join(userHome,".config/Thunar/uca.xml")])
-      subprocess.call(["sed", "-i", "s/<action><icon>.*<\/icon><name>\"" +
-                       _("Unpublish from Yandex.disk") + "\".*<\/action>//",
-                      os.path.join(userHome, ".config/Thunar/uca.xml")])
+      try:
+        subprocess.call(["sed", "-i", "s/<action><icon>.*<\/icon><name>\"" +
+                         _("Publish via Yandex.Disk") + "\".*<\/action>//",
+                        os.path.join(userHome,".config/Thunar/uca.xml")])
+        subprocess.call(["sed", "-i", "s/<action><icon>.*<\/icon><name>\"" +
+                         _("Unpublish from Yandex.disk") + "\".*<\/action>//",
+                        os.path.join(userHome, ".config/Thunar/uca.xml")])
+        result = True
+      except:
+        result = False
+
   # --- Actions for Dolphin ---
   ret = subprocess.call(["dpkg -s dolphin>/dev/null 2>&1"], shell=True)
   logger.info("Dolphin installed: %s" % str(ret == 0))
   if ret == 0:
     if activate:        # Install actions for Dolphin
-      copyFile(os.path.join(installDir, "fm-actions/Dolphin/publish.desktop"),
-               os.path.join(userHome, ".kde/share/kde4/services/publish.desktop"))
-      copyFile(os.path.join(installDir, "fm-actions/Dolphin/unpublish.desktop"),
-               os.path.join(userHome, ".kde/share/kde4/services/unpublish.desktop"))
+      try:
+        copyFile(os.path.join(installDir, "fm-actions/Dolphin/publish.desktop"),
+                 os.path.join(userHome, ".kde/share/kde4/services/publish.desktop"))
+        copyFile(os.path.join(installDir, "fm-actions/Dolphin/unpublish.desktop"),
+                 os.path.join(userHome, ".kde/share/kde4/services/unpublish.desktop"))
+        result = True
+      except:
+        result = False
     else:               # Remove actions for Dolphin
-      deleteFile(os.path.join(userHome, ".kde/share/kde4/services/publish.desktop"))
-      deleteFile(os.path.join(userHome," .kde/share/kde4/services/unpublish.desktop"))
+      try:
+        deleteFile(os.path.join(userHome, ".kde/share/kde4/services/publish.desktop"))
+        deleteFile(os.path.join(userHome," .kde/share/kde4/services/unpublish.desktop"))
+        result = True
+      except:
+        result = False
 
   # actions for Pantheon-files
   ret = subprocess.call(["dpkg -s pantheon-files>/dev/null 2>&1"], shell=True)
@@ -1085,17 +1137,25 @@ def activateActions():        # Install/deinstall file extensions
     if activate:        # Install actions for Pantheon-files
       contractor_for_publish = os.path.join(installDir, "fm-actions/pantheon-files/yandex-disk-indicator-publish.contract")
       contractor_for_unpublish = os.path.join(installDir, "fm-actions/pantheon-files/yandex-disk-indicator-unpublish.contract")
-      res = subprocess.call(["gksudo", "-D", "yd-tools", "cp", contractor_for_publish, 
-                                                               contractor_for_unpublish, 
+      res = subprocess.call(["gksudo", "-D", "yd-tools", "cp", contractor_for_publish,
+                                                               contractor_for_unpublish,
                                                                path_to_contractors])
       if res != 0:
         logger.error("Cannot enable actions for Pantheon-files")
+        result = False
+      else:
+        result = True
     else:               # Remove actions for Pantheon-files
-      res = subprocess.call(["gksudo", "-D", "yd-tools", "rm", 
+      res = subprocess.call(["gksudo", "-D", "yd-tools", "rm",
                              os.path.join(path_to_contractors, "yandex-disk-indicator-publish.contract"),
                              os.path.join(path_to_contractors, "yandex-disk-indicator-unpublish.contract")])
       if res != 0:
         logger.error("Cannot disable actions for Pantheon-files")
+        result = False
+      else:
+        result = True
+
+  return result
 
 ###################### MAIN #########################
 if __name__ == '__main__':
@@ -1116,19 +1176,29 @@ if __name__ == '__main__':
   ### Output the version and environment information to console output
   print('%s v.%s' % (appName, appVer))
 
-  ### Localization ###
-  origLANG = os.getenv('LANG')    # Store original LANG environment
-  # Load translation object (or NullTranslations object when
-  # translation file not found) and define _() function.
-  gettext.translation(appName, '/usr/share/locale', fallback=True).install()
-  # Set LANG environment for daemon output (it must be 'en' for correct parsing)
-  workLANG = 'en_US.UTF-8'
-  os.putenv('LANG', workLANG)
-
   ### Logging ###
-  # Line:%(lineno)d
+  '''
+  Logging level can be set via command line parameter:
+    -l<n>     where n is one of the logging levels: 10, 20, 30, 40 or 50 (see below)
+  Logging level can be:
+    10 - to show all messages (DEBUG)
+    20 - to show all messages except debugging messages (INFO)
+    30 - to show all messages except debugging and info messages (WARNING)
+    40 - to show only error and critical messages (ERROR)
+    50 - to show critical messages only (CRITICAL) '''
+
   logging.basicConfig(format='%(asctime)-15s %(levelname)-8s %(message)s')
   logger = logging.getLogger('')
+  # Check command line arguments for logging level options
+  logger.setLevel(30)
+  for opt in sys.argv[1:]:
+    if opt[:2] == '-l':
+      logger.setLevel(int(opt[2:]))
+
+  logger.info('Logging level: '+str(logger.getEffectiveLevel()))
+
+  ### Localization ###
+  lang = Language()
 
   ### Application configuration ###
   '''
@@ -1136,8 +1206,8 @@ if __name__ == '__main__':
   This file can contain comments (line starts with '#') and config values in
   form: key=value[,value[,value ...]] where keys and values can be quoted ("...") or not.
   The following key words are reserved for configuration:
-    autostart, startonstart, stoponexit, notifications, theme, fmextensions, autostartdaemon
-    and loglevel (loglevel is not configurable from indicator preferences dialogue).
+    autostart, startonstart, stoponexit, notifications, theme, fmextensions and autostartdaemon.
+
   The dictionary 'config' stores the config settings for usage in code. Its values are saved to
   config file on the Menu.Preferences dialogue exit or on application start when cofig
   file is not exists.
@@ -1149,16 +1219,6 @@ if __name__ == '__main__':
   '''
   config = Config(os.path.join(configPath, appName + '.conf'))
   # Read some settings to variables, set default values and update some values
-  # Set logger level from config value
-  logger.setLevel(level=int(config.setdefault('loglevel', '30')))
-  '''
-  Log level can be set to:
-    10 - for all messages
-    20 - for all messages except debugging messages
-    30 - for all messages except debugging and info messages
-    40 - for all messages except debugging, info and warning messages
-    50 - for critical messages only (don't show error, warning, info and error messages)
-  '''
   config['autostart'] = os.path.isfile(autoStartIndDst)
   config.setdefault('startonstart', True)
   config.setdefault('stoponexit', False)
