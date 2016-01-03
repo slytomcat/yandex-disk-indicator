@@ -25,6 +25,10 @@ rm usr/share/yd-tools/fm-actions/Nautilus_Nemo/publish
 rm usr/share/yd-tools/fm-actions/Nautilus_Nemo/unpublish
 rm usr/share/yd-tools/fm-actions/Dolphin/publish.desktop
 rm usr/share/yd-tools/fm-actions/Dolphin/unpublish.desktop
+rm usr/share/yd-tools/fm-actions/pantheon-files/publish.sh
+rm usr/share/yd-tools/fm-actions/pantheon-files/unpublish.sh
+rm usr/share/yd-tools/fm-actions/pantheon-files/yandex-disk-indicator-publish.contract
+rm usr/share/yd-tools/fm-actions/pantheon-files/yandex-disk-indicator-unpublish.contract
 rm usr/share/locale/ru/LC_MESSAGES/yandex-disk-indicator.mo
 rm usr/share/locale/el/LC_MESSAGES/yandex-disk-indicator.mo
 rm usr/share/applications/Yandex.Disk.desktop

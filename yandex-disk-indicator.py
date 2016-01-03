@@ -303,7 +303,7 @@ class YDDaemon(object):       # Yandex.Disk daemon interface object
     self.yandexDiskFolder = self.config.get('dir', '')
     while not self.getOutput():     # Check for correct daemon response and check that it is running
       try:                          # Try to find daemon running process owned by current user
-        msg = subprocess.check_output(['pgrep', '-x', 'yandex-disk', '-u$USER'],
+        msg = subprocess.check_output(['pgrep', '-x', 'yandex-disk', '-u'+user],
                                       universal_newlines=True)[: -1]
         logger.error('yandex-disk daemon is running but NOT responding!')
         # Kills the daemon(s) when it is running but not responding (HARON_CASE).
@@ -706,9 +706,15 @@ class Menu(Gtk.Menu):         # Menu object
           deleteFile(autoStartIndDst)
           notify.send(_('Yandex.Disk Indicator'), _('Auto-start OFF'))
       elif key == 'fmextensions':
-        if not activateActions():                     # when activation/deactivation is not success
-          daemon.config[key] = not toggleState        # revert back settings
-          button.set_active(not toggleState)          # and check-button status
+        if not button.get_inconsistent():             # first call
+          if not activateActions():                   # when activation/deactivation is not success
+            notify.send(_('Yandex.Disk Indicator'),
+                        _('ERROR in setting up of file manager extensions'))
+            daemon.config[key] = not toggleState      # revert back settings
+            button.set_inconsistent(True)             # set inconsistent state to detect second call
+            button.set_active(not toggleState)        # and check-button status
+        else:                                         # second call
+          button.set_inconsistent(False)              # just remove inconsistent status
       elif key == 'read-only':
         self.overwrite.set_sensitive(toggleState)
 
@@ -1011,6 +1017,8 @@ def handleEvent(byNotifier):  # Perform status update
 
 def activateActions():        # Install/deinstall file extensions
   activate = config["fmextensions"]
+  result = False
+
   # --- Actions for Nautilus ---
   ret = subprocess.call(["dpkg -s nautilus>/dev/null 2>&1"], shell=True)
   logger.info("Nautilus installed: %s" % str(ret == 0))
@@ -1163,6 +1171,7 @@ if __name__ == '__main__':
   appName = 'yandex-disk-indicator'
   appHomeName = 'yd-tools'
   installDir = os.path.join(os.sep, 'usr', 'share', appHomeName)
+  user = os.getenv("USER")
   userHome = os.getenv("HOME")
   logo = os.path.join(installDir, 'icons', 'yd-128.png')
   configPath = os.path.join(userHome, '.config', appHomeName)

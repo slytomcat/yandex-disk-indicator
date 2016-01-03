@@ -1,4 +1,5 @@
 ﻿________TO DO__________
+- продумать вариант чтения X-GNOME-Autostart-enabled=fals/true из .desktop файтов в каталоге ~/.config/autostart
 
 ________TO DO (ON HOLD)__________
 - DAEMON-INSTALL_STORY — solution 5??? - on hold
