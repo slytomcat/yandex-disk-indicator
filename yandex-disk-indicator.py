@@ -622,10 +622,10 @@ class Menu(Gtk.Menu):         # Menu object
       сbTheme.connect("toggled", self.onButtonToggled, сbTheme, key)
       preferencesBox.add(сbTheme)
       key = 'fmextensions'                        # Activate file-manager extensions
-      сbExtensions = Gtk.CheckButton(_('Activate file manager extensions'))
-      сbExtensions.set_active(config[key])
-      сbExtensions.connect("toggled", self.onButtonToggled, сbExtensions, key)
-      preferencesBox.add(сbExtensions)
+      self.сbExtensions = Gtk.CheckButton(_('Activate file manager extensions'))
+      self.сbExtensions.set_active(config[key])
+      self.id_сbExtensions_toggled = self.сbExtensions.connect("toggled", self.onButtonToggled, self.сbExtensions, key)
+      preferencesBox.add(self.сbExtensions)
       # --- End of Indicator preferences tab --- add it to notebook
       pref_notebook.append_page(preferencesBox, Gtk.Label(_('Indicator settings')))
       # --- Daemon start options tab ---
@@ -708,7 +708,8 @@ class Menu(Gtk.Menu):         # Menu object
       elif key == 'fmextensions':
         if not activateActions():                     # when activation/deactivation is not success
           daemon.config[key] = not toggleState        # revert back settings
-          button.set_active(not toggleState)          # and check-button status
+          with self.сbExtensions.handler_block(self.id_сbExtensions_toggled):
+            button.set_active(not toggleState)          # and check-button status
       elif key == 'read-only':
         self.overwrite.set_sensitive(toggleState)
 
