@@ -583,6 +583,69 @@ class Menu(Gtk.Menu):         # Menu object
 
   class Preferences(Gtk.Dialog):          # Preferences Window
 
+    class excludeDirsList(Gtk.Dialog):                # Excluded list dialogue
+
+      def __init__(self, widget, parent):   # show current list
+        self.parent = parent
+        self.changed = False
+        Gtk.Dialog.__init__(self, title=_('Folders that are excluded from synchronization'),
+                            parent=parent, flags=1)
+        self.set_icon(GdkPixbuf.Pixbuf.new_from_file(logo))
+        self.set_border_width(6)
+        self.add_button(_('Add catalogue'),
+                        Gtk.ResponseType.APPLY).connect("clicked", self.addFolder, self)
+        self.add_button(_('Remove selected'),
+                        Gtk.ResponseType.REJECT).connect("clicked", self.deleteSelected)
+        self.add_button(_('Close'),
+                        Gtk.ResponseType.CLOSE).connect("clicked", self.exitFromDialog)
+        self.excludeList = Gtk.ListStore(bool , str)
+        view = Gtk.TreeView(model=self.excludeList)
+        render = Gtk.CellRendererToggle()
+        render.connect("toggled", self.lineToggled)
+        view.append_column(Gtk.TreeViewColumn(" ", render, active=0))
+        view.append_column(Gtk.TreeViewColumn(_('Path'), Gtk.CellRendererText(), text=1))
+        self.get_content_area().add(view)
+        # Populate list with paths from "exclude-dirs" property of daemon configuration
+        for val in CVal(daemon.config.get('exclude-dirs', None)):
+          self.excludeList.append([False, val])
+        self.show_all()
+
+      def exitFromDialog(self, widget):     # Save list from dialogue to "exclude-dirs" property
+        if self.changed:
+          exList = CVal()                                     # Store path value from dialogue rows
+          listIter = self.excludeList.get_iter_first()
+          while listIter != None:
+            exList.add(self.excludeList.get(listIter, 1)[0])
+            listIter = self.excludeList.iter_next(listIter)
+          daemon.config['exclude-dirs'] = exList.get()        # Save collected value
+          self.parent.daemonCfgUpdate = True                  # Inform parent about changed list
+        self.destroy()                                        # Close dialogue
+
+      def lineToggled(self, widget, path):  # Line click handler, it switch row selection
+        self.excludeList[path][0] = not self.excludeList[path][0]
+
+      def deleteSelected(self, widget):     # Remove selected rows from list
+        listIiter = self.excludeList.get_iter_first()
+        while listIiter != None and self.excludeList.iter_is_valid(listIiter):
+          if self.excludeList.get(listIiter, 0)[0]:
+            self.excludeList.remove(listIiter)
+            self.changed = True
+          else:
+            listIiter = self.excludeList.iter_next(listIiter)
+
+      def addFolder(self, widget, parent):  # Add new path to list via FileChooserDialog
+        dialog = Gtk.FileChooserDialog(_('Select catalogue to add to list'), parent,
+                                     Gtk.FileChooserAction.SELECT_FOLDER,
+                                     (_('Close'), Gtk.ResponseType.CANCEL,
+                                      _('Select'), Gtk.ResponseType.ACCEPT))
+        dialog.set_default_response(Gtk.ResponseType.CANCEL)
+        dialog.set_current_folder(daemon.yandexDiskFolder)
+        if dialog.run() == Gtk.ResponseType.ACCEPT:
+          res = os.path.relpath(dialog.get_filename(), start=daemon.yandexDiskFolder)
+          self.excludeList.append([False, res])
+          self.changed = True
+        dialog.destroy()
+
     def __init__(self, widget):                       # Show preferences window
       # Preferences Window routine
       widget.set_sensitive(False)                 # Disable menu item to avoid multiple windows creation
@@ -679,12 +742,6 @@ class Menu(Gtk.Menu):         # Menu object
 
     def onButtonToggled(self, widget, button, key):   # Handle clicks on check-buttons
       toggleState = button.get_active()
-      if key in ['read-only', 'overwrite']:
-        daemon.config[key] = toggleState              # Update daemon config
-        self.daemonCfgUpdate = True
-      else:
-        config[key] = toggleState                     # Update application config
-        self.appCfgUpdate = True
       logger.debug('Togged: %s  val: %s' % (key, str(toggleState)))
       if key == 'theme':
         icon.updateTheme()                            # Update themeStyle
@@ -710,77 +767,22 @@ class Menu(Gtk.Menu):         # Menu object
           if not activateActions():                   # when activation/deactivation is not success
             notify.send(_('Yandex.Disk Indicator'),
                         _('ERROR in setting up of file manager extensions'))
-            daemon.config[key] = not toggleState      # revert back settings
+            toggleState = not toggleState             # revert settings back
             button.set_inconsistent(True)             # set inconsistent state to detect second call
-            button.set_active(not toggleState)        # and check-button status
+            button.set_active(toggleState)            # set check-button to reverted status
+            # set_active will raise again the 'toggled' event 
         else:                                         # second call
           button.set_inconsistent(False)              # just remove inconsistent status
       elif key == 'read-only':
         self.overwrite.set_sensitive(toggleState)
-
-    class excludeDirsList(Gtk.Dialog):                # Excluded list dialogue
-
-      def __init__(self, widget, parent):   # show current list
-        self.parent = parent
-        self.changed = False
-        Gtk.Dialog.__init__(self, title=_('Folders that are excluded from synchronization'),
-                            parent=parent, flags=1)
-        self.set_icon(GdkPixbuf.Pixbuf.new_from_file(logo))
-        self.set_border_width(6)
-        self.add_button(_('Add catalogue'),
-                        Gtk.ResponseType.APPLY).connect("clicked", self.addFolder, self)
-        self.add_button(_('Remove selected'),
-                        Gtk.ResponseType.REJECT).connect("clicked", self.deleteSelected)
-        self.add_button(_('Close'),
-                        Gtk.ResponseType.CLOSE).connect("clicked", self.exitFromDialog)
-        self.excludeList = Gtk.ListStore(bool , str)
-        view = Gtk.TreeView(model=self.excludeList)
-        render = Gtk.CellRendererToggle()
-        render.connect("toggled", self.lineToggled)
-        view.append_column(Gtk.TreeViewColumn(" ", render, active=0))
-        view.append_column(Gtk.TreeViewColumn(_('Path'), Gtk.CellRendererText(), text=1))
-        self.get_content_area().add(view)
-        # Populate list with paths from "exclude-dirs" property of daemon configuration
-        for val in CVal(daemon.config.get('exclude-dirs', None)):
-          self.excludeList.append([False, val])
-        self.show_all()
-
-      def exitFromDialog(self, widget):     # Save list from dialogue to "exclude-dirs" property
-        if self.changed:
-          exList = CVal()                                     # Store path value from dialogue rows
-          listIter = self.excludeList.get_iter_first()
-          while listIter != None:
-            exList.add(self.excludeList.get(listIter, 1)[0])
-            listIter = self.excludeList.iter_next(listIter)
-          daemon.config['exclude-dirs'] = exList.get()        # Save collected value
-          self.parent.daemonCfgUpdate = True                  # Inform parent about changed list
-        self.destroy()                                        # Close dialogue
-
-      def lineToggled(self, widget, path):  # Line click handler, it switch row selection
-        self.excludeList[path][0] = not self.excludeList[path][0]
-
-      def deleteSelected(self, widget):     # Remove selected rows from list
-        listIiter = self.excludeList.get_iter_first()
-        while listIiter != None and self.excludeList.iter_is_valid(listIiter):
-          if self.excludeList.get(listIiter, 0)[0]:
-            self.excludeList.remove(listIiter)
-            self.changed = True
-          else:
-            listIiter = self.excludeList.iter_next(listIiter)
-
-      def addFolder(self, widget, parent):  # Add new path to list via FileChooserDialog
-        dialog = Gtk.FileChooserDialog(_('Select catalogue to add to list'), parent,
-                                     Gtk.FileChooserAction.SELECT_FOLDER,
-                                     (_('Close'), Gtk.ResponseType.CANCEL,
-                                      _('Select'), Gtk.ResponseType.ACCEPT))
-        dialog.set_default_response(Gtk.ResponseType.CANCEL)
-        dialog.set_current_folder(daemon.yandexDiskFolder)
-        if dialog.run() == Gtk.ResponseType.ACCEPT:
-          res = os.path.relpath(dialog.get_filename(), start=daemon.yandexDiskFolder)
-          self.excludeList.append([False, res])
-          self.changed = True
-        dialog.destroy()
-
+      # Update configurations
+      if key in ['read-only', 'overwrite']:
+        daemon.config[key] = toggleState              # Update daemon config
+        self.daemonCfgUpdate = True
+      else:
+        config[key] = toggleState                     # Update application config
+        self.appCfgUpdate = True
+      
   def update(self):                       # Update information in menu
     # Update status data
     self.status.set_label(_('Status: ') + self.YD_STATUS.get(daemon.status) +
@@ -1037,14 +1039,14 @@ def activateActions():        # Install/deinstall file extensions
                  os.path.join(userHome, nautilusPath, _("Unpublish from Yandex.disk")))
         result = True
       except:
-        result = False
+        pass
     else:               # Remove actions for Nautilus
       try:
         deleteFile(os.path.join(userHome, nautilusPath, _("Publish via Yandex.Disk")))
         deleteFile(os.path.join(userHome, nautilusPath, _("Unpublish from Yandex.disk")))
         result = True
       except:
-        result = False
+        pass
   # --- Actions for Nemo ---
   ret = subprocess.call(["dpkg -s nemo>/dev/null 2>&1"], shell=True)
   logger.info("Nemo installed: %s" % str(ret == 0))
@@ -1059,14 +1061,14 @@ def activateActions():        # Install/deinstall file extensions
                             _("Unpublish from Yandex.disk")))
         result = True
       except:
-        result = False
+        pass
     else:               # Remove actions for Nemo
       try:
         deleteFile(os.path.join(userHome, ".gnome2/nemo-scripts", _("Publish via Yandex.Disk")))
         deleteFile(os.path.join(userHome, ".gnome2/nemo-scripts", _("Unpublish from Yandex.disk")))
         result = True
       except:
-        result = False
+        pass
   # --- Actions for Thunar ---
   ret = subprocess.call(["dpkg -s thunar>/dev/null 2>&1"], shell=True)
   logger.info("Thunar installed: %s" % str(ret == 0))
@@ -1103,7 +1105,7 @@ def activateActions():        # Install/deinstall file extensions
                         os.path.join(userHome, ".config/Thunar/uca.xml")])
         result = True
       except:
-        result = False
+        pass
     else:               # Remove actions for Thunar
       try:
         subprocess.call(["sed", "-i", "s/<action><icon>.*<\/icon><name>\"" +
@@ -1114,7 +1116,7 @@ def activateActions():        # Install/deinstall file extensions
                         os.path.join(userHome, ".config/Thunar/uca.xml")])
         result = True
       except:
-        result = False
+        pass
 
   # --- Actions for Dolphin ---
   ret = subprocess.call(["dpkg -s dolphin>/dev/null 2>&1"], shell=True)
@@ -1128,16 +1130,15 @@ def activateActions():        # Install/deinstall file extensions
                  os.path.join(userHome, ".kde/share/kde4/services/unpublish.desktop"))
         result = True
       except:
-        result = False
+        pass
     else:               # Remove actions for Dolphin
       try:
         deleteFile(os.path.join(userHome, ".kde/share/kde4/services/publish.desktop"))
         deleteFile(os.path.join(userHome," .kde/share/kde4/services/unpublish.desktop"))
         result = True
       except:
-        result = False
-
-  # actions for Pantheon-files
+        pass
+  # --- Actions for Pantheon-files ---
   ret = subprocess.call(["dpkg -s pantheon-files>/dev/null 2>&1"], shell=True)
   logger.info("Pantheon-files installed: %s" % str(ret == 0))
   if ret == 0:
@@ -1148,20 +1149,18 @@ def activateActions():        # Install/deinstall file extensions
       res = subprocess.call(["gksudo", "-D", "yd-tools", "cp", contractor_for_publish,
                                                                contractor_for_unpublish,
                                                                path_to_contractors])
-      if res != 0:
-        logger.error("Cannot enable actions for Pantheon-files")
-        result = False
-      else:
+      if res = 0:
         result = True
+      else:
+        logger.error("Cannot enable actions for Pantheon-files")
     else:               # Remove actions for Pantheon-files
       res = subprocess.call(["gksudo", "-D", "yd-tools", "rm",
                              os.path.join(path_to_contractors, "yandex-disk-indicator-publish.contract"),
                              os.path.join(path_to_contractors, "yandex-disk-indicator-unpublish.contract")])
-      if res != 0:
-        logger.error("Cannot disable actions for Pantheon-files")
-        result = False
-      else:
+      if res = 0:
         result = True
+      else:
+        logger.error("Cannot disable actions for Pantheon-files")
 
   return result
 
