@@ -2,7 +2,8 @@
 # yandex-disk-indicator
 Desktop panel indicator for YandexDisk CLI client for Linux
 
-Usage: yandex-disk-indicator [-l\<n\>]
+USAGE:
+    yandex-disk-indicator [-l\<n\>]
 
 Options:
  -l\<n\>   Set logging level to value \<n\>.
