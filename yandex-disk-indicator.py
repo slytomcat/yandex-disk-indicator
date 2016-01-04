@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.6.3'
+appVer = '1.6.4'
 #
 #  Copyright 2014+ Sly_tom_cat <slytomcat@mail.ru>
 #  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
@@ -489,14 +489,22 @@ class Menu(Gtk.Menu):         # Menu object
     open_folder.connect("activate", self.openPath, daemon.yandexDiskFolder)
     self.append(open_folder)
     open_web = Gtk.MenuItem(_('Open Yandex.Disk on the web'))
-    open_web.connect("activate", self.openInBrowser, 'http://disk.yandex.ru')
+    open_web.connect("activate", self.openInBrowser, _('https://disk.yandex.com'))
     self.append(open_web)
     self.append(Gtk.SeparatorMenuItem.new())  # -----separator--------
     preferences = Gtk.MenuItem(_('Preferences'))
     preferences.connect("activate", self.Preferences)
     self.append(preferences)
     open_help = Gtk.MenuItem(_('Help'))
-    open_help.connect("activate", self.openInBrowser, 'https://yandex.ru/support/disk/')
+    m_help = Gtk.Menu()
+    help1 = Gtk.MenuItem(_('Yandex.Disk daemon'))
+    help1.connect("activate", self.openInBrowser, _('https://yandex.com/support/disk/'))
+    m_help.append(help1)
+    help2 = Gtk.MenuItem(_('Yandex.Disk Indicator'))
+    help2.connect("activate", self.openInBrowser,
+                  _('https://github.com/slytomcat/yandex-disk-indicator/wiki'))
+    m_help.append(help2)
+    open_help.set_submenu(m_help)
     self.append(open_help)
     about = Gtk.MenuItem(_('About'));    about.connect("activate", self.openAbout)
     self.append(about)
@@ -533,7 +541,7 @@ class Menu(Gtk.Menu):         # Menu object
     aboutWindow.set_authors([_('Sly_tom_cat (slytomcat@mail.ru) '),
       _('ya-setup utility author: Snow Dimon (snowdimon.ru)'),
       _('\nSpecial thanks to:'),
-      _(' - Christiaan Diedericks (www.thefanclub.co.za) - Grive tools creator'),
+      _(' - Christiaan Diedericks (www.thefanclub.co.za) - Grive tools autor'),
       _(' - ryukusu_luminarius (my-faios@ya.ru) - icons designer'),
       _(' - metallcorn (metallcorn@jabber.ru) - icons designer'),
       _(' - Chibiko (zenogears@jabber.ru) - deb package creation assistance'),
@@ -763,16 +771,16 @@ class Menu(Gtk.Menu):         # Menu object
           deleteFile(autoStartIndDst)
           notify.send(_('Yandex.Disk Indicator'), _('Auto-start OFF'))
       elif key == 'fmextensions':
-        if not button.get_inconsistent():             # first call
-          if not activateActions():                   # when activation/deactivation is not success
+        if not button.get_inconsistent():             # It is a first call
+          if not activateActions():                   # When activation/deactivation is not success:
             notify.send(_('Yandex.Disk Indicator'),
                         _('ERROR in setting up of file manager extensions'))
             toggleState = not toggleState             # revert settings back
             button.set_inconsistent(True)             # set inconsistent state to detect second call
             button.set_active(toggleState)            # set check-button to reverted status
             # set_active will raise again the 'toggled' event 
-        else:                                         # second call
-          button.set_inconsistent(False)              # just remove inconsistent status
+        else:                                         # This is a second call
+          button.set_inconsistent(False)              # Just remove inconsistent status
       elif key == 'read-only':
         self.overwrite.set_sensitive(toggleState)
       # Update configurations
@@ -1149,7 +1157,7 @@ def activateActions():        # Install/deinstall file extensions
       res = subprocess.call(["gksudo", "-D", "yd-tools", "cp", contractor_for_publish,
                                                                contractor_for_unpublish,
                                                                path_to_contractors])
-      if res = 0:
+      if res == 0:
         result = True
       else:
         logger.error("Cannot enable actions for Pantheon-files")
@@ -1157,7 +1165,7 @@ def activateActions():        # Install/deinstall file extensions
       res = subprocess.call(["gksudo", "-D", "yd-tools", "rm",
                              os.path.join(path_to_contractors, "yandex-disk-indicator-publish.contract"),
                              os.path.join(path_to_contractors, "yandex-disk-indicator-unpublish.contract")])
-      if res = 0:
+      if res == 0:
         result = True
       else:
         logger.error("Cannot disable actions for Pantheon-files")
