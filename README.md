@@ -3,6 +3,7 @@
 Desktop panel indicator for YandexDisk CLI client for Linux
 
 USAGE:
+
     yandex-disk-indicator [-l\<n\>]
 
 Options:
