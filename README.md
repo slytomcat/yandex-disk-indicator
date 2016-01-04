@@ -15,16 +15,18 @@ Options:
             50 - to show critical messages only (CRITICAL)
 
 INSTALLATION:
-From github source: 
+
+Note that yandex-disk CLI utility have to be installed before the indicator. Visit https://yandex.com/support/disk/cli-clients.xml#cli-install for instructions.
+
+Installation from Github: 
 
  1. Download ZIP with project sources (either master branch or last releaze)
 
  2. Run build/install.sh script.
 
-From Launchpad PPA: 
+Installation from Launchpad PPA: 
  - Visit PPA: https://launchpad.net/~slytomcat/+archive/ubuntu/ppa and follow the instructions.
 
-Note that yandex-disk CLI utility have to be installed before the indicator. Visit https://yandex.com/support/disk/cli-clients.xml#cli-install for instructions.
 
 NOTES:
 
