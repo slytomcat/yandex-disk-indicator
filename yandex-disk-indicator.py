@@ -29,6 +29,7 @@ from gi.repository import AppIndicator3 as appIndicator
 from gi.repository import GdkPixbuf
 from gi.repository import Notify
 from shutil import copy as fileCopy
+from re import findall as rfindall
 from collections import OrderedDict as ordDict
 from webbrowser import open_new as openNewBrowser
 import os, sys, subprocess, pyinotify, fcntl, gettext, datetime, logging
@@ -327,14 +328,14 @@ class YDDaemon(object):       # Yandex.Disk daemon interface object
             appExit()               # Something wrong. It's no way to continue. Exit right now.
           else:
             break                   # Daemon was not started but user decided to start indicator
-    else:  # while
+    else:  # for while
       logger.info('yandex-disk daemon is installed, configured and responding.')
     self.status = 'none'
     self.lastStatus = 'idle'        # Fallback status for "index" status substitution at start time
-    self.lastBuf = ''
+    self.lastItems = []
     self.parseOutput()              # To update all status variables
     self.lastStatus = self.status
-    self.lastBuf = '*'              # To be shure that self.lastItemsChanged = True on next time
+    self.lastItems = ['*']          # To be shure that self.lastItemsChanged = True on next time
 
   def getOutput(self):          # Get result of 'yandex-disk status'
     try:
@@ -345,66 +346,37 @@ class YDDaemon(object):       # Yandex.Disk daemon interface object
     return self.output
 
   def parseOutput(self):        # Parse the daemon output
-    # Look for synchronization progress
-    lastPos = 0
-    startPos = self.output.find('ync progress: ')
-    if startPos > 0:
-      startPos += 14                                # 14 is a length of 'ync progress: ' string
-      lastPos = self.output.find('\n', startPos)
-      self.syncProgress = self.output[startPos: lastPos]
+    # split output on two parts: list of named values and file list
+    pos = self.output.find('Last synchronized items:')
+    if pos > 0:
+      output = self.output[:pos].splitlines()
+      files = self.output[pos+25:]
     else:
-      self.syncProgress = ''
-    # Look for current core status (it is always presented in output)
-    self.lastStatus = self.status
-    if self.output != '':
-      startPos = self.output.find('core status: ', lastPos) + 13  # 13 is len('core status: '
-      lastPos = self.output.find('\n', startPos)
-      status = self.output[startPos: lastPos]
-      if status == 'index':                         # Don't handle index status
-        status = self.lastStatus                    # Keep last status
-      if status == 'no internet access':
-        status = 'no_net'
-      self.status = status if status in ['busy', 'idle', 'paused', 'none', 'no_net'] else 'error'
-      # Status 'error' covers 'error', 'failed to connect to daemon process' and other messages...
-    else:
-      self.status = 'none'
-    # Look for total Yandex.Disk size
-    startPos = self.output.find('Total: ', lastPos)
-    if startPos > 0:
-      startPos += 7                                 # 7 is len('Total: ')
-      lastPos = self.output.find('\n', startPos)
-      self.sTotal = self.output[startPos: lastPos]
-      ## If 'Total: ' was found then other information as also should be presented
-      # Look for used size                          # 6 is len('Used: ')
-      startPos = self.output.find('Used: ', lastPos) + 6
-      lastPos = self.output.find('\n', startPos)
-      self.sUsed = self.output[startPos: lastPos]
-      # Look for free size                          # 11 is len('Available: ')
-      startPos = self.output.find('Available: ', lastPos) + 11
-      lastPos = self.output.find('\n', startPos)
-      self.sFree = self.output[startPos: lastPos]
-      # Look for trash size                         # 12 is len('Trash size: ')
-      startPos = self.output.find('Trash size: ', lastPos) + 12
-      lastPos = self.output.find('\n', startPos)
-      self.sTrash = self.output[startPos: lastPos]
-    else:  # When there is no Total: then other sizes are not presented too
-      self.sTotal = self.sUsed = self.sFree = self.sTrash = '...'
-    # Look for last synchronized items list
-    startPos = self.output.find('Last synchronized', lastPos)
-    if startPos > 0:                                # skip one line
-      startPos = self.output.find('\n', startPos) + 1
-      buf = self.output[startPos: ]                 # save the rest
-    else:
-      buf = ''
-    self.lastItemsChanged = (self.lastBuf != buf)   # check for changes in the list
+      output = self.output.splitlines()
+      files = ''
+    # Make a dictionary from named values (use only lines containing ':')
+    res = dict([rfindall(r'\t*(.+): (.*)' , l)[0] for l in output if ':' in l])
+    # Get necessary values or default values
+    self.syncProgress = res.get('Sync progress', '')
+    status = res.get('Synchronization core status', 'none')
+    self.sTotal = res.get('Total', '...')
+    self.sUsed = res.get('Used', '...')
+    self.sFree = res.get('Available', '...')
+    self.sTrash = res.get('Trash size', '...')
+    # Handle new status
+    self.lastStatus = self.status                     # Store previous status
+    # Convert new status to internal representation
+    if status == 'index':                             # Don't handle index status
+      status = self.lastStatus                        # Keep last status
+    if status == 'no internet access':
+      status = 'no_net'
+    # Status 'error' covers 'error', 'failed to connect to daemon process' and other messages...
+    self.status = status if status in ['busy', 'idle', 'paused', 'none', 'no_net'] else 'error'
+
+    buf = rfindall(r"\t.+: '(.*)'\n", files)          # Get file list
+    self.lastItemsChanged = (self.lastItems != buf)   # Check if file list has been changed
     if self.lastItemsChanged:
-      self.lastBuf = buf
-      self.lastItems = []                           # clear list of file paths
-      for listLine in buf.splitlines():
-        startPos = listLine.find(": '")             # Find file path in the line
-        if (startPos > 0):                          # File path was found
-          filePath = listLine[startPos+3: -1]       # Get relative file path (skip quotes)
-          self.lastItems.append(filePath)           # Store file path
+      self.lastItems = buf                            # Store the new file list
 
   def updateStatus(self):       # Get daemon output and update all daemon YDDaemon status variables
     self.getOutput()
@@ -778,7 +750,7 @@ class Menu(Gtk.Menu):         # Menu object
             toggleState = not toggleState             # revert settings back
             button.set_inconsistent(True)             # set inconsistent state to detect second call
             button.set_active(toggleState)            # set check-button to reverted status
-            # set_active will raise again the 'toggled' event 
+            # set_active will raise again the 'toggled' event
         else:                                         # This is a second call
           button.set_inconsistent(False)              # Just remove inconsistent status
       elif key == 'read-only':
@@ -790,7 +762,7 @@ class Menu(Gtk.Menu):         # Menu object
       else:
         config[key] = toggleState                     # Update application config
         self.appCfgUpdate = True
-      
+
   def update(self):                       # Update information in menu
     # Update status data
     self.status.set_label(_('Status: ') + self.YD_STATUS.get(daemon.status) +
@@ -950,7 +922,7 @@ class Timer(object):          # Timer object
 
   def stop(self):                     # Stop active timer
     if self.active:
-      logger.debug('timer to stop %s %s' %(self.timer, self.interval))
+      logger.debug('timer to stop %s' %(self.timer))
       GLib.source_remove(self.timer)
       self.active = False
 
