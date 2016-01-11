@@ -1,5 +1,8 @@
 ﻿________TO DO__________
 - продумать вариант чтения X-GNOME-Autostart-enabled=fals/true из .desktop файтов в каталоге ~/.config/autostart
+- в 16.04 ругань на версии (раньше ее не было): sys:1: PyGIWarning: AppIndicator3 was imported without specifying a version first. Use gi.require_version('AppIndicator3', '0.1') before import to ensure that the right version gets loaded.
+sys:1: PyGIWarning: Notify was imported without specifying a version first. Use gi.require_version('Notify', '0.7') before import to ensure that the right version gets loaded.
+Надо будет прописать версии как просят
 
 ________TO DO (ON HOLD)__________
 - DAEMON-INSTALL_STORY — solution 5??? - on hold
