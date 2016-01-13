@@ -1,8 +1,5 @@
 ﻿________TO DO__________
 - продумать вариант чтения X-GNOME-Autostart-enabled=fals/true из .desktop файтов в каталоге ~/.config/autostart
-- в 16.04 ругань на версии (раньше ее не было): sys:1: PyGIWarning: AppIndicator3 was imported without specifying a version first. Use gi.require_version('AppIndicator3', '0.1') before import to ensure that the right version gets loaded.
-sys:1: PyGIWarning: Notify was imported without specifying a version first. Use gi.require_version('Notify', '0.7') before import to ensure that the right version gets loaded.
-Надо будет прописать версии как просят
 
 ________TO DO (ON HOLD)__________
 - DAEMON-INSTALL_STORY — solution 5??? - on hold
@@ -30,7 +27,17 @@ DAEMON-INSTALL_STORY: (ON HOLD)
 Решение: пока 5.
 Результат: нет
 
-______FIXED issues:_____
+______FIXED issues/improvemnts:_____
+- в 16.04 ругань на версии (раньше ее не было): sys:1: PyGIWarning: AppIndicator3 was imported without specifying a version first. Use gi.require_version('AppIndicator3', '0.1') before import to ensure that the right version gets loaded.
+sys:1: PyGIWarning: Notify was imported without specifying a version first. Use gi.require_version('Notify', '0.7') before import to ensure that the right version gets loaded.
+Прописал как просили.
+- при переделке обработки галочки в настройках (1.6.4) сделал ошибку, приводившую к неадекватному поведению при смене тем иконок (и других настроек) - пофиксил.
+- Переделал работу с конфигурационными файлам с использованием регулярных выражений, это решилло сразу несколько моментов:
+  +\- файл не переписывается целиком, в нем только меняются строки с изменяемыми значениями. Это несколько медлеенее, но т.к. обновление происходет в буфере, то это не заметно - это сотые доли секунды;
+  + пустые строки и комментарии не хранятся во внутренней структуре;
+  + при обновлении файла, порядок во внутренней структуре не имеет значения, что позволило отказаться от OrderedDict (и фикса к неработающему методу setdefault).
+FIXED 1.6.5
+- переделал функцию разбора вывода демона с использоваением регулярных выражений: код в 2 раза медлеенее(что не важно при времени порядка 10^-5), но в 2 раза короче и легче сопровождаем.
 - BUG - ошибка в коде при правке файловых расширений
 - Уточнение по адресам поддержки (меню Help)
 FIXED 1.6.4 dev, master, realize

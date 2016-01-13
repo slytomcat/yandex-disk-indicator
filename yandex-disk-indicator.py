@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.6.4'
+appVer = '1.6.5'
 #
 #  Copyright 2014+ Sly_tom_cat <slytomcat@mail.ru>
 #  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
@@ -25,14 +25,14 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 from gi.repository import Gio
 from gi.repository import GLib
+gi.require_version('AppIndicator3', '0.1')
 from gi.repository import AppIndicator3 as appIndicator
 from gi.repository import GdkPixbuf
+gi.require_version('Notify', '0.7')
 from gi.repository import Notify
 from shutil import copy as fileCopy
-from re import findall as rfindall
-from collections import OrderedDict as ordDict
 from webbrowser import open_new as openNewBrowser
-import os, sys, subprocess, pyinotify, fcntl, gettext, datetime, logging
+import os, sys, subprocess, pyinotify, fcntl, gettext, datetime, logging, re
 
 class CVal(object):
 # Class to work with value that can be None, scalar value or list of values depending
@@ -80,25 +80,17 @@ class CVal(object):
   def __str__(self):      # String representation of CVal
     return str(self.val)
 
-class OrderedDict(ordDict):   # Redefine OrderdDict class with working setdefault
-
-  def setdefault(self, key, val):  # Redefine not working setdefault method of OreredDict class
-    try:
-      return self[key]
-    except:
-      self[key] = val
-      return val
-
-class Config(OrderedDict):    # Configuration object
+class Config(dict):     # Configuration object
 
   def __init__(self, filename, load=True,
                bools=[['true', 'yes', 'y'], ['false', 'no', 'n']],
-               boolval=['yes', 'no'], usequotes=True ):
-    OrderedDict.__init__(self)
+               boolval=['yes', 'no'], usequotes=True, delimiter='='):
+    super(Config, self).__init__(self)
     self.fileName = filename
     self.bools = bools             # Values to detect booleans in self.load
     self.boolval = boolval         # Values to write booleans in self.save
     self.usequotes = usequotes     # Use qoutes for keys and values in self.save
+    self.delimiter = delimiter     # Use specified delimiter between key and value
     if load:
       self.load()
 
@@ -110,45 +102,25 @@ class Config(OrderedDict):    # Configuration object
       value = False
     return value
 
-  def word(self, line, dc=True):                          # Get first word from beginning of line
-    if line[0] == '"':                  # Is value quoted?
-      end = line.find('"', 1)           # Find ending quote
-      if end > 0:                       # Is ending quote exists?
-        val = line[1: end]              # Divide line on word without quotes and rest of line
-        rest = line[end+1: ].lstrip()   # Remove leading spaces from rest
-        return (self.decode(val) if dc else val), rest  # Decode word if required
-      else:                             # Error: Missed ending quote
-        return None, None
-    else:                               # Not quoted value.
-      for i in range(len(line)):
-        if line[i] in ['"', ',', ' ', '=']:   # Is it end of word?
-          val = line[: i]               # Divide line on word and rest
-          rest =  line[i:].lstrip()     # Remove leading spaces from rest
-          if not val:                   # Is value empty?
-            return None, None           # Error: Missed value
-          if rest and rest[0] == '"':   # Is rest starts with '"'?
-            return None, None           # Error: Missed starting quote or delimiter
-          # Return word and rest line. Decode word if required.
-          return (self.decode(val) if dc else val), rest
-      # End of line reached: value is the whole line. Decode it if required.
-      return (self.decode(line) if dc else line), ''
+  def getValue(self, st):                           # Parse value(s) from string after '='
+    words = re.findall(r'("[^"]*")|([\w-]+)', st)   # Get list of values
+    words = [p[0]+p[1] for p in words]              # Join words variants
+    # Check commas and not correct symbols that are not part of words
+    # Substitute found words by '*' and split line by commas
+    mask = re.sub((''.join(r'(?<=[\W])%s(?=[\W])|'%p for p in words))[:-1],
+                   '*', ' '+st+' ').split(',')
+    # Correctly masked value have to be just one '*' and possible surrounded by spaces
+    # Number of '*' must be equal to number of words
+    if sum([len(p.strip()) for p in mask]) == len(words):
+      # Values are OK, store them
+      res = CVal()
+      for p in words:                               # decode vales with removed quotes
+        res.add(self.decode(p[1:-1] if p[0] == '"' else p))
+      return res.get()
+    else:
+      return None                                   # Something wrong in values string
 
-  def getValue(self, rest):                               # Get value(s) from string after '='
-    result = CVal()                               # Result buffer
-    val, rest = self.word(rest)                   # Get first value after '='
-    while val != None:                            # Value was get without error
-      result.add(val)                             # Store value in result
-      if rest == '':
-        break                                     # No more values
-      elif rest[0] == ',':                        # Is next symbol ','?
-        val, rest = self.word(rest[1:].lstrip())  # Get value after ','
-      else:
-        val = None                                # No delimiter or missed quote
-    else:                                         # Some error occur while parsing after '='
-      return None
-    return result.get()
-
-  def load(self, bools=[['true', 'yes', 'y'], ['false', 'no', 'n']]):
+  def load(self, bools=[['true', 'yes', 'y'], ['false', 'no', 'n']], delimiter='='):
     """
     Reads config file to dictionalry (OrderedDict).
     Config file shoud conain key=value rows.
@@ -158,65 +130,79 @@ class Config(OrderedDict):    # Configuration object
     When value is a list of items it creates key:[value, value,...] dictionary's item.
     """
     self.bools = bools
-    try:
-      index = 0                                           # Comment lines index
+    self.delimiter = delimiter
+    try:                              # Read configuration file into dictionary ignoring blank
+                                      # lines, lines without delimiter, and lines with comments.
       with open(self.fileName) as cf:
-        for row in cf:                                    # Parse config file lines
-          row = row.strip()
-          logger.debug("Line: '%s'"%row)
-          if row and row[0] != '#':                       # Don't parse comments and blank lines
-            key , rest = self.word(row, False)            # Get key name from beginning of line
-            if key and rest[0] == '=':                    # Is it a correct key?
-              rest = rest[1:].lstrip()                    # Parse rest line (after '=')
-              if rest:                                    # If rest not empty
-                result = self.getValue(rest)
-                if result != None:                        # Is there any value in result buffer?
-                  self[key] = result                      # Store it.
-                else:
-                  logger.error("Error in value in '%s'" % row)
-              else:
-                logger.error("No value specified in '%s'" % row)
-            else:
-              logger.error("Key error in '%s'" % row)
-          else:                                           # Store comments and blank lines
-            self['#'+str(index)] = row
-            index += 1
-            logger.debug("Comment or blank line in '%s'" % row)
-      logger.info('Config read: %s' % self.fileName)
-      return True
+        res = dict([re.findall(r'^\s*(.+?)\s*%s\s*(.*)$' % self.delimiter, l)[0]
+                    for l in cf if l and self.delimiter in l and l.lstrip()[0] != '#'])
     except:
       logger.error('Config file read error: %s' % self.fileName)
       return False
+    for kv, vv in res.items():        # Parse each line
+      # check key
+      key = re.findall(r'"([\w-]+)"$|^([\w-]+)$', kv)
+      if not key:
+        logger.warning('Wrong key in line \'%s\'' % (kv + self.delimiter + vv))
+      else:                           # Key is OK
+        key = key[0][0] + key[0][1]   # Join two possible keys variants (with and without quotes)
+        if not vv.strip():
+          logger.warning('No value specified in line \'%s\'' % (kv + self.delimiter + vv))
+        else:                         # Value is not empty
+          value = self.getValue(vv)   # Parse values
+          if value is None:
+            logger.warning('Wrong value(s) in line \'%s\'' % (kv + self.delimiter + vv))
+          else:                       # Value is OK
+            self[key] = value      # Store correct values from file
+            logger.debug('Config value read as: %s=%s'%(key,str(value)))
+    logger.info('Config read: %s' % self.fileName)
+    return True
 
   def encode(self, val):                                  # Convert value to string before save it
     if isinstance(val, bool):  # Treat Boolean
       val = self.boolval[0] if val else self.boolval[1]
     if self.usequotes:
-      val = '"' + val + '"'
-    return val                 # Put value within quotes
+      val = '"' + val + '"'    # Put value within quotes
+    return val
 
-  def save(self, boolval=['yes', 'no'], usequotes=True):  # Write configuration to file
+  def save(self, boolval=['yes', 'no'], usequotes=True, delimiter='='):  # Write configuration to file
     self.usequotes = usequotes
     self.boolval = boolval
+    self.delimiter = delimiter
+    try:                                  # Read the file in buffer
+      with open(self.fileName, 'rt') as cf:
+        buf = cf.read()
+    except:
+      logger.error('Config file read error: %s' % self.fileName)
+      return False
+    while buf and buf[-1] == '\n':        # Remove ending blank lines
+      buf = buf[:-1]
+    buf += '\n'                           # Left only one
+    for key, value in self.items():
+      if value is None:
+        res = ''                          # Remove 'key=value' from file if value is None
+      else:
+        res = ''.join([key, self.delimiter,
+                       ''.join([self.encode(val) + ', ' for val in CVal(value)])])
+        if res [-2:] == ', ':               # Remove ending comma
+          res = res[:-2]
+        res += '\n'
+      logger.debug('Config value to save: %s'%res)
+      # Find key in file buffer
+      sRe = re.search(r'^[ \t]*["]?%s["]?[ \t]*%s.+\n' % (key, self.delimiter),
+                      buf, flags=re.M)
+      if sRe:                             # Value has been found
+        buf = sRe.re.sub(res, buf)        # Replace it with new value
+      elif res:                           # Value was not found value is not empty
+        buf += res                        # Add new value to end of file buffer
     try:
       with open(self.fileName, 'wt') as cf:
-        for key, value in self.items():
-          if key[0] == '#':                   # Comment or blank line
-            res = value                       # Restore such lines
-          else:
-            if self.usequotes:
-              key = '"' + key + '"'
-            res = key + '='                   # Start composing config row
-            for val in CVal(value):           # Iterate through the value
-              res += self.encode(val) + ','   # Collect values in comma separated list
-            if res[-1] == ',':
-              res = res[: -1]                 # Remove last comma
-          cf.write(res + '\n')                # Write resulting string in file
-      logger.info('Config written: %s' % self.fileName)
-      return True
+        cf.write(buf)                     # Write resulting string in file
     except:
       logger.error('Config file write error: %s' % self.fileName)
       return False
+    logger.info('Config written: %s' % self.fileName)
+    return True
 
 class Notification(object):   # On-screen notification object
 
@@ -264,23 +250,17 @@ class YDDaemon(object):       # Yandex.Disk daemon interface object
       for key, val in self.items():
         fileConfig[key] = val
       # Convert values representations
-      ro = fileConfig.pop('read-only', False)
-      if ro:
-        fileConfig['read-only'] = ''
-      if fileConfig.pop('overwrite', False) and ro:
-        fileConfig['overwrite'] = ''
-      exList = fileConfig.pop('exclude-dirs', None)
-      if exList != None:
-        dirs = ''
-        for i in CVal(exList):
-          dirs += i + ','
-        dirs = dirs[:-1]
-        fileConfig['exclude-dirs'] = dirs
+      ro = fileConfig.get('read-only', False)
+      fileConfig['read-only'] = '' if ro else None
+      fileConfig['overwrite'] = '' if fileConfig.get('overwrite', False) and ro else None
+      exList = fileConfig.get('exclude-dirs', None)
+      if exList:
+        fileConfig['exclude-dirs'] = ''.join([i + ',' for i in CVal(exList)])[:-1]
       fileConfig.save()
 
     def load(self):  # Get daemon config from its config file
       if super(YDDaemon.DConfig, self).load():  # Call super class method to load config from file
-        # Convert values
+        # Convert values representations
         self['read-only'] = (self.get('read-only', False) == '')
         self['overwrite'] = (self.get('overwrite', False) == '')
         exDirs = self.get('exclude-dirs', None)
@@ -355,7 +335,7 @@ class YDDaemon(object):       # Yandex.Disk daemon interface object
       output = self.output.splitlines()
       files = ''
     # Make a dictionary from named values (use only lines containing ':')
-    res = dict([rfindall(r'\t*(.+): (.*)' , l)[0] for l in output if ':' in l])
+    res = dict([re.findall(r'\t*(.+): (.*)' , l)[0] for l in output if ':' in l])
     # Get necessary values or default values
     self.syncProgress = res.get('Sync progress', '')
     status = res.get('Synchronization core status', 'none')
@@ -373,7 +353,7 @@ class YDDaemon(object):       # Yandex.Disk daemon interface object
     # Status 'error' covers 'error', 'failed to connect to daemon process' and other messages...
     self.status = status if status in ['busy', 'idle', 'paused', 'none', 'no_net'] else 'error'
 
-    buf = rfindall(r"\t.+: '(.*)'\n", files)          # Get file list
+    buf = re.findall(r"\t.+: '(.*)'\n", files)          # Get file list
     self.lastItemsChanged = (self.lastItems != buf)   # Check if file list has been changed
     if self.lastItemsChanged:
       self.lastItems = buf                            # Store the new file list
@@ -723,6 +703,14 @@ class Menu(Gtk.Menu):         # Menu object
     def onButtonToggled(self, widget, button, key):   # Handle clicks on check-buttons
       toggleState = button.get_active()
       logger.debug('Togged: %s  val: %s' % (key, str(toggleState)))
+      # Update configurations
+      if key in ['read-only', 'overwrite']:
+        daemon.config[key] = toggleState              # Update daemon config
+        self.daemonCfgUpdate = True
+      else:
+        config[key] = toggleState                     # Update application config
+        self.appCfgUpdate = True
+      # React on setting change
       if key == 'theme':
         icon.updateTheme()                            # Update themeStyle
         icon.update()                                 # Update current icon
@@ -755,13 +743,6 @@ class Menu(Gtk.Menu):         # Menu object
           button.set_inconsistent(False)              # Just remove inconsistent status
       elif key == 'read-only':
         self.overwrite.set_sensitive(toggleState)
-      # Update configurations
-      if key in ['read-only', 'overwrite']:
-        daemon.config[key] = toggleState              # Update daemon config
-        self.daemonCfgUpdate = True
-      else:
-        config[key] = toggleState                     # Update application config
-        self.appCfgUpdate = True
 
   def update(self):                       # Update information in menu
     # Update status data
