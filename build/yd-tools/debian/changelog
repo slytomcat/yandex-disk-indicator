@@ -1,8 +1,6 @@
-yd-tools (1.6.4) trusty; urgency=medium
+yd-tools (1.6.5) trusty; urgency=medium
 
   * Changes:
-   -- FM actions for Pantheon-files added
-   -- Help menu modified
-   -- The parser of daemon output is re-written using re module(2 times slower, but code 2 times shorter and much easier to support)
-
- -- Sly_tom_cat <slytomcat@mail.ru>  Mon, 12 Jan 2016 02:13:55 +0300
+    -- Procedures of reading and writing of configuration file were rewritten using re module 
+    -- Small fixes
+ -- Sly_tom_cat <slytomcat@mail.ru>  Wed, 13 Jan 2016 18:37:57 +0300
