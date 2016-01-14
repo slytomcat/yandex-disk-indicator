@@ -1,5 +1,10 @@
 ﻿________TO DO__________
 - продумать вариант чтения X-GNOME-Autostart-enabled=fals/true из .desktop файтов в каталоге ~/.config/autostart
+- проработать вариант (new branch multidisk) запуска нескольких экзкмпляров индикатора с несколькими экземплярами демонов с разными конфигами:
+   запуск демона: yandex-disk -c <patth/to/config> start
+   статус: yandex-disk -c <patth/to/config> status
+   получать <patth/to/config> - через параметр -c командной строки
+   PID файл создавать с именем PID_<patth_to_config>
 
 ________TO DO (ON HOLD)__________
 - DAEMON-INSTALL_STORY — solution 5??? - on hold
