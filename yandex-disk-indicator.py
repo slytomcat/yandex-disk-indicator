@@ -1141,7 +1141,7 @@ def activateActions():        # Install/deinstall file extensions
   return result
 
 def argParse():               # Parse command line arguments
-  argParser = argparse.ArgumentParser(description=_('Desktop indicator for yande-disk daemon'),
+  argParser = argparse.ArgumentParser(description=_('Desktop indicator for yandex-disk daemon'),
                                       prog=appName)
   argParser.add_argument('-l', dest='level', default='30',
             help=_('Sets the logging level to LEVEL, where LEVEL is one of: ' +
