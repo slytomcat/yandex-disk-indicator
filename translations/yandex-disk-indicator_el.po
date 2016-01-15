@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: yd-tools\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-01-15 14:38+0300\n"
-"PO-Revision-Date: 2016-01-15 14:38+0300\n"
+"POT-Creation-Date: 2016-01-15 17:31+0300\n"
+"PO-Revision-Date: 2016-01-15 17:31+0300\n"
 "Last-Translator: Sly_tom_cat <slytomcat@mail.ru>\n"
 "Language-Team: ubuntu.ru local team <slytomcat@mail.ru>\n"
 "Language: el_GR\n"
@@ -444,6 +444,10 @@ msgid "Desktop indicator for yandex-disk daemon"
 msgstr ""
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1146
+msgid "Options"
+msgstr ""
+
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1148
 msgid ""
 "Sets the logging level: 10 - to show all messages (DEBUG), 20 - to show all "
 "messages except debugging messages (INFO), 30 - to show all messages except "
@@ -451,12 +455,16 @@ msgid ""
 "messages (ERROR), 50 - to show critical messages only (CRITICAL). Default: 30"
 msgstr ""
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1153
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1156
 msgid ""
 "Path to configuration file of YandexDisk daemon. Default: ~/.config/yandex-"
 "disk/config.cfg"
 msgstr ""
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1156
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1158
+msgid "Show this help message and exit"
+msgstr ""
+
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1160
 msgid "Print version and exit"
 msgstr ""
