@@ -876,8 +876,7 @@ class LockFile(object):       # LockFile
     self.fileName = fileName
     logger.debug('Lock file is:%s' % self.fileName)
     try:                                                          # Open lock file for write
-      self.lockFile = (open(self.fileName, 'r+') if pathExists(self.fileName) else
-                       open(self.fileName, 'w'))
+      self.lockFile = open(self.fileName, 'wt')
       fcntl.flock(self.lockFile, fcntl.LOCK_EX | fcntl.LOCK_NB)   # Try to acquire exclusive lock
       logger.debug('Lock file succesfully locked.')
     except:                                                       # File is already locked
@@ -889,6 +888,9 @@ class LockFile(object):       # LockFile
   def release(self):
     fcntl.flock(self.lockFile, fcntl.LOCK_UN)
     self.lockFile.close()
+    logger.debug('Lock file %s succesfully unlocked.' % self.fileName)
+    deleteFile(self.fileName)
+    logger.debug('Lock file %s succesfully deleted.' % self.fileName)
 
 class Timer(object):          # Timer
 
@@ -952,9 +954,9 @@ def deleteFile(source):
   try:    os.remove(source)
   except: logger.error('File Deletion Error: %s' % source)
 
-def appExit():
+def appExit(msg = None):
   flock.release()
-  os._exit(0)
+  sys.exit(msg)
 
 def handleEvent(byNotifier):  # Perform status update
   '''
@@ -1061,9 +1063,9 @@ def activateActions():        # Install/deinstall file extensions
                          '<name>"' + _("Publish via Yandex.Disk") +
                          '"<\/name><command>yandex-disk publish %f | xclip -filter -selection' +
                          ' clipboard; zenity --info ' +
-                         '--window-icon=\/usr\/share\/yd-tools\/icons\/yd-128.png --title="Yandex.Disk"' +
-                         ' --ok-label="' + _('Close') + '" --text="' +
-                         _('URL to file: %f has copied into clipboard.') +
+                         '--window-icon=\/usr\/share\/yd-tools\/icons\/yd-128.png ' +
+                         '--title="Yandex.Disk" --ok-label="' + _('Close') + '" --text="' +
+                         _('URL to file: %f was copied into clipboard.') +
                          '"<\/command><description><\/description><patterns>*<\/patterns>' +
                          '<directories\/><audio-files\/><image-files\/><other-files\/>' +
                          "<text-files\/><video-files\/><\/action><\/actions>/g", ucaPath])
@@ -1138,6 +1140,23 @@ def activateActions():        # Install/deinstall file extensions
 
   return result
 
+def argParse():               # Parse command line arguments
+  argParser = argparse.ArgumentParser(description=_('Desktop indicator for yande-disk daemon'),
+                                      prog=appName)
+  argParser.add_argument('-l', dest='level', default='30',
+            help=_('Sets the logging level to LEVEL, where LEVEL is one of: ' +
+                   '10 - to show all messages (DEBUG), ' +
+                   '20 - to show all messages except debugging messages (INFO), ' +
+                   '30 - to show all messages except debugging and info messages (WARNING), ' +
+                   '40 - to show only error and critical messages (ERROR), ' +
+                   '50 - to show critical messages only (CRITICAL). Default: 30'))
+  argParser.add_argument('-c', dest='cfg', default='~/.config/yandex-disk/config.cfg',
+            help=_('Path to configuration file of YandexDisk daemon. ' +
+                   'Default: ~/.config/yandex-disk/config.cfg'))
+  argParser.add_argument('-v', action='version', version='%(prog)s v.' + appVer,
+            help=_('Print version and exit'))
+  return argParser.parse_args()
+
 ###################### MAIN #########################
 if __name__ == '__main__':
   ### Application constants ###
@@ -1156,31 +1175,17 @@ if __name__ == '__main__':
   ### Logging ###
   logging.basicConfig(format='%(asctime)-15s %(levelname)-8s %(message)s')
   logger = logging.getLogger('')
-  logger.setLevel(30)                       # Set defalt logging level
 
   ### Setup localization ###
   lang = Language()
 
-  ### Check command line arguments for logging level options and yandexDisk config path ###
-  parser = argparse.ArgumentParser(description=_('Desktop indicator for yande-disk daemon'),
-                                   prog=appName)
-  parser.add_argument('-l', dest='level', default='30',
-          help=_('Sets the logging level to <LEVEL>, where <LEVEL> is one of: ' +
-                 '10 - to show all messages (DEBUG), ' +
-                 '20 - to show all messages except debugging messages (INFO), ' +
-                 '30 - to show all messages except debugging and info messages (WARNING), ' +
-                 '40 - to show only error and critical messages (ERROR), ' +
-                 '50 - to show critical messages only (CRITICAL). Default: 30'))
-  parser.add_argument('-c', dest='cfg', default='~/.config/yandex-disk/config.cfg',
-          help=_('Path to configuration file of YandexDisk daemon. ' +
-                 'Default: ~/.config/yandex-disk/config.cfg'))
-  parser.add_argument('-v', action='version', version='%(prog)s v.' + appVer,
-          help=_('Print version and exit'))
-  args = parser.parse_args()
-  logger.setLevel(int(args.level))       # Set logging level
+  ### Get command line arguments ###
+  args = argParse()
+  logger.setLevel(int(args.level))       # Set user specified logging level
+  args.cfg = args.cfg.replace('~', userHome)
 
   logger.info('%s v.%s' % (appName, appVer))
-  logger.info('Logging level: '+str(logger.getEffectiveLevel()))
+  logger.debug('Logging level: '+str(logger.getEffectiveLevel()))
 
   ### Check for already running instance of the indicator application with the same config ###
   flock = LockFile(pathJoin(configPath, 'pid' + args.cfg.replace('/','_')))
@@ -1197,7 +1202,7 @@ if __name__ == '__main__':
   config file on exit from the Menu.Preferences dialogue or when there is no configuratin file when
   application starts.
 
-  Note that daemon settings ("read-only", "overwrite" and "exclude_dir") are stored
+  Note that daemon settings ("dir", "read-only", "overwrite" and "exclude_dir") are stored
   in ~/ .config/yandex-disk/config.cfg file. They are read in YDDaemon.__init__() method
   (in dictionary YDDaemon.config). Their values are saved to daemon config file also
   on exit from Menu.Preferences dialogue.
@@ -1229,7 +1234,7 @@ if __name__ == '__main__':
     activateActions()
 
   ### Initialize Yandex.Disk daemon connection object ###
-  daemon = YDDaemon(args.cfg.replace('~', userHome))
+  daemon = YDDaemon(args.cfg)
 
   ### Application Indicator ###
   ## Icons ##
