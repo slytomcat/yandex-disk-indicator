@@ -1141,16 +1141,15 @@ def activateActions():        # Install/deinstall file extensions
   return result
 
 def argParse():               # Parse command line arguments
-  argParser = argparse.ArgumentParser(description=_('Desktop indicator for yandex-disk daemon'),
-                                      prog=appName)
-  argParser.add_argument('-l', dest='level', default='30',
-            help=_('Sets the logging level to LEVEL, where LEVEL is one of: ' +
+  argParser = argparse.ArgumentParser(description=_('Desktop indicator for yandex-disk daemon'))
+  argParser.add_argument('-l', '--log', type=int, choices=range(10, 60, 10),
+            dest='level', default=30, help=_('Sets the logging level: ' +
                    '10 - to show all messages (DEBUG), ' +
                    '20 - to show all messages except debugging messages (INFO), ' +
                    '30 - to show all messages except debugging and info messages (WARNING), ' +
                    '40 - to show only error and critical messages (ERROR), ' +
                    '50 - to show critical messages only (CRITICAL). Default: 30'))
-  argParser.add_argument('-c', dest='cfg', default='~/.config/yandex-disk/config.cfg',
+  argParser.add_argument('-c', '--config', dest='cfg', default='~/.config/yandex-disk/config.cfg',
             help=_('Path to configuration file of YandexDisk daemon. ' +
                    'Default: ~/.config/yandex-disk/config.cfg'))
   argParser.add_argument('-v', action='version', version='%(prog)s v.' + appVer,
@@ -1181,7 +1180,7 @@ if __name__ == '__main__':
 
   ### Get command line arguments ###
   args = argParse()
-  logger.setLevel(int(args.level))       # Set user specified logging level
+  logger.setLevel(args.level)       # Set user specified logging level
   args.cfg = args.cfg.replace('~', userHome)
 
   logger.info('%s v.%s' % (appName, appVer))
