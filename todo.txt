@@ -39,7 +39,7 @@ ______FIXED issues/improvemnts:_____
   * поиск мертвого демона вести с указанием '--dit=<patth_YD_folder>' + убрать из поиска текущего пользователя + убивать мертвичину по найденым pid
   * запуск и останов демона: yandex-disk -c <patth/to/config> start|stop
   * статус: yandex-disk -c <patth/to/config> status
-FIXED 1.7.0
+FIXED 1.7.0 dev, master, realize
 - в 16.04 ругань на версии (раньше ее не было): sys:1: PyGIWarning: AppIndicator3 was imported without specifying a version first. Use gi.require_version('AppIndicator3', '0.1') before import to ensure that the right version gets loaded.
 sys:1: PyGIWarning: Notify was imported without specifying a version first. Use gi.require_version('Notify', '0.7') before import to ensure that the right version gets loaded.
 Прописал как просили.
@@ -48,7 +48,7 @@ sys:1: PyGIWarning: Notify was imported without specifying a version first. Use 
   +\- файл не переписывается целиком, в нем только меняются строки с изменяемыми значениями. Это несколько медлеенее, но т.к. обновление происходет в буфере, то это не заметно - это сотые доли секунды;
   + пустые строки и комментарии не хранятся во внутренней структуре;
   + при обновлении файла, порядок во внутренней структуре не имеет значения, что позволило отказаться от OrderedDict (и фикса к неработающему методу setdefault).
-FIXED 1.6.5
+FIXED 1.6.5 dev, master, no realize, no launchpad
 - переделал функцию разбора вывода демона с использоваением регулярных выражений: код в 2 раза медлеенее(что не важно при времени порядка 10^-5), но в 2 раза короче и легче сопровождаем.
 - BUG - ошибка в коде при правке файловых расширений
 - Уточнение по адресам поддержки (меню Help)
