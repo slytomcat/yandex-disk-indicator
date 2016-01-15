@@ -2,13 +2,12 @@
 # yandex-disk-indicator
 Desktop panel indicator for YandexDisk CLI client for Linux
 
-usage: yandex-disk-indicator.py [-l {10,20,30,40,50}] [-c path] [-h] [-v]
-
-Desktop indicator for yandex-disk daemon
-
-Options:
+  usage: yandex-disk-indicator.py [-l {10,20,30,40,50}] [-c path] [-h] [-v]
+  
+  Options:
+  
   -l {10,20,30,40,50}, --log {10,20,30,40,50}
-                        Sets the logging level: 
+                        Sets the logging level:
                          10 - to show all messages (DEBUG), 
                          20 - to show all messages except debugging messages (INFO),
                          30 - to show all messages except debugging and info messages (WARNING),
