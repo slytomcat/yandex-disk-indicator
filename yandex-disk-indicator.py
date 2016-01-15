@@ -293,11 +293,11 @@ class YDDaemon(object):       # Yandex.Disk daemon interface
     self.cfgFile = cfgFile          # Remember path to config file
     if not pathExists('/usr/bin/yandex-disk'):
       self.ErrorDialog('NOTINSTALLED')
-      appExit()                     # Daemon is not installed. Exit right now.
+      appExit('Daemon is not installed')
     self.config = self.DConfig(self.cfgFile, load=False)
     while not self.config.load():   # Try to read Yandex.Disk configuration file
       if self.errorDialog('NOCONFIG') != 0:
-        appExit()                   # User hasn't configured daemon. Exit right now.
+        appExit('Daemon is not configured')
     self.config.setdefault('dir', '')
     while not self.getOutput():     # Check for correct daemon response and check that it is running
       try:                          # Try to find daemon running process with current CFG file path
@@ -314,7 +314,7 @@ class YDDaemon(object):       # Yandex.Disk daemon interface
         except:
           logger.error('yandex-disk daemon kill error')
           self.errorDialog('')
-          appExit()                 # nonconvertible error - exit
+          appExit('Critical error: Bad daemon can\'t be killed')
       except:
         logger.info("yandex-disk daemon is not running")
         msg = ''
@@ -324,7 +324,7 @@ class YDDaemon(object):       # Yandex.Disk daemon interface
         err = self.start()          # Try to start it
         if err != '':
           if self.errorDialog(err) != 0:
-            appExit()               # Something wrong. It's no way to continue. Exit right now.
+            appExit('Critical error: Daemon can\'t start')
           else:
             break                   # Daemon was not started but user decided to start indicator
     else:
