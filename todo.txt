@@ -28,6 +28,18 @@ DAEMON-INSTALL_STORY: (ON HOLD)
 Результат: нет
 
 ______FIXED issues/improvemnts:_____
+- Переделал работу с параметрами командной строки на стандартную библиотеку argparse:
+  + простота добавления новых параметров вызова и гибкость в формате их записи (ест и '-с10' и '-с 10')
+  + автоматическая генерация вывода онлайн-справки (вызов с ключем -h) и текста "Usage" при ошибках в переданных опциях запуска.
+  + вывод версии не всегда а только по ключу -v (без запуска индикатора) + вывод версии в logging.info() при нормальном запуске.
+  + ноовый параметр -с <path> - для указания конфигурации демона.
+- реализовал вариант (new branch multidisk) запуск нескольких экзкмпляров индикатора с несколькими экземплярами демонов с разными конфигами. Это потребовало следующие переделки:
+  * <patth/to/config> - получать через параметр -c командной строки + разворачивать в нем '~' в абсолютный путь 
+  * PID файл создавать с именем pid_<patth_to_config> 
+  * поиск мертвого демона вести с указанием '--dit=<patth_YD_folder>' + убрать из поиска текущего пользователя + убивать мертвичину по найденым pid
+  * запуск и останов демона: yandex-disk -c <patth/to/config> start|stop
+  * статус: yandex-disk -c <patth/to/config> status
+FIXED 1.7.0
 - в 16.04 ругань на версии (раньше ее не было): sys:1: PyGIWarning: AppIndicator3 was imported without specifying a version first. Use gi.require_version('AppIndicator3', '0.1') before import to ensure that the right version gets loaded.
 sys:1: PyGIWarning: Notify was imported without specifying a version first. Use gi.require_version('Notify', '0.7') before import to ensure that the right version gets loaded.
 Прописал как просили.
