@@ -20,7 +20,7 @@ appVer = '1.7.0'
 #  You should have received a copy of the GNU General Public License
 #  along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import gi
+import gi, os, sys, subprocess, pyinotify, fcntl, gettext, datetime, logging, re, argparse
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 gi.require_version('AppIndicator3', '0.1')
@@ -33,7 +33,7 @@ from gi.repository import GdkPixbuf
 from os.path import exists as pathExists, join as pathJoin
 from shutil import copy as fileCopy
 from webbrowser import open_new as openNewBrowser
-import os, sys, subprocess, pyinotify, fcntl, gettext, datetime, logging, re, argparse
+
 
 class CVal(object):           # Multivalue helper
   ''' Class to work with value that can be None, scalar value or list of values depending
@@ -1180,11 +1180,15 @@ if __name__ == '__main__':
 
   ### Get command line arguments ###
   args = argParse()
-  logger.setLevel(args.level)       # Set user specified logging level
+  # Make a full path to daemon configuration file
   args.cfg = args.cfg.replace('~', userHome)
 
+  # Set user specified logging level
+  logger.setLevel(args.level)
+
+  # Report app version and logging level
   logger.info('%s v.%s' % (appName, appVer))
-  logger.debug('Logging level: '+str(logger.getEffectiveLevel()))
+  logger.debug('Logging level: '+str(args.level))
 
   ### Check for already running instance of the indicator application with the same config ###
   flock = LockFile(pathJoin(configPath, 'pid' + args.cfg.replace('/','_')))

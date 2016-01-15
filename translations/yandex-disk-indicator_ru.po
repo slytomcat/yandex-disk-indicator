@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: yd-tools\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-01-15 12:51+0300\n"
-"PO-Revision-Date: 2016-01-15 12:52+0300\n"
+"POT-Creation-Date: 2016-01-15 14:38+0300\n"
+"PO-Revision-Date: 2016-01-15 14:38+0300\n"
 "Last-Translator: Sly_tom_cat <slytomcat@mail.ru>\n"
 "Language-Team: ubuntu.ru local team <slytomcat@mail.ru>\n"
 "Language: ru_RU\n"
@@ -435,21 +435,20 @@ msgstr "Ссылка на файл: %f скопирована в буфер об
 msgid "Desktop indicator for yandex-disk daemon"
 msgstr "Индикатор рабочего стола для сервиса Яндекс.Диск"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1147
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1146
 msgid ""
-"Sets the logging level to LEVEL, where LEVEL is one of: 10 - to show all "
-"messages (DEBUG), 20 - to show all messages except debugging messages "
-"(INFO), 30 - to show all messages except debugging and info messages "
-"(WARNING), 40 - to show only error and critical messages (ERROR), 50 - to "
-"show critical messages only (CRITICAL). Default: 30"
+"Sets the logging level: 10 - to show all messages (DEBUG), 20 - to show all "
+"messages except debugging messages (INFO), 30 - to show all messages except "
+"debugging and info messages (WARNING), 40 - to show only error and critical "
+"messages (ERROR), 50 - to show critical messages only (CRITICAL). Default: 30"
 msgstr ""
-"Установить уровень логгирования в LEVEL, где LEVEL одно из: 10 - для показа "
-"всех сообщений (Отладка), 20 - для показа всех сообщений кроме отладочных "
-"(Информация), 30 - для показа всех сообщений кроме информационных и "
-"отладочных (Предупреждения), 40 - для показа только сообщений об ошибках, 50 "
-"- для показа только сообщений о критических ошибках. По умолчанию: 30"
+"Установить уровень логгирования: 10 - для показа всех сообщений (Отладка), "
+"20 - для показа всех сообщений кроме отладочных (Информация), 30 - для "
+"показа всех сообщений кроме информационных и отладочных (Предупреждения), 40 "
+"- для показа только сообщений об ошибках, 50 - для показа только сообщений о "
+"критических ошибках. По умолчанию: 30"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1154
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1153
 msgid ""
 "Path to configuration file of YandexDisk daemon. Default: ~/.config/yandex-"
 "disk/config.cfg"
@@ -457,7 +456,7 @@ msgstr ""
 "Путь к файлу конфигурации сервиса yandex-disk. По умолчанию: ~/.config/"
 "yandex-disk/config.cfg"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1157
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1156
 msgid "Print version and exit"
 msgstr "Напечатать версию и выйти"
 

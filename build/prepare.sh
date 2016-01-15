@@ -43,7 +43,6 @@ cp ../../fm-actions/pantheon-files/unpublish.sh usr/share/yd-tools/fm-actions/pa
 cp ../../fm-actions/pantheon-files/yandex-disk-indicator-publish.contract usr/share/yd-tools/fm-actions/pantheon-files/
 cp ../../fm-actions/pantheon-files/yandex-disk-indicator-unpublish.contract usr/share/yd-tools/fm-actions/pantheon-files/
 
-
 chmod -R u+rw *
 chmod -R go-w *
 chmod a+x debian/rules
