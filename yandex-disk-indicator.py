@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.6.5md'
+appVer = '1.7.0'
 #
 #  Copyright 2014+ Sly_tom_cat <slytomcat@mail.ru>
 #  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
@@ -290,7 +290,7 @@ class YDDaemon(object):       # Yandex.Disk daemon interface
         return False
 
   def __init__(self, cfgFile):  # Check that daemon installed, configured and started
-    self.cfgFile = cfgFile
+    self.cfgFile = cfgFile          # Remember path to config file
     if not pathExists('/usr/bin/yandex-disk'):
       self.ErrorDialog('NOTINSTALLED')
       appExit()                     # Daemon is not installed. Exit right now.
@@ -298,15 +298,17 @@ class YDDaemon(object):       # Yandex.Disk daemon interface
     while not self.config.load():   # Try to read Yandex.Disk configuration file
       if self.errorDialog('NOCONFIG') != 0:
         appExit()                   # User hasn't configured daemon. Exit right now.
-    self.yandexDiskFolder = self.config.get('dir', '')
+    self.config.setdefault('dir', '')
     while not self.getOutput():     # Check for correct daemon response and check that it is running
-      try:                          # Try to find daemon running process owned by current user
-        msg = subprocess.check_output(['pgrep', '-f', r'"yandex-disk.*--config=%s"' % self.cfgFile,
-                                       '-u', os.getenv("USER")], universal_newlines=True)[: -1]
+      try:                          # Try to find daemon running process with current CFG file path
+        msg = subprocess.check_output(['pgrep', '-f',
+                                       r'"yandex-disk .*--dir=%s"' % self.cofig['dir']],
+                                      universal_newlines=True)[: -1]
         logger.error('yandex-disk daemon is running but NOT responding!')
         # Kills the daemon(s) when it is running but not responding (HARON_CASE).
         try:                        # Try to kill all instances of daemon
-          subprocess.check_call(['killall', 'yandex-disk'])
+          for p in msg.splitlines():
+            subprocess.check_call(['kill', p])
           logger.info('yandex-disk daemon(s) killed')
           msg = ''
         except:
@@ -458,7 +460,7 @@ class Menu(Gtk.Menu):         # Menu
     self.daemon_stop.connect("activate", self.stopDaemon);
     self.append(self.daemon_stop)
     open_folder = Gtk.MenuItem(_('Open Yandex.Disk Folder'))
-    open_folder.connect("activate", self.openPath, daemon.yandexDiskFolder)
+    open_folder.connect("activate", self.openPath, daemon.config['dir'])
     self.append(open_folder)
     open_web = Gtk.MenuItem(_('Open Yandex.Disk on the web'))
     open_web.connect("activate", self.openInBrowser, _('https://disk.yandex.com'))
@@ -619,9 +621,9 @@ class Menu(Gtk.Menu):         # Menu
                                      (_('Close'), Gtk.ResponseType.CANCEL,
                                       _('Select'), Gtk.ResponseType.ACCEPT))
         dialog.set_default_response(Gtk.ResponseType.CANCEL)
-        dialog.set_current_folder(daemon.yandexDiskFolder)
+        dialog.set_current_folder(daemon.config['dir'])
         if dialog.run() == Gtk.ResponseType.ACCEPT:
-          res = os.path.relpath(dialog.get_filename(), start=daemon.yandexDiskFolder)
+          res = os.path.relpath(dialog.get_filename(), start=daemon.config['dir'])
           self.excludeList.append([False, res])
           self.changed = True
         dialog.destroy()
@@ -781,7 +783,7 @@ class Menu(Gtk.Menu):         # Menu
                      (filePath[: 20] + '...' + filePath[-27: ] if len(filePath) > 50 else
                       filePath).replace('_', u'\u02CD'))
         # Make full path
-        filePath = pathJoin(daemon.yandexDiskFolder, filePath)
+        filePath = pathJoin(daemon.config['dir'], filePath)
         if pathExists(filePath):
           widget.set_sensitive(True)                # If it exists then it can be opened
           widget.connect("activate", self.openPath, filePath)
@@ -1150,7 +1152,7 @@ if __name__ == '__main__':
   autoStartIndDst = pathJoin(userHome, '.config', 'autostart', 'Yandex.Disk-indicator.desktop')
   autoStartDaemonSrc = pathJoin(os.sep, 'usr', 'share', 'applications', 'Yandex.Disk.desktop')
   autoStartDaemonDst = pathJoin(userHome, '.config', 'autostart', 'Yandex.Disk.desktop')
-  
+
   ### Logging ###
   logging.basicConfig(format='%(asctime)-15s %(levelname)-8s %(message)s')
   logger = logging.getLogger('')
@@ -1162,7 +1164,7 @@ if __name__ == '__main__':
   ### Check command line arguments for logging level options and yandexDisk config path ###
   parser = argparse.ArgumentParser(description=_('Desktop indicator for yande-disk daemon'),
                                    prog=appName)
-  parser.add_argument('-l', dest='level', default='30', 
+  parser.add_argument('-l', dest='level', default='30',
           help=_('Sets the logging level to <LEVEL>, where <LEVEL> is one of: ' +
                  '10 - to show all messages (DEBUG), ' +
                  '20 - to show all messages except debugging messages (INFO), ' +
@@ -1176,7 +1178,7 @@ if __name__ == '__main__':
           help=_('Print version and exit'))
   args = parser.parse_args()
   logger.setLevel(int(args.level))       # Set logging level
-  
+
   logger.info('%s v.%s' % (appName, appVer))
   logger.info('Logging level: '+str(logger.getEffectiveLevel()))
 
@@ -1242,7 +1244,7 @@ if __name__ == '__main__':
   icon.update()                             # Update indicator icon with current daemon status
 
   ### Create file updates watcher ###
-  inotify = INotify(pathJoin(daemon.yandexDiskFolder, '.sync/cli.log'), handleEvent, True)
+  inotify = INotify(pathJoin(daemon.config['dir'], '.sync/cli.log'), handleEvent, True)
 
   ### Initial menu actualisation ###
   # Timer triggered event staff #
