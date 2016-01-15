@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.6.5'
+appVer = '1.6.5md'
 #
 #  Copyright 2014+ Sly_tom_cat <slytomcat@mail.ru>
 #  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
@@ -33,7 +33,7 @@ from gi.repository import GdkPixbuf
 from os.path import exists as pathExists, join as pathJoin
 from shutil import copy as fileCopy
 from webbrowser import open_new as openNewBrowser
-import os, sys, subprocess, pyinotify, fcntl, gettext, datetime, logging, re
+import os, sys, subprocess, pyinotify, fcntl, gettext, datetime, logging, re, argparse
 
 class CVal(object):           # Multivalue helper
   ''' Class to work with value that can be None, scalar value or list of values depending
@@ -289,19 +289,20 @@ class YDDaemon(object):       # Yandex.Disk daemon interface
       else:
         return False
 
-  def __init__(self):           # Check that daemon installed, configured and started
+  def __init__(self, cfgFile):  # Check that daemon installed, configured and started
+    self.cfgFile = cfgFile
     if not pathExists('/usr/bin/yandex-disk'):
       self.ErrorDialog('NOTINSTALLED')
       appExit()                     # Daemon is not installed. Exit right now.
-    self.config = self.DConfig(userHome + '/.config/yandex-disk/config.cfg', load=False)
+    self.config = self.DConfig(self.cfgFile, load=False)
     while not self.config.load():   # Try to read Yandex.Disk configuration file
       if self.errorDialog('NOCONFIG') != 0:
         appExit()                   # User hasn't configured daemon. Exit right now.
     self.yandexDiskFolder = self.config.get('dir', '')
     while not self.getOutput():     # Check for correct daemon response and check that it is running
       try:                          # Try to find daemon running process owned by current user
-        msg = subprocess.check_output(['pgrep', '-x', 'yandex-disk', '-u' + os.getenv("USER")],
-                                      universal_newlines=True)[: -1]
+        msg = subprocess.check_output(['pgrep', '-f', r'"yandex-disk.*--config=%s"' % self.cfgFile,
+                                       '-u', os.getenv("USER")], universal_newlines=True)[: -1]
         logger.error('yandex-disk daemon is running but NOT responding!')
         # Kills the daemon(s) when it is running but not responding (HARON_CASE).
         try:                        # Try to kill all instances of daemon
@@ -335,7 +336,8 @@ class YDDaemon(object):       # Yandex.Disk daemon interface
 
   def getOutput(self):          # Get result of 'yandex-disk status'
     try:
-      self.output = subprocess.check_output(['yandex-disk', 'status'], universal_newlines=True)
+      self.output = subprocess.check_output(['yandex-disk','-c', self.cfgFile, 'status'],
+                                            universal_newlines=True)
     except:
       self.output = ''      # daemon is not running or bad
     #logger.debug('output = %s' % daemonOutput)
@@ -415,7 +417,8 @@ class YDDaemon(object):       # Yandex.Disk daemon interface
     and return '' if success or error message if not
     ... but sometime it starts successfully with error message '''
     try:
-      msg = subprocess.check_output(['yandex-disk', 'start'], universal_newlines=True)
+      msg = subprocess.check_output(['yandex-disk', '-c', self.cfgFile, 'start'],
+                                    universal_newlines=True)
       logger.info('Start success, message: %s' % msg)
       return ''
     except subprocess.CalledProcessError as e:
@@ -428,7 +431,8 @@ class YDDaemon(object):       # Yandex.Disk daemon interface
       return err
 
   def stop(self):               # Execute 'yandex-disk stop'
-    try:    msg = subprocess.check_output(['yandex-disk', 'stop'], universal_newlines=True)
+    try:    msg = subprocess.check_output(['yandex-disk', '-c', self.cfgFile, 'stop'],
+                                          universal_newlines=True)
     except: msg = ''
     return (msg != '')
 
@@ -1146,35 +1150,38 @@ if __name__ == '__main__':
   autoStartIndDst = pathJoin(userHome, '.config', 'autostart', 'Yandex.Disk-indicator.desktop')
   autoStartDaemonSrc = pathJoin(os.sep, 'usr', 'share', 'applications', 'Yandex.Disk.desktop')
   autoStartDaemonDst = pathJoin(userHome, '.config', 'autostart', 'Yandex.Disk.desktop')
-
-  ### Output version to console output
-  print('%s v.%s' % (appName, appVer))
-
+  
   ### Logging ###
-  '''
-  Logging level can be set via command line parameter:
-    -l<n>     where n is one of the logging levels: 10, 20, 30, 40 or 50 (see below)
-  Logging level can be:
-    10 - to show all messages (DEBUG)
-    20 - to show all messages except debugging messages (INFO)
-    30 - to show all messages except debugging and info messages (WARNING)
-    40 - to show only error and critical messages (ERROR)
-    50 - to show critical messages only (CRITICAL)
-  '''
   logging.basicConfig(format='%(asctime)-15s %(levelname)-8s %(message)s')
   logger = logging.getLogger('')
-  # Check command line arguments for logging level options
-  logger.setLevel(30)
-  for opt in sys.argv[1:]:
-    if opt[:2] == '-l':
-      logger.setLevel(int(opt[2:]))
-  logger.info('Logging level: '+str(logger.getEffectiveLevel()))
+  logger.setLevel(30)                       # Set defalt logging level
 
   ### Setup localization ###
   lang = Language()
 
-  ### Check for already running instance of the indicator application in user space ###
-  flock = LockFile(pathJoin(configPath, 'pid'))
+  ### Check command line arguments for logging level options and yandexDisk config path ###
+  parser = argparse.ArgumentParser(description=_('Desktop indicator for yande-disk daemon'),
+                                   prog=appName)
+  parser.add_argument('-l', dest='level', default='30', 
+          help=_('Sets the logging level to <LEVEL>, where <LEVEL> is one of: ' +
+                 '10 - to show all messages (DEBUG), ' +
+                 '20 - to show all messages except debugging messages (INFO), ' +
+                 '30 - to show all messages except debugging and info messages (WARNING), ' +
+                 '40 - to show only error and critical messages (ERROR), ' +
+                 '50 - to show critical messages only (CRITICAL). Default: 30'))
+  parser.add_argument('-c', dest='cfg', default='~/.config/yandex-disk/config.cfg',
+          help=_('Path to configuration file of YandexDisk daemon. ' +
+                 'Default: ~/.config/yandex-disk/config.cfg'))
+  parser.add_argument('-v', action='version', version='%(prog)s v.' + appVer,
+          help=_('Print version and exit'))
+  args = parser.parse_args()
+  logger.setLevel(int(args.level))       # Set logging level
+  
+  logger.info('%s v.%s' % (appName, appVer))
+  logger.info('Logging level: '+str(logger.getEffectiveLevel()))
+
+  ### Check for already running instance of the indicator application with the same config ###
+  flock = LockFile(pathJoin(configPath, 'pid' + args.cfg.replace('/','_')))
 
   ### Application configuration ###
   '''
@@ -1220,7 +1227,7 @@ if __name__ == '__main__':
     activateActions()
 
   ### Initialize Yandex.Disk daemon connection object ###
-  daemon = YDDaemon()                       # Initialize daemon connector
+  daemon = YDDaemon(args.cfg.replace('~', userHome))
 
   ### Application Indicator ###
   ## Icons ##
