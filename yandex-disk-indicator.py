@@ -259,7 +259,7 @@ class INotify(object):        # File change watcher
       self.iNotifier.process_events()
     return True
 
-class YDDaemon(object):       # Yandex.Disk daemon interface
+class YDDaemon(str):       # Yandex.Disk daemon interface
 
   class DConfig(Config):        # Redefined class for daemon config
 
@@ -337,6 +337,9 @@ class YDDaemon(object):       # Yandex.Disk daemon interface
     self.parseOutput()              # To update all status variables
     self.lastStatus = self.status
     self.lastItems = ['*']          # To be shure that self.lastItemsChanged = True on next time
+
+  def __str__(self):
+    return self.cfgFile
 
   def getOutput(self, origLang=False):          # Get result of 'yandex-disk status'
     origLANG = os.getenv('LANG')
@@ -447,7 +450,7 @@ class YDDaemon(object):       # Yandex.Disk daemon interface
 
 class Menu(Gtk.Menu):         # Menu
 
-  def __init__(self, daemon, config):         # Create initial menu for daemon object with config
+  def __init__(self, daemon, config, icon):   # Create initial menu for daemon object with config
     self.daemon = daemon                      # Store reference to daemon object for future usage
     self.config = config                      # Store reference app config object for future usage
     self.dconf = daemon.config                # Store reference to daemon.config object
@@ -477,7 +480,7 @@ class Menu(Gtk.Menu):         # Menu
     self.append(open_web)
     self.append(Gtk.SeparatorMenuItem.new())  # -----separator--------
     preferences = Gtk.MenuItem(_('Preferences'))
-    preferences.connect("activate", self.Preferences, self.config, self.daemon)
+    preferences.connect("activate", self.Preferences, self.config, self.daemon, icon)
     self.append(preferences)
     open_help = Gtk.MenuItem(_('Help'))
     m_help = Gtk.Menu()
@@ -638,10 +641,11 @@ class Menu(Gtk.Menu):         # Menu
           self.changed = True
         dialog.destroy()
 
-    def __init__(self, widget, config, daemon):      # Show preferences window
+    def __init__(self, widget, config, daemon, icon):      # Show preferences window
       self.config = config
       self.daemon = daemon
       self.dconfig = daemon.config
+      self.icon = icon
       # Preferences Window routine
       widget.set_sensitive(False)                 # Disable menu item to avoid multiple windows creation
       # Create Preferences window
@@ -746,8 +750,8 @@ class Menu(Gtk.Menu):         # Menu
         self.appCfgUpdate = True                      # Update application config
         self.config[key] = toggleState
       if key == 'theme':
-          icon.setTheme(toggleState)                  # Update icon theme
-          icon.update(ind, self.daemon.status)        # Update current icon
+          self.icon.setTheme(toggleState)                  # Update icon theme
+          self.icon.update(self.daemon.status)             # Update current icon
       elif key == 'notifications':
         notify.switch(toggleState)                    # Update notification object
       elif key == 'autostartdaemon':
@@ -803,7 +807,7 @@ class Menu(Gtk.Menu):         # Menu
           widget.set_sensitive(False)               # Don't allow to open nonexisting path
         self.lastItems.append(widget)
         widget.show()
-      if len(daemon.lastItems) == 0:                # No items in list?
+      if len(self.daemon.lastItems) == 0:                # No items in list?
         self.last.set_sensitive(False)
       else:                                         # There are some items in list
         self.last.set_sensitive(True)
@@ -822,11 +826,6 @@ class Menu(Gtk.Menu):         # Menu
     if stopOnExit and self.daemon.status != 'none':
       self.daemon.stop()   # Stop daemon
       logger.info('Daemon is stopped')
-    # --- Stop all timers ---
-    icon.timer.stop()
-    inotify.timer.stop()
-    wTimer.stop()
-    logger.info("Timers are stopped")
     appExit()
 
 class Icon(object):           # Indicator icon
@@ -857,9 +856,11 @@ class Icon(object):           # Indicator icon
       self.busy = pathJoin(defaultPath, 'yd-busy1.png')
       self.themePath = defaultPath
 
-  def update(self, ind, status):        # Change indicator icon according to daemon status
+  def update(self, status, ind = None):        # Change indicator icon according to daemon status
+    if ind is not None:
+      self.ind = ind
     if status == 'busy':                # Just entered into 'busy' status
-      ind.set_icon(self.busy)           # Start animation from first busy icon
+      self.ind.set_icon(self.busy)           # Start animation from first busy icon
       self.seqNum = 2                   # Next icon for animation
       self.timer.start()                # Start animation timer
     else:
@@ -867,15 +868,15 @@ class Icon(object):           # Indicator icon
         self.timer.stop()               # Stop icon animation
       # --- Set icon for non-animated statuses ---
       if status == 'idle':
-        ind.set_icon(self.idle)
+        self.ind.set_icon(self.idle)
       elif status == 'error':
-        ind.set_icon(self.error)
+        self.ind.set_icon(self.error)
       else:                             # status is 'none' or 'paused'
-        ind.set_icon(self.pause)
+        self.ind.set_icon(self.pause)
 
   def animation(self):    # Changes busy icon by loop (triggered by self.timer)
     seqFile = 'yd-busy' + str(self.seqNum) + '.png'
-    ind.set_icon(pathJoin(self.themePath, seqFile))
+    self.ind.set_icon(pathJoin(self.themePath, seqFile))
     # calculate next icon number
     self.seqNum = self.seqNum % 5 + 1    # 5 icons in loop (1-2-3-4-5-1-2-3...)
     return True                          # True required to continue triggering by timer
@@ -951,47 +952,75 @@ def appExit(msg = None):
   flock.release()
   sys.exit(msg)
 
-def handleEvent(byNotifier):  # Perform status update
-  '''
-  It handles daemon status changes by updating icon, creting messages and also update
-  status information in menu (status, sizes and list of last synchronized items).
-  It can be called by timer (when byNotifier=False) or by iNonifier
-  (when byNotifier=True)
-  '''
-  global tCnt, wTimer
-  daemon.updateStatus()                   # Get the latest status data from daemon
-  logger.info(('iNonify ' if byNotifier else 'Timer   ') +
-              daemon.lastStatus + ' -> ' + daemon.status)
-  menu.update()                           # Update information in menu
-  if daemon.status != daemon.lastStatus:  # Handle status change
-    icon.update(ind, daemon.status)       # Update icon
-    if daemon.lastStatus == 'none':       # Daemon has been started
-      menu.updateSSS()                    # Change menu sensitivity
-      notify.send(_('Yandex.Disk'), _('Yandex.Disk daemon has been started'))
-    if daemon.status == 'busy':           # Just entered into 'busy'
-      notify.send(_('Yandex.Disk'), _('Synchronization started'))
-    elif daemon.status == 'idle':         # Just entered into 'idle'
-      if daemon.lastStatus == 'busy':     # ...from 'busy' status
-        notify.send(_('Yandex.Disk'), _('Synchronization has been completed'))
-    elif daemon.status =='paused':        # Just entered into 'paused'
-      if daemon.lastStatus != 'none':     # ...not from 'none' status
-        notify.send(_('Yandex.Disk'), _('Synchronization has been paused'))
-    elif daemon.status == 'none':         # Just entered into 'none' from some another status
-      menu.updateSSS()                    # Change menu sensitivity as daemon not started
-      notify.send(_('Yandex.Disk'), _('Yandex.Disk daemon has been stopped'))
-    else:                                 # newStatus = 'error' or 'no-net'
-      notify.send(_('Yandex.Disk'), _('Synchronization ERROR'))
-  # --- Handle timer delays ---
-  if byNotifier:                          # True means that it is called by iNonifier
-    wTimer.update(2000)                   # Set timer interval to 2 sec.
-    tCnt = 0                              # reset counter as it was triggered not by timer
-  else:                                   # It called by timer
-    if daemon.status != 'busy':           # in 'busy' keep update interval (2 sec.)
-      if tCnt < 9:                        # increase interval up to 10 sec (2 + 8)
-        wTimer.update((2 + tCnt)*1000)    # Update timer interval.
-        tCnt += 1                         # Increase counter to increase delay in next activation.
-  return True                             # True is required to continue activations by timer.
+class Indicator(object):
+  def __init__(self, config, path):
+    ### Initialize Yandex.Disk daemon connection object ###
+    self.daemon = YDDaemon(path)
+  
+    ### Application Indicator ###
+    ## Icons ##
+    self.icon = Icon(config['theme'])              # Initialize icon object
+  
+    ## Indicator ##
+    self.ind = appIndicator.Indicator.new("yandex-disk", self.icon.pause,
+                                          appIndicator.IndicatorCategory.APPLICATION_STATUS)
+    self.ind.set_status(appIndicator.IndicatorStatus.ACTIVE)
+    self.menu = Menu(self.daemon, config, self.icon)    # Create menu for daemon object 
+    self.ind.set_menu(self.menu)                        # Prepare and attach menu to indicator
+    self.icon.update(self.daemon.status, self.ind)      # Update indicator icon with current daemon status
+  
+    ### Create file updates watcher ###
+    self.inotify = INotify(pathJoin(self.daemon.config['dir'], '.sync/cli.log'),
+                           self.handleEvent, True)
+  
+    ### Initial menu actualisation ###
+    # Timer triggered event staff #
+    self.wTimer = Timer(2000, self.handleEvent, False)  # Timer object
+    self.handleEvent(True)                         # Update menu info on initialization
+    self.menu.updateSSS()
 
+
+  def handleEvent(self, byNotifier):  # Perform status update
+    '''
+    It handles daemon status changes by updating icon, creting messages and also update
+    status information in menu (status, sizes and list of last synchronized items).
+    It can be called by timer (when byNotifier=False) or by iNonifier
+    (when byNotifier=True)
+    '''
+    #global tCnt, wTimer
+    self.daemon.updateStatus()                   # Get the latest status data from daemon
+    logger.info(('iNonify ' if byNotifier else 'Timer   ') +
+                self.daemon.lastStatus + ' -> ' + self.daemon.status)
+    self.menu.update()                           # Update information in menu
+    if self.daemon.status != self.daemon.lastStatus:  # Handle status change
+      self.icon.update(self.daemon.status)       # Update icon
+      if self.daemon.lastStatus == 'none':       # Daemon has been started
+        self.menu.updateSSS()                    # Change menu sensitivity
+        notify.send(_('Yandex.Disk'), _('Yandex.Disk daemon has been started'))
+      if self.daemon.status == 'busy':           # Just entered into 'busy'
+        notify.send(_('Yandex.Disk'), _('Synchronization started'))
+      elif self.daemon.status == 'idle':         # Just entered into 'idle'
+        if self.daemon.lastStatus == 'busy':     # ...from 'busy' status
+          notify.send(_('Yandex.Disk'), _('Synchronization has been completed'))
+      elif self.daemon.status =='paused':        # Just entered into 'paused'
+        if self.daemon.lastStatus != 'none':     # ...not from 'none' status
+          notify.send(_('Yandex.Disk'), _('Synchronization has been paused'))
+      elif self.daemon.status == 'none':         # Just entered into 'none' from some another status
+        self.menu.updateSSS()                    # Change menu sensitivity as daemon not started
+        notify.send(_('Yandex.Disk'), _('Yandex.Disk daemon has been stopped'))
+      else:                                 # newStatus = 'error' or 'no-net'
+        notify.send(_('Yandex.Disk'), _('Synchronization ERROR'))
+    # --- Handle timer delays ---
+    if byNotifier:                          # True means that it is called by iNonifier
+      self.wTimer.update(2000)                   # Set timer interval to 2 sec.
+      self.tCnt = 0                              # reset counter as it was triggered not by timer
+    else:                                   # It called by timer
+      if self.daemon.status != 'busy':           # in 'busy' keep update interval (2 sec.)
+        if self.tCnt < 9:                        # increase interval up to 10 sec (2 + 8)
+          self.wTimer.update((2 + self.tCnt)*1000)    # Update timer interval.
+          self.tCnt += 1                         # Increase counter to increase delay in next activation.
+    return True                             # True is required to continue activations by timer.
+  
 def activateActions():        # Install/deinstall file extensions
   activate = config["fmextensions"]
   result = False
@@ -1237,31 +1266,9 @@ if __name__ == '__main__':
   ### Check for already running instance of the indicator application with the same config ###
   flock = LockFile(pathJoin(configPath, 'pid' + args.cfg.replace('/','_')))
 
-
-  ### Initialize Yandex.Disk daemon connection object ###
-  daemon = YDDaemon(args.cfg)
-
-  ### Application Indicator ###
-  ## Icons ##
-  icon = Icon(config['theme'])              # Initialize icon object
-
-  ## Indicator ##
-  ind = appIndicator.Indicator.new("yandex-disk", icon.pause,
-                                   appIndicator.IndicatorCategory.APPLICATION_STATUS)
-  ind.set_status(appIndicator.IndicatorStatus.ACTIVE)
-  menu = Menu(daemon, config)               # Create menu for daemon object 
-  ind.set_menu(menu)                        # Prepare and attach menu to indicator
-  icon.update(ind, daemon.status)                # Update indicator icon with current daemon status
-
-  ### Create file updates watcher ###
-  inotify = INotify(pathJoin(daemon.config['dir'], '.sync/cli.log'), handleEvent, True)
-
-  ### Initial menu actualisation ###
-  # Timer triggered event staff #
-  wTimer = Timer(2000, handleEvent, False)  # Timer object
-  handleEvent(True)                         # Update menu info on initialization
-  menu.updateSSS()
-
+  # Make the indicator objet
+  indicator = Indicator(config, args.cfg)
+  
   ### Start GTK Main loop ###
   Gtk.main()
 
