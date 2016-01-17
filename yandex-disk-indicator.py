@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.7.1'
+appVer = '1.8.0'
 #
 #  Copyright 2014+ Sly_tom_cat <slytomcat@mail.ru>
 #  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
@@ -259,7 +259,7 @@ class INotify(object):        # File change watcher
       self.iNotifier.process_events()
     return True
 
-class YDDaemon(str):       # Yandex.Disk daemon interface
+class YDDaemon(object):       # Yandex.Disk daemon interface
 
   class DConfig(Config):        # Redefined class for daemon config
 
@@ -337,9 +337,6 @@ class YDDaemon(str):       # Yandex.Disk daemon interface
     self.parseOutput()              # To update all status variables
     self.lastStatus = self.status
     self.lastItems = ['*']          # To be shure that self.lastItemsChanged = True on next time
-
-  def __str__(self):            # IDEA ?
-    return self.cfgFile
 
   def getOutput(self, origLang=False):          # Get result of 'yandex-disk status'
     origLANG = os.getenv('LANG')
@@ -450,11 +447,14 @@ class YDDaemon(str):       # Yandex.Disk daemon interface
 
 class Menu(Gtk.Menu):         # Menu
 
-  def __init__(self, daemon, config, icon):   # Create initial menu for daemon object with config
+  def __init__(self, daemon, config, icon, multiInstance):   # Create initial menu for daemon object with config
     self.daemon = daemon                      # Store reference to daemon object for future usage
     self.config = config                      # Store reference app config object for future usage
     self.dconf = daemon.config                # Store reference to daemon.config object
     Gtk.Menu.__init__(self)                   # Create menu
+    if multiInstance:
+      yddir = Gtk.MenuItem(_('Path: %s')%self.dconf['dir'].replace('_', u'\u02CD'))
+      yddir.set_sensitive(False);   self.append(yddir)
     self.status = Gtk.MenuItem();   self.status.connect("activate", self.showOutput)
     self.append(self.status)
     self.used = Gtk.MenuItem();     self.used.set_sensitive(False)
@@ -934,25 +934,8 @@ class Timer(object):          # Timer
       GLib.source_remove(self.timer)
       self.active = False
 
-def copyFile(source, destination):
-  try:    fileCopy (source, destination)
-  except: logger.error("File Copy Error: from %s to %s" % (source, destination))
-
-def deleteFile(source):
-  try:    os.remove(source)
-  except: logger.error('File Deletion Error: %s' % source)
-
-def appExit(msg = None):
-  flock.release()
-  if config['stoponexit']:
-    for i in indicators:
-      if i.daemon.status != 'none':
-        i.daemon.stop()
-        
-  sys.exit(msg)
-
-class Indicator(object):
-  def __init__(self, config, path):
+class Indicator(object):      # Yandex.Disk indicator 
+  def __init__(self, config, path, multiInstance):
     ### Initialize Yandex.Disk daemon connection object ###
     self.daemon = YDDaemon(path)
   
@@ -964,7 +947,7 @@ class Indicator(object):
     self.ind = appIndicator.Indicator.new("yandex-disk"+path, self.icon.pause,
                                           appIndicator.IndicatorCategory.APPLICATION_STATUS)
     self.ind.set_status(appIndicator.IndicatorStatus.ACTIVE)
-    self.menu = Menu(self.daemon, config, self.icon)    # Create menu for daemon object 
+    self.menu = Menu(self.daemon, config, self.icon, multiInstance)    # Create menu for daemon 
     self.ind.set_menu(self.menu)                        # Prepare and attach menu to indicator
     self.icon.update(self.daemon.status, self.ind)      # Update indicator icon with current daemon status
   
@@ -1019,7 +1002,24 @@ class Indicator(object):
           self.wTimer.update((2 + self.tCnt)*1000)    # Update timer interval.
           self.tCnt += 1                         # Increase counter to increase delay in next activation.
     return True                             # True is required to continue activations by timer.
-  
+
+def copyFile(src, dst):
+  try:    fileCopy (src, dst)
+  except: logger.error("File Copy Error: from %s to %s" % (src, dst))
+
+def deleteFile(source):
+  try:    os.remove(source)
+  except: logger.error('File Deletion Error: %s' % source)
+
+def appExit(msg = None):
+  flock.release()
+  if config['stoponexit']:
+    logger.info('Stopping active daemons')
+    for i in indicators:
+      if i.daemon.status != 'none':
+        i.daemon.stop()
+  sys.exit(msg)
+
 def activateActions():        # Install/deinstall file extensions
   activate = config["fmextensions"]
   result = False
@@ -1204,7 +1204,6 @@ if __name__ == '__main__':
   # Load translation object (or NullTranslations object when
   # translation file not found) and define _() function.
   gettext.translation(appName, '/usr/share/locale', fallback=True).install()
-  # Set LANG environment for daemon output (it must be 'en' for correct parsing)
   logger.info('User LANG is '+os.getenv('LANG'))
 
   ### Get command line arguments ###
@@ -1246,7 +1245,7 @@ if __name__ == '__main__':
   config.setdefault('theme', False)
   config.setdefault('fmextensions', True)
   config['autostartdaemon'] = pathExists(autoStartDaemonDst)
-  config.setdefault('daemons', args.cfg)
+  daemons = CVal(config.setdefault('daemons', None))
   if not config.readSuccess:            # Is it a first run?
     logging.info('No config, probably it is a first run.')
     # Create app config folders in ~/.config
@@ -1266,18 +1265,19 @@ if __name__ == '__main__':
   ### Check for already running instance of the indicator application with the same config ###
   flock = LockFile(pathJoin(configPath, 'pid'))
 
-  # Check that args.cfg is alredy in daemons
+  # Check that args.cfg is alredy in daemons list
   allOk = False
-  for d in CVal(config['daemons']):
+  for d in daemons:
     if d == args.cfg:
       allOk = True
   if not allOk:
-    config['daemons'] = CVal(config['daemons']).add(args.cfg)
-    config.save()
-  # Make the indicators objets
+    config['daemons'] = daemons.add(args.cfg)
+    config.save()                 # Update configuration file
+
+  # Make indicator objets
   indicators = []
-  for d in CVal(config['daemons']):
-    indicators.append(Indicator(config, d))
+  for d in daemons:
+    indicators.append(Indicator(config, d, len(daemons) > 1))
   
   ### Start GTK Main loop ###
   Gtk.main()

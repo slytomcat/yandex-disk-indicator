@@ -1,5 +1,5 @@
-yd-tools (1.7.1) trusty; urgency=medium
+yd-tools (1.8.0) trusty; urgency=medium
 
   * Changes:
-    -- fix for broken procedure of first run (config file autocreation)
- -- Sly_tom_cat <slytomcat@mail.ru>  Sun, 17 Jan 2016 12:35:37 +0300
+    -- Multi-indicators support
+ -- Sly_tom_cat <slytomcat@mail.ru>  Mon, 18 Jan 2016 01:27:27 +0300
