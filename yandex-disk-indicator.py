@@ -111,7 +111,7 @@ class Config(dict):           # Configuration
     self.usequotes = usequotes     # Use qoutes for keys and values in self.save
     self.delimiter = delimiter     # Use specified delimiter between key and value
     if load:
-      self.readSuccess = self.load()
+      self.load()
 
   def decode(self, value):              # Convert string to value before store it
     #logger.debug("Decoded value: '%s'"%value)
@@ -155,8 +155,10 @@ class Config(dict):           # Configuration
       with open(self.fileName) as cf:
         res = dict([re.findall(r'^\s*(.+?)\s*%s\s*(.*)$' % self.delimiter, l)[0]
                     for l in cf if l and self.delimiter in l and l.lstrip()[0] != '#'])
+      self.readSuccess = True
     except:
-      logger.info('Config file read error: %s' % self.fileName)
+      logger.warning('Config file read error: %s' % self.fileName)
+      self.readSuccess = False
       return False
     for kv, vv in res.items():        # Parse each line
       # check key
@@ -336,13 +338,18 @@ class YDDaemon(object):       # Yandex.Disk daemon interface
     self.lastStatus = self.status
     self.lastItems = ['*']          # To be shure that self.lastItemsChanged = True on next time
 
-  def getOutput(self):          # Get result of 'yandex-disk status'
+  def getOutput(self, origLang=False):          # Get result of 'yandex-disk status'
+    origLANG = os.getenv('LANG')
+    if not origLang:          # Change LANG settings when it requered 
+      os.putenv('LANG', 'en_US.UTF-8')
     try:
       self.output = subprocess.check_output(['yandex-disk','-c', self.cfgFile, 'status'],
                                             universal_newlines=True)
     except:
-      self.output = ''      # daemon is not running or bad
+      self.output = ''        # daemon is not running or bad
     #logger.debug('output = %s' % daemonOutput)
+    if not origLang:          # Restore LANG settings
+      os.putenv('LANG', origLANG)
     return self.output
 
   def parseOutput(self):        # Parse the daemon output
@@ -440,7 +447,8 @@ class YDDaemon(object):       # Yandex.Disk daemon interface
 
 class Menu(Gtk.Menu):         # Menu
 
-  def __init__(self):                     # Create initial menu
+  def __init__(self, daemon):                 # Create initial menu for daemon object
+    self.daemon = daemon                      # Store daemon object for future usage 
     Gtk.Menu.__init__(self)                   # Create menu
     self.status = Gtk.MenuItem();   self.status.connect("activate", self.showOutput)
     self.append(self.status)
@@ -536,9 +544,8 @@ class Menu(Gtk.Menu):         # Menu
     statusWindow.set_border_width(6)
     statusWindow.add_button(_('Close'), Gtk.ResponseType.CLOSE)
     textBox = Gtk.TextView()                            # Create text-box to display daemon output
-    lang.orig()                                         # Switch to user LANG
-    textBox.get_buffer().set_text(daemon.getOutput())   # Set test to daemon output in user language
-    lang.work()                                         # Restore working LANG
+    # Set test to daemon output in user language
+    textBox.get_buffer().set_text(self.daemon.getOutput(origLang = True))   
     textBox.set_editable(False)
     statusWindow.get_content_area().add(textBox)        # Put it inside the dialogue content area
     statusWindow.show_all();  statusWindow.run();   statusWindow.destroy()
@@ -926,24 +933,6 @@ class Timer(object):          # Timer
       GLib.source_remove(self.timer)
       self.active = False
 
-class Language(object):       # Language
-
-  def __init__(self):
-    self.origLANG = os.getenv('LANG')    # Store original LANG environment
-    self.workLANG = 'en_US.UTF-8'
-    # Load translation object (or NullTranslations object when
-    # translation file not found) and define _() function.
-    gettext.translation(appName, '/usr/share/locale', fallback=True).install()
-    # Set LANG environment for daemon output (it must be 'en' for correct parsing)
-    self.work()
-    logger.info('User LANG is '+self.origLANG)
-
-  def orig(self):  # Set original user language
-    os.putenv('LANG', self.origLANG)
-
-  def work(self):  # Set working language for daemon output correct parsing
-    os.putenv('LANG', self.workLANG)
-
 def copyFile(source, destination):
   try:    fileCopy (source, destination)
   except: logger.error("File Copy Error: from %s to %s" % (source, destination))
@@ -1178,7 +1167,11 @@ if __name__ == '__main__':
   logger = logging.getLogger('')
 
   ### Setup localization ###
-  lang = Language()
+  # Load translation object (or NullTranslations object when
+  # translation file not found) and define _() function.
+  gettext.translation(appName, '/usr/share/locale', fallback=True).install()
+  # Set LANG environment for daemon output (it must be 'en' for correct parsing)
+  logger.info('User LANG is '+os.getenv('LANG'))
 
   ### Get command line arguments ###
   args = argParse()
@@ -1250,7 +1243,7 @@ if __name__ == '__main__':
   ind = appIndicator.Indicator.new("yandex-disk", icon.pause,
                                    appIndicator.IndicatorCategory.APPLICATION_STATUS)
   ind.set_status(appIndicator.IndicatorStatus.ACTIVE)
-  menu = Menu()
+  menu = Menu(daemon)                       # Create menu for daemon object 
   ind.set_menu(menu)                        # Prepare and attach menu to indicator
   icon.update(ind, daemon.status)                # Update indicator icon with current daemon status
 
