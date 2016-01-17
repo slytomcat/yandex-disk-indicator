@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.7.0'
+appVer = '1.7.1'
 #
 #  Copyright 2014+ Sly_tom_cat <slytomcat@mail.ru>
 #  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
@@ -111,7 +111,7 @@ class Config(dict):           # Configuration
     self.usequotes = usequotes     # Use qoutes for keys and values in self.save
     self.delimiter = delimiter     # Use specified delimiter between key and value
     if load:
-      self.load()
+      self.readSuccess = self.load()
 
   def decode(self, value):              # Convert string to value before store it
     #logger.debug("Decoded value: '%s'"%value)
@@ -156,7 +156,7 @@ class Config(dict):           # Configuration
         res = dict([re.findall(r'^\s*(.+?)\s*%s\s*(.*)$' % self.delimiter, l)[0]
                     for l in cf if l and self.delimiter in l and l.lstrip()[0] != '#'])
     except:
-      logger.error('Config file read error: %s' % self.fileName)
+      logger.info('Config file read error: %s' % self.fileName)
       return False
     for kv, vv in res.items():        # Parse each line
       # check key
@@ -192,8 +192,8 @@ class Config(dict):           # Configuration
       with open(self.fileName, 'rt') as cf:
         buf = cf.read()
     except:
-      logger.error('Config file access error: %s' % self.fileName)
-      return False
+      logger.warning('Config file access error, a new file (%s) will be created' % self.fileName)
+      buf = ''
     while buf and buf[-1] == '\n':        # Remove ending blank lines
       buf = buf[:-1]
     buf += '\n'                           # Left only one
@@ -730,12 +730,11 @@ class Menu(Gtk.Menu):         # Menu
         daemon.config[key] = toggleState              # Update daemon config
         self.daemonCfgUpdate = True
       else:
-        config[key] = toggleState                     # Update application config
-        self.appCfgUpdate = True
-      # React on setting change
+        self.appCfgUpdate = True                      # Update application config
+        config[key] = toggleState
       if key == 'theme':
-        icon.updateTheme()                            # Update themeStyle
-        icon.update()                                 # Update current icon
+          icon.setTheme(toggleState)                  # Update icon theme
+          icon.update(ind, daemon.status)             # Update current icon
       elif key == 'notifications':
         notify.switch(toggleState)                    # Update notification object
       elif key == 'autostartdaemon':
@@ -819,17 +818,17 @@ class Menu(Gtk.Menu):         # Menu
 
 class Icon(object):           # Indicator icon
 
-  def __init__(self):     # Initialize icon paths
-    self.updateTheme()
+  def __init__(self, theme):    # Initialize icon paths
+    self.setTheme(theme)
     # Create timer object for the icon animation
     self.timer = Timer(777, self.animation, start=False)
 
-  def updateTheme(self):  # Determine paths to icons according to current theme
+  def setTheme(self, theme):    # Determine paths to icons according to current theme
     global installDir, configPath
+    theme = 'light' if theme else 'dark'
     # Determine theme from application configuration settings
-    iconTheme = 'light' if config["theme"] else 'dark'
-    defaultPath = pathJoin(installDir, 'icons', iconTheme)
-    userPath = pathJoin(configPath, 'icons', iconTheme)
+    defaultPath = pathJoin(installDir, 'icons', theme)
+    userPath = pathJoin(configPath, 'icons', theme)
     # Set appropriate paths to icons
     userIcon = pathJoin(userPath, 'yd-ind-idle.png')
     self.idle = (userIcon if pathExists(userIcon) else pathJoin(defaultPath, 'yd-ind-idle.png'))
@@ -845,9 +844,8 @@ class Icon(object):           # Indicator icon
       self.busy = pathJoin(defaultPath, 'yd-busy1.png')
       self.themePath = defaultPath
 
-  def update(self):       # Change indicator icon according to daemon status
-    global ind
-    if daemon.status == 'busy':         # Just entered into 'busy' status
+  def update(self, ind, status):        # Change indicator icon according to daemon status
+    if status == 'busy':                # Just entered into 'busy' status
       ind.set_icon(self.busy)           # Start animation from first busy icon
       self.seqNum = 2                   # Next icon for animation
       self.timer.start()                # Start animation timer
@@ -855,9 +853,9 @@ class Icon(object):           # Indicator icon
       if self.timer.active:             # Not 'busy' and animation is on
         self.timer.stop()               # Stop icon animation
       # --- Set icon for non-animated statuses ---
-      if daemon.status == 'idle':
+      if status == 'idle':
         ind.set_icon(self.idle)
-      elif daemon.status == 'error':
+      elif status == 'error':
         ind.set_icon(self.error)
       else:                             # status is 'none' or 'paused'
         ind.set_icon(self.pause)
@@ -971,7 +969,7 @@ def handleEvent(byNotifier):  # Perform status update
               daemon.lastStatus + ' -> ' + daemon.status)
   menu.update()                           # Update information in menu
   if daemon.status != daemon.lastStatus:  # Handle status change
-    icon.update()                         # Update icon
+    icon.update(ind, daemon.status)       # Update icon
     if daemon.lastStatus == 'none':       # Daemon has been started
       menu.updateSSS()                    # Change menu sensitivity
       notify.send(_('Yandex.Disk'), _('Yandex.Disk daemon has been started'))
@@ -1193,10 +1191,7 @@ if __name__ == '__main__':
   # Report app version and logging level
   logger.info('%s v.%s' % (appName, appVer))
   logger.debug('Logging level: '+str(args.level))
-
-  ### Check for already running instance of the indicator application with the same config ###
-  flock = LockFile(pathJoin(configPath, 'pid' + args.cfg.replace('/','_')))
-
+  
   ### Application configuration ###
   '''
   User configuration is stored in ~/.config/<appHomeName>/<appName>.conf file.
@@ -1224,7 +1219,7 @@ if __name__ == '__main__':
   config.setdefault('theme', False)
   config.setdefault('fmextensions', True)
   config['autostartdaemon'] = pathExists(autoStartDaemonDst)
-  if not pathExists(configPath):            # Is it a first run?
+  if not config.readSuccess:            # Is it a first run?
     logging.info('No config, probably it is a first run.')
     # Create app config folders in ~/.config
     try: os.makedirs(configPath)
@@ -1240,12 +1235,16 @@ if __name__ == '__main__':
     ### Activate FM actions according to config (as it is first run)
     activateActions()
 
+  ### Check for already running instance of the indicator application with the same config ###
+  flock = LockFile(pathJoin(configPath, 'pid' + args.cfg.replace('/','_')))
+
+
   ### Initialize Yandex.Disk daemon connection object ###
   daemon = YDDaemon(args.cfg)
 
   ### Application Indicator ###
   ## Icons ##
-  icon = Icon()                             # Initialize icon object
+  icon = Icon(config['theme'])              # Initialize icon object
 
   ## Indicator ##
   ind = appIndicator.Indicator.new("yandex-disk", icon.pause,
@@ -1253,7 +1252,7 @@ if __name__ == '__main__':
   ind.set_status(appIndicator.IndicatorStatus.ACTIVE)
   menu = Menu()
   ind.set_menu(menu)                        # Prepare and attach menu to indicator
-  icon.update()                             # Update indicator icon with current daemon status
+  icon.update(ind, daemon.status)                # Update indicator icon with current daemon status
 
   ### Create file updates watcher ###
   inotify = INotify(pathJoin(daemon.config['dir'], '.sync/cli.log'), handleEvent, True)

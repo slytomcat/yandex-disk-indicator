@@ -1,8 +1,5 @@
-yd-tools (1.7.0) trusty; urgency=medium
+yd-tools (1.7.1) trusty; urgency=medium
 
   * Changes:
-    -- Procedures of reading and writing of configuration file were rewritten using re module
-    -- Command line arguments are parsed via argparse whitch additionaly providea --help and --version functionality
-    -- Command line argument -c|--config can be used to specify the yandex-disk configuration file (it allows to run multiple indicator instances with different accounts to yandex.Disk in the same userspace)
-    -- Small fixes and updated translations
- -- Sly_tom_cat <slytomcat@mail.ru>  Fri, 15 Jan 2016 14:25:53 +0300
+    -- fix for broken procedure of first run (config file autocreation)
+ -- Sly_tom_cat <slytomcat@mail.ru>  Sun, 17 Jan 2016 12:35:37 +0300
