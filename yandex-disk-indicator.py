@@ -447,8 +447,10 @@ class YDDaemon(object):       # Yandex.Disk daemon interface
 
 class Menu(Gtk.Menu):         # Menu
 
-  def __init__(self, daemon):                 # Create initial menu for daemon object
-    self.daemon = daemon                      # Store daemon object for future usage 
+  def __init__(self, daemon, config):         # Create initial menu for daemon object with config
+    self.daemon = daemon                      # Store reference to daemon object for future usage
+    self.config = config                      # Store reference app config object for future usage
+    self.dconf = daemon.config                # Store reference to daemon.config object
     Gtk.Menu.__init__(self)                   # Create menu
     self.status = Gtk.MenuItem();   self.status.connect("activate", self.showOutput)
     self.append(self.status)
@@ -468,14 +470,14 @@ class Menu(Gtk.Menu):         # Menu
     self.daemon_stop.connect("activate", self.stopDaemon);
     self.append(self.daemon_stop)
     open_folder = Gtk.MenuItem(_('Open Yandex.Disk Folder'))
-    open_folder.connect("activate", self.openPath, daemon.config['dir'])
+    open_folder.connect("activate", self.openPath, self.daemon.config['dir'])
     self.append(open_folder)
     open_web = Gtk.MenuItem(_('Open Yandex.Disk on the web'))
     open_web.connect("activate", self.openInBrowser, _('https://disk.yandex.com'))
     self.append(open_web)
     self.append(Gtk.SeparatorMenuItem.new())  # -----separator--------
     preferences = Gtk.MenuItem(_('Preferences'))
-    preferences.connect("activate", self.Preferences)
+    preferences.connect("activate", self.Preferences, self.config, self.daemon)
     self.append(preferences)
     open_help = Gtk.MenuItem(_('Help'))
     m_help = Gtk.Menu()
@@ -628,14 +630,18 @@ class Menu(Gtk.Menu):         # Menu
                                      (_('Close'), Gtk.ResponseType.CANCEL,
                                       _('Select'), Gtk.ResponseType.ACCEPT))
         dialog.set_default_response(Gtk.ResponseType.CANCEL)
-        dialog.set_current_folder(daemon.config['dir'])
+        rootDir = self.parent.daemon.config['dir']
+        dialog.set_current_folder(rootDir)
         if dialog.run() == Gtk.ResponseType.ACCEPT:
-          res = os.path.relpath(dialog.get_filename(), start=daemon.config['dir'])
+          res = os.path.relpath(dialog.get_filename(), start=rootDir)
           self.excludeList.append([False, res])
           self.changed = True
         dialog.destroy()
 
-    def __init__(self, widget):                       # Show preferences window
+    def __init__(self, widget, config, daemon):      # Show preferences window
+      self.config = config
+      self.daemon = daemon
+      self.dconfig = daemon.config
       # Preferences Window routine
       widget.set_sensitive(False)                 # Disable menu item to avoid multiple windows creation
       # Create Preferences window
@@ -649,33 +655,33 @@ class Menu(Gtk.Menu):         # Menu
       preferencesBox = Gtk.VBox(spacing=5)
       key = 'autostart'                           # Auto-start indicator on system start-up
       сbAutoStart = Gtk.CheckButton(_('Start Yandex.Disk indicator when you start your computer'))
-      сbAutoStart.set_active(config[key])
+      сbAutoStart.set_active(self.config[key])
       сbAutoStart.connect("toggled", self.onButtonToggled, сbAutoStart, key)
       preferencesBox.add(сbAutoStart)
       key = 'startonstart'                        # Start daemon on indicator start
       сbStOnStart = Gtk.CheckButton(_('Start Yandex.Disk daemon when indicator is starting'))
       сbStOnStart.set_tooltip_text(_("When daemon was not started before."))
-      сbStOnStart.set_active(config[key])
+      сbStOnStart.set_active(self.config[key])
       сbStOnStart.connect("toggled", self.onButtonToggled, сbStOnStart, key)
       preferencesBox.add(сbStOnStart)
       key = 'stoponexit'                          # Stop daemon on exit
       сbStoOnExit = Gtk.CheckButton(_('Stop Yandex.Disk daemon on closing of indicator'))
-      сbStoOnExit.set_active(config[key])
+      сbStoOnExit.set_active(self.config[key])
       сbStoOnExit.connect("toggled", self.onButtonToggled, сbStoOnExit, key)
       preferencesBox.add(сbStoOnExit)
       key = 'notifications'                       # Notifications
       сbNotify = Gtk.CheckButton(_('Show on-screen notifications'))
-      сbNotify.set_active(config[key])
+      сbNotify.set_active(self.config[key])
       сbNotify.connect("toggled", self.onButtonToggled, сbNotify, key)
       preferencesBox.add(сbNotify)
       key = 'theme'                               # Theme
       сbTheme = Gtk.CheckButton(_('Prefer light icon theme'))
-      сbTheme.set_active(config[key])
+      сbTheme.set_active(self.config[key])
       сbTheme.connect("toggled", self.onButtonToggled, сbTheme, key)
       preferencesBox.add(сbTheme)
       key = 'fmextensions'                        # Activate file-manager extensions
       сbExtensions = Gtk.CheckButton(_('Activate file manager extensions'))
-      сbExtensions.set_active(config[key])
+      сbExtensions.set_active(self.config[key])
       сbExtensions.connect("toggled", self.onButtonToggled, сbExtensions, key)
       preferencesBox.add(сbExtensions)
       # --- End of Indicator preferences tab --- add it to notebook
@@ -684,7 +690,7 @@ class Menu(Gtk.Menu):         # Menu
       optionsBox = Gtk.VBox(spacing=5)
       key = 'autostartdaemon'                     # Auto-start daemon on system start-up
       сbASDaemon = Gtk.CheckButton(_('Start Yandex.Disk daemon when you start your computer'))
-      сbASDaemon.set_active(config[key])
+      сbASDaemon.set_active(self.config[key])
       сbASDaemon.connect("toggled", self.onButtonToggled, сbASDaemon, key)
       optionsBox.add(сbASDaemon)
       frame = Gtk.Frame()
@@ -697,7 +703,7 @@ class Menu(Gtk.Menu):         # Menu
       сbRO = Gtk.CheckButton(_('Read-Only: Do not upload locally changed files to Yandex.Disk'))
       сbRO.set_tooltip_text(_("Locally changed files will be renamed if a newer version of this " +
                               "file appear in Yandex.Disk."))
-      сbRO.set_active(daemon.config[key])
+      сbRO.set_active(self.dconfig[key])
       сbRO.connect("toggled", self.onButtonToggled, сbRO, key)
       framedBox.add(сbRO)
       key = 'overwrite'                           # Option Overwrite    # daemon config
@@ -706,8 +712,8 @@ class Menu(Gtk.Menu):         # Menu
       self.overwrite.set_tooltip_text(
         _("Locally changed files will be overwritten if a newer version of this file appear " +
           "in Yandex.Disk."))
-      self.overwrite.set_active(daemon.config[key])
-      self.overwrite.set_sensitive(daemon.config['read-only'])
+      self.overwrite.set_active(self.dconfig[key])
+      self.overwrite.set_sensitive(self.dconfig['read-only'])
       self.overwrite.connect("toggled", self.onButtonToggled, self.overwrite, key)
       framedBox.add(self.overwrite)
       # Excude folders list
@@ -723,9 +729,9 @@ class Menu(Gtk.Menu):         # Menu
       self.daemonCfgUpdate = False
       self.run()
       if self.daemonCfgUpdate:
-        daemon.config.save()                      # Save daemon options in config file
+        self.dconfig.save()                 # Save daemon options in config file
       if self.appCfgUpdate:
-        config.save()                             # Save app config
+        self.config.save()                        # Save app config
       widget.set_sensitive(True)                  # Enable menu item
       self.destroy()
 
@@ -734,14 +740,14 @@ class Menu(Gtk.Menu):         # Menu
       logger.debug('Togged: %s  val: %s' % (key, str(toggleState)))
       # Update configurations
       if key in ['read-only', 'overwrite']:
-        daemon.config[key] = toggleState              # Update daemon config
+        self.dconfig[key] = toggleState         # Update daemon config
         self.daemonCfgUpdate = True
       else:
         self.appCfgUpdate = True                      # Update application config
-        config[key] = toggleState
+        self.config[key] = toggleState
       if key == 'theme':
           icon.setTheme(toggleState)                  # Update icon theme
-          icon.update(ind, daemon.status)             # Update current icon
+          icon.update(ind, self.daemon.status)        # Update current icon
       elif key == 'notifications':
         notify.switch(toggleState)                    # Update notification object
       elif key == 'autostartdaemon':
@@ -774,22 +780,22 @@ class Menu(Gtk.Menu):         # Menu
 
   def update(self):                       # Update information in menu
     # Update status data
-    self.status.set_label(_('Status: ') + self.YD_STATUS.get(daemon.status) +
-                          (daemon.syncProgress if daemon.status == 'busy' else ''))
-    self.used.set_label(_('Used: ') + daemon.sUsed + '/' + daemon.sTotal)
-    self.free.set_label(_('Free: ') + daemon.sFree + _(', trash: ') + daemon.sTrash)
+    self.status.set_label(_('Status: ') + self.YD_STATUS.get(self.daemon.status) +
+                          (self.daemon.syncProgress if self.daemon.status == 'busy' else ''))
+    self.used.set_label(_('Used: ') + self.daemon.sUsed + '/' + self.daemon.sTotal)
+    self.free.set_label(_('Free: ') + self.daemon.sFree + _(', trash: ') + self.daemon.sTrash)
     # --- Update last synchronized sub-menu ---
-    if daemon.lastItemsChanged:                     # Only when list of last synchronized is changed
+    if self.daemon.lastItemsChanged:                     # Only when list of last synchronized is changed
       for widget in self.lastItems.get_children():  # Clear last synchronized sub-menu
         self.lastItems.remove(widget)
-      for filePath in daemon.lastItems:             # Create new sub-menu items
+      for filePath in self.daemon.lastItems:             # Create new sub-menu items
         # Make menu label as file path (shorten to 50 symbols if path length > 50 symbols),
         # with replaced underscore (to disable menu acceleration feature of GTK menu).
         widget = Gtk.MenuItem.new_with_label(
                      (filePath[: 20] + '...' + filePath[-27: ] if len(filePath) > 50 else
                       filePath).replace('_', u'\u02CD'))
         # Make full path
-        filePath = pathJoin(daemon.config['dir'], filePath)
+        filePath = pathJoin(self.dconf['dir'], filePath)
         if pathExists(filePath):
           widget.set_sensitive(True)                # If it exists then it can be opened
           widget.connect("activate", self.openPath, filePath)
@@ -804,17 +810,17 @@ class Menu(Gtk.Menu):         # Menu
       logger.info("Sub-menu 'Last synchronized' has been updated")
 
   def updateSSS(self):                    # Update daemon start, stop & status menu availability
-    started = daemon.status != 'none'
+    started = self.daemon.status != 'none'
     self.daemon_stop.set_sensitive(started)
     self.status.set_sensitive(started)
     self.daemon_start.set_sensitive(not started)
 
   def close(self, widget):                # Quit from indicator
     global wTimer
-    stopOnExit = config.get("stoponexit", False)
+    stopOnExit = self.config["stoponexit"]
     logger.info('Stop daemon on exit - %s' % str(stopOnExit))
-    if stopOnExit and daemon.status != 'none':
-      daemon.stop()   # Stop daemon
+    if stopOnExit and self.daemon.status != 'none':
+      self.daemon.stop()   # Stop daemon
       logger.info('Daemon is stopped')
     # --- Stop all timers ---
     icon.timer.stop()
@@ -1243,7 +1249,7 @@ if __name__ == '__main__':
   ind = appIndicator.Indicator.new("yandex-disk", icon.pause,
                                    appIndicator.IndicatorCategory.APPLICATION_STATUS)
   ind.set_status(appIndicator.IndicatorStatus.ACTIVE)
-  menu = Menu(daemon)                       # Create menu for daemon object 
+  menu = Menu(daemon, config)               # Create menu for daemon object 
   ind.set_menu(menu)                        # Prepare and attach menu to indicator
   icon.update(ind, daemon.status)                # Update indicator icon with current daemon status
 
