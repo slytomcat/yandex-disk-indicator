@@ -111,7 +111,7 @@ class Config(dict):           # Configuration
     self.usequotes = usequotes     # Use qoutes for keys and values in self.save
     self.delimiter = delimiter     # Use specified delimiter between key and value
     if load:
-      self.load()
+      self.readSuccess = self.load()
 
   def decode(self, value):              # Convert string to value before store it
     #logger.debug("Decoded value: '%s'"%value)
@@ -156,7 +156,7 @@ class Config(dict):           # Configuration
         res = dict([re.findall(r'^\s*(.+?)\s*%s\s*(.*)$' % self.delimiter, l)[0]
                     for l in cf if l and self.delimiter in l and l.lstrip()[0] != '#'])
     except:
-      logger.error('Config file read error: %s' % self.fileName)
+      logger.info('Config file read error: %s' % self.fileName)
       return False
     for kv, vv in res.items():        # Parse each line
       # check key
@@ -192,8 +192,8 @@ class Config(dict):           # Configuration
       with open(self.fileName, 'rt') as cf:
         buf = cf.read()
     except:
-      logger.error('Config file access error: %s' % self.fileName)
-      return False
+      logger.warning('Config file access error, a new file (%s) will be created' % self.fileName)
+      buf = ''
     while buf and buf[-1] == '\n':        # Remove ending blank lines
       buf = buf[:-1]
     buf += '\n'                           # Left only one
@@ -1191,10 +1191,7 @@ if __name__ == '__main__':
   # Report app version and logging level
   logger.info('%s v.%s' % (appName, appVer))
   logger.debug('Logging level: '+str(args.level))
-
-  ### Check for already running instance of the indicator application with the same config ###
-  flock = LockFile(pathJoin(configPath, 'pid' + args.cfg.replace('/','_')))
-
+  
   ### Application configuration ###
   '''
   User configuration is stored in ~/.config/<appHomeName>/<appName>.conf file.
@@ -1222,7 +1219,7 @@ if __name__ == '__main__':
   config.setdefault('theme', False)
   config.setdefault('fmextensions', True)
   config['autostartdaemon'] = pathExists(autoStartDaemonDst)
-  if not pathExists(configPath):            # Is it a first run?
+  if not config.readSuccess:            # Is it a first run?
     logging.info('No config, probably it is a first run.')
     # Create app config folders in ~/.config
     try: os.makedirs(configPath)
@@ -1237,6 +1234,10 @@ if __name__ == '__main__':
     copyFile(pathJoin(installDir, 'icons', 'readme'), pathJoin(configPath, 'icons', 'readme'))
     ### Activate FM actions according to config (as it is first run)
     activateActions()
+
+  ### Check for already running instance of the indicator application with the same config ###
+  flock = LockFile(pathJoin(configPath, 'pid' + args.cfg.replace('/','_')))
+
 
   ### Initialize Yandex.Disk daemon connection object ###
   daemon = YDDaemon(args.cfg)
