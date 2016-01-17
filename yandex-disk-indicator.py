@@ -338,7 +338,7 @@ class YDDaemon(str):       # Yandex.Disk daemon interface
     self.lastStatus = self.status
     self.lastItems = ['*']          # To be shure that self.lastItemsChanged = True on next time
 
-  def __str__(self):
+  def __str__(self):            # IDEA ?
     return self.cfgFile
 
   def getOutput(self, origLang=False):          # Get result of 'yandex-disk status'
@@ -820,12 +820,6 @@ class Menu(Gtk.Menu):         # Menu
     self.daemon_start.set_sensitive(not started)
 
   def close(self, widget):                # Quit from indicator
-    global wTimer
-    stopOnExit = self.config["stoponexit"]
-    logger.info('Stop daemon on exit - %s' % str(stopOnExit))
-    if stopOnExit and self.daemon.status != 'none':
-      self.daemon.stop()   # Stop daemon
-      logger.info('Daemon is stopped')
     appExit()
 
 class Icon(object):           # Indicator icon
@@ -950,6 +944,11 @@ def deleteFile(source):
 
 def appExit(msg = None):
   flock.release()
+  if config['stoponexit']:
+    for i in indicators:
+      if i.daemon.status != 'none':
+        i.daemon.stop()
+        
   sys.exit(msg)
 
 class Indicator(object):
@@ -962,7 +961,7 @@ class Indicator(object):
     self.icon = Icon(config['theme'])              # Initialize icon object
   
     ## Indicator ##
-    self.ind = appIndicator.Indicator.new("yandex-disk", self.icon.pause,
+    self.ind = appIndicator.Indicator.new("yandex-disk"+path, self.icon.pause,
                                           appIndicator.IndicatorCategory.APPLICATION_STATUS)
     self.ind.set_status(appIndicator.IndicatorStatus.ACTIVE)
     self.menu = Menu(self.daemon, config, self.icon)    # Create menu for daemon object 
@@ -1247,6 +1246,7 @@ if __name__ == '__main__':
   config.setdefault('theme', False)
   config.setdefault('fmextensions', True)
   config['autostartdaemon'] = pathExists(autoStartDaemonDst)
+  config.setdefault('daemons', args.cfg)
   if not config.readSuccess:            # Is it a first run?
     logging.info('No config, probably it is a first run.')
     # Create app config folders in ~/.config
@@ -1264,10 +1264,20 @@ if __name__ == '__main__':
     activateActions()
 
   ### Check for already running instance of the indicator application with the same config ###
-  flock = LockFile(pathJoin(configPath, 'pid' + args.cfg.replace('/','_')))
+  flock = LockFile(pathJoin(configPath, 'pid'))
 
-  # Make the indicator objet
-  indicator = Indicator(config, args.cfg)
+  # Check that args.cfg is alredy in daemons
+  allOk = False
+  for d in CVal(config['daemons']):
+    if d == args.cfg:
+      allOk = True
+  if not allOk:
+    config['daemons'] = CVal(config['daemons']).add(args.cfg)
+    config.save()
+  # Make the indicators objets
+  indicators = []
+  for d in CVal(config['daemons']):
+    indicators.append(Indicator(config, d))
   
   ### Start GTK Main loop ###
   Gtk.main()
