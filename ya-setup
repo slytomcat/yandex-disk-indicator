@@ -2,24 +2,36 @@
 
 #### Author: Snow Dimon ####
 #### Website: snowdimon.ru ####
+#### Mon 18 2016 modified by SlyTomCat: 
+####   - adoption to alternative configuration of Yandex Disk daemon
+####   - addes quotes around config values
+
+# Command line positional argument:
+# $1 - configfile path
+
+if [ $# -eq 1 ];then
+  conf=$1
+else 
+  conf="/home/$USER/.config/yandex-disk/config.cfg"
+fi 
 
 ###Proxy
 ans=$(zenity  --list --cancel-label="Выход" --ok-label="Далее" --title "Yandex.Disk setup" --text "Добро пожаловать в мастер установки Яндекс.Диск!
-До начала использования клиента необходимо ответить на несколько вопросов:
+Выбранные настройки будут сохранены в файле: $conf.
+Для начала использования клиента необходимо ответить на несколько вопросов:
 Использовать проки-сервер?" --radiolist --hide-header --column "" --column "Варианты" TRUE "Нет"  FALSE "Да" FALSE "Системные настройки")
 if [ $? -eq "0" ];then
-echo "auth=/home/$USER/.config/yandex-disk/passwd" > /home/$USER/.config/yandex-disk/config.cfg
 	if [ "$ans" = "Нет" ]; then
-	echo "proxy=no" >> /home/$USER/.config/yandex-disk/config.cfg
+	echo "proxy=\"no\"" > $conf
 
 	else
 		if [ "$ans" = "Системные настройки" ]; then
-		echo "proxy=auto" >> /home/$USER/.config/yandex-disk/config.cfg
+		echo "proxy=\"auto\"" > $conf
 
 		else
 			if [ "$ans" = "Да" ]; then
-			echo "proxy=`zenity --entry --title="Настройки прокси-сервера" --text="Введите тип соединения, адрес, порт, логин, пароль. Например:" \
-          --entry-text="https,127.0.0.1,443,login,password"`" >> /home/$USER/.config/yandex-disk/config.cfg
+			echo "proxy=\"`zenity --entry --title="Настройки прокси-сервера" --text="Введите тип соединения, адрес, порт, логин, пароль. Например:" \
+          --entry-text="https,127.0.0.1,443,login,password"`\"" > $conf
 			fi
 		fi
 	fi
@@ -31,21 +43,25 @@ ans=$(zenity  --list --cancel-label="Выход" --ok-label="Далее" --title
 if [ $? -eq "0" ];then
 	if [ "$ans" = "По умолчанию (~/Yandex.Disk)" ]; then
 	mkdir /home/$USER/Yandex.Disk
-	echo "dir=/home/$USER/Yandex.Disk" >> /home/$USER/.config/yandex-disk/config.cfg
+	echo "dir=\"/home/$USER/Yandex.Disk\"" >> $conf
 
 	else
 		if [ "$ans" = "Выбрать существующую папку" ]; then
 		folder=`zenity --file-selection --directory --title="Выбор папки для синхронизации"`
-		echo "dir=$folder" >> /home/$USER/.config/yandex-disk/config.cfg
+		echo "dir=\"$folder\"" >> $conf
 		fi
 	fi
 else
 exit 1
 fi
 ###Token
+
+auth=$(zenity --entry --title="Выбор пути до файла токена" --text="Введите путь к файлу токена (или отсавьте значение по умолчанию)" --entry-text="/home/$USER/.config/yandex-disk/passwd")
+echo auth=\"$auth\" >> $conf 
+
 ENTRY=`zenity --password --username --title="Yandex.Disk setup"`
 if [ $? -eq "0" ];then
-echo $ENTRY | cut -d'|' -f2 | yandex-disk token `echo $ENTRY | cut -d'|' -f1`  | cut -d':' -f2 | zenity --text-info --width=350 --height=200 --title="Yandex.Disk авторизация..."
+echo $ENTRY | cut -d'|' -f2 | yandex-disk -a $auth token `echo $ENTRY | cut -d'|' -f1`  | cut -d':' -f2 | zenity --text-info --width=350 --height=200 --title="Yandex.Disk авторизация..."
 exit 0
 else
 exit 1
