@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: yd-tools\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-01-19 00:55+0300\n"
-"PO-Revision-Date: 2016-01-19 00:56+0300\n"
+"POT-Creation-Date: 2016-01-19 01:19+0300\n"
+"PO-Revision-Date: 2016-01-19 01:19+0300\n"
 "Last-Translator: Sly_tom_cat <slytomcat@mail.ru>\n"
 "Language-Team: ubuntu.ru local team <slytomcat@mail.ru>\n"
 "Language: ru_RU\n"
@@ -54,8 +54,8 @@ msgstr "Запуск сервиса Яндекс.Диск не удался из
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:459
 #, python-format
-msgid "#%d.folder: "
-msgstr "№%d.каталог: "
+msgid "#%d  Folder: "
+msgstr "№%d  Каталог: "
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:467
 msgid "Last synchronized items"

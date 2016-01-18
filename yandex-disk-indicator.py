@@ -456,7 +456,7 @@ class Menu(Gtk.Menu):         # Menu
     self.dconf = daemon.config                # Store reference to daemon.config object
     Gtk.Menu.__init__(self)                   # Create menu
     if multiInstance:
-      yddir = Gtk.MenuItem(_('#%d.folder: ')%no + self.dconf['dir'].replace('_', u'\u02CD')))
+      yddir = Gtk.MenuItem(_('#%d  Folder: ')%no + self.dconf['dir'].replace('_', u'\u02CD'))
       yddir.set_sensitive(False);   self.append(yddir)
     self.status = Gtk.MenuItem();   self.status.connect("activate", self.showOutput)
     self.append(self.status)
