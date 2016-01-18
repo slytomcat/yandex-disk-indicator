@@ -122,7 +122,7 @@ class Config(dict):           # Configuration
     return value
 
   def getValue(self, st):               # Parse value(s) from string after '='
-    words = re.findall(r'("[^"]*")|([\w-]+)', st)   # Get list of values
+    words = re.findall(r'("[^"]*")|([~/.\w-]+)', st)   # Get list of values
     words = [p[0]+p[1] for p in words]              # Join words variants
     # Check commas and not correct symbols that are not part of words
     # Substitute found words by '*' and split line by commas
@@ -298,7 +298,7 @@ class YDDaemon(object):       # Yandex.Disk daemon interface
       appExit('Daemon is not installed')
     self.config = self.DConfig(self.cfgFile, load=False)
     while not self.config.load():   # Try to read Yandex.Disk configuration file
-      if self.errorDialog('NOCONFIG') != 0:
+      if self.errorDialog('NOCONFIG', self.cfgFile) != 0:
         appExit('Daemon is not configured')
     self.config.setdefault('dir', '')
     while not self.getOutput():     # Check for correct daemon response and check that it is running
@@ -340,7 +340,7 @@ class YDDaemon(object):       # Yandex.Disk daemon interface
 
   def getOutput(self, origLang=False):          # Get result of 'yandex-disk status'
     origLANG = os.getenv('LANG')
-    if not origLang:          # Change LANG settings when it requered 
+    if not origLang:          # Change LANG settings when it requered
       os.putenv('LANG', 'en_US.UTF-8')
     try:
       self.output = subprocess.check_output(['yandex-disk','-c', self.cfgFile, 'status'],
@@ -389,7 +389,7 @@ class YDDaemon(object):       # Yandex.Disk daemon interface
     self.getOutput()
     self.parseOutput()
 
-  def errorDialog(self, err):   # Show error messages according to the error
+  def errorDialog(self, err, cfg=None):   # Show error messages according to the error
     global logo
     if err == 'NOCONFIG':
       dialog = Gtk.MessageDialog(None, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK_CANCEL,
@@ -414,7 +414,7 @@ class YDDaemon(object):       # Yandex.Disk daemon interface
     dialog.destroy()
     if (err == 'NOCONFIG') and (response == Gtk.ResponseType.OK):  # Launch Set-up utility
       logger.debug('starting configuration utility: %s' % pathJoin(installDir, 'ya-setup'))
-      retCode = subprocess.call([pathJoin(installDir,'ya-setup')])
+      retCode = subprocess.call([pathJoin(installDir,'ya-setup'), cfg])
     else:
       retCode = 0 if err == 'NONET' else 1
     dialog.destroy()
@@ -453,7 +453,7 @@ class Menu(Gtk.Menu):         # Menu
     self.dconf = daemon.config                # Store reference to daemon.config object
     Gtk.Menu.__init__(self)                   # Create menu
     if multiInstance:
-      yddir = Gtk.MenuItem(_('Path: %s')%self.dconf['dir'].replace('_', u'\u02CD'))
+      yddir = Gtk.MenuItem(_('Folder: %s')%self.dconf['dir'].replace('_', u'\u02CD'))
       yddir.set_sensitive(False);   self.append(yddir)
     self.status = Gtk.MenuItem();   self.status.connect("activate", self.showOutput)
     self.append(self.status)
@@ -550,7 +550,7 @@ class Menu(Gtk.Menu):         # Menu
     statusWindow.add_button(_('Close'), Gtk.ResponseType.CLOSE)
     textBox = Gtk.TextView()                            # Create text-box to display daemon output
     # Set test to daemon output in user language
-    textBox.get_buffer().set_text(self.daemon.getOutput(origLang = True))   
+    textBox.get_buffer().set_text(self.daemon.getOutput(origLang = True))
     textBox.set_editable(False)
     statusWindow.get_content_area().add(textBox)        # Put it inside the dialogue content area
     statusWindow.show_all();  statusWindow.run();   statusWindow.destroy()
@@ -560,13 +560,13 @@ class Menu(Gtk.Menu):         # Menu
     openNewBrowser(url)
 
   def startDaemon(self, widget):          # Start daemon
-    err = daemon.start()        # Try to start yandex-disk daemon
+    err = self.daemon.start()        # Try to start yandex-disk daemon
     if err != '':
-      daemon.errorDialog(err)   # Hangle the starting error
+      self.daemon.errorDialog(err)   # Hangle the starting error
     self.updateSSS()            # Change the menu items sensitivity
 
   def stopDaemon(self, widget):           # Stop daemon
-    daemon.stop()
+    self.daemon.stop()
     self.updateSSS()            # Change the menu items sensitivity
 
   def openPath(self, widget, path):       # Open path
@@ -934,27 +934,29 @@ class Timer(object):          # Timer
       GLib.source_remove(self.timer)
       self.active = False
 
-class Indicator(object):      # Yandex.Disk indicator 
-  def __init__(self, config, path, multiInstance):
+class Indicator(object):      # Yandex.Disk indicator
+  def __init__(self, config, path, No, multiInstance):
+    self.No = No
+    self.multiInstance = multiInstance
     ### Initialize Yandex.Disk daemon connection object ###
     self.daemon = YDDaemon(path)
-  
+
     ### Application Indicator ###
     ## Icons ##
     self.icon = Icon(config['theme'])              # Initialize icon object
-  
+
     ## Indicator ##
-    self.ind = appIndicator.Indicator.new("yandex-disk"+path, self.icon.pause,
+    self.ind = appIndicator.Indicator.new("yandex-disk-%s"%str(No), self.icon.pause,
                                           appIndicator.IndicatorCategory.APPLICATION_STATUS)
     self.ind.set_status(appIndicator.IndicatorStatus.ACTIVE)
-    self.menu = Menu(self.daemon, config, self.icon, multiInstance)    # Create menu for daemon 
+    self.menu = Menu(self.daemon, config, self.icon, multiInstance)    # Create menu for daemon
     self.ind.set_menu(self.menu)                        # Prepare and attach menu to indicator
     self.icon.update(self.daemon.status, self.ind)      # Update indicator icon with current daemon status
-  
+
     ### Create file updates watcher ###
     self.inotify = INotify(pathJoin(self.daemon.config['dir'], '.sync/cli.log'),
                            self.handleEvent, True)
-  
+
     ### Initial menu actualisation ###
     # Timer triggered event staff #
     self.wTimer = Timer(2000, self.handleEvent, False)  # Timer object
@@ -971,7 +973,8 @@ class Indicator(object):      # Yandex.Disk indicator
     '''
     #global tCnt, wTimer
     self.daemon.updateStatus()                   # Get the latest status data from daemon
-    logger.info(('iNonify ' if byNotifier else 'Timer   ') +
+    logger.info(('#%s: '% self.No if self.multiInstance else '')+
+                ('iNonify ' if byNotifier else 'Timer   ') +
                 self.daemon.lastStatus + ' -> ' + self.daemon.status)
     self.menu.update()                           # Update information in menu
     if self.daemon.status != self.daemon.lastStatus:  # Handle status change
@@ -1217,7 +1220,7 @@ if __name__ == '__main__':
   # Report app version and logging level
   logger.info('%s v.%s' % (appName, appVer))
   logger.debug('Logging level: '+str(args.level))
-  
+
   ### Application configuration ###
   '''
   User configuration is stored in ~/.config/<appHomeName>/<appName>.conf file.
@@ -1277,8 +1280,8 @@ if __name__ == '__main__':
   # Make indicator objets
   indicators = []
   for d in daemons:
-    indicators.append(Indicator(config, d, len(daemons) > 1))
-  
+    indicators.append(Indicator(config, d, len(indicators), len(daemons) > 1))
+
   ### Start GTK Main loop ###
   Gtk.main()
 
