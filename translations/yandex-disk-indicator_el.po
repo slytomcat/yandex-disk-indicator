@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: yd-tools\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-01-19 00:56+0300\n"
-"PO-Revision-Date: 2016-01-19 00:57+0300\n"
+"POT-Creation-Date: 2016-01-19 01:19+0300\n"
+"PO-Revision-Date: 2016-01-19 01:19+0300\n"
 "Last-Translator: Sly_tom_cat <slytomcat@mail.ru>\n"
 "Language-Team: ubuntu.ru local team <slytomcat@mail.ru>\n"
 "Language: el_GR\n"
@@ -56,7 +56,7 @@ msgstr "Εκκίνηση υπηρεσίας Yandex.Disk κατά την εκκί
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:459
 #, python-format
-msgid "#%d.folder: "
+msgid "#%d  Folder: "
 msgstr ""
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:467
@@ -444,8 +444,9 @@ msgid "Desktop indicator for yandex-disk daemon"
 msgstr ""
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1166
+#, fuzzy
 msgid "Options"
-msgstr ""
+msgstr "Επιλογές της υπηρεσίας Yandex.Δίσκος"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1168
 msgid ""
