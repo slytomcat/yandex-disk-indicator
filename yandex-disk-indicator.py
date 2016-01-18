@@ -110,6 +110,7 @@ class Config(dict):           # Configuration
     self.boolval = boolval         # Values to write booleans in self.save
     self.usequotes = usequotes     # Use qoutes for keys and values in self.save
     self.delimiter = delimiter     # Use specified delimiter between key and value
+    self.changed = False
     if load:
       self.load()
 
@@ -221,6 +222,7 @@ class Config(dict):           # Configuration
       logger.error('Config file write error: %s' % self.fileName)
       return False
     logger.info('Config written: %s' % self.fileName)
+    self.changed = False
     return True
 
 class Notification(object):   # On-screen notification
@@ -276,6 +278,7 @@ class YDDaemon(object):       # Yandex.Disk daemon interface
       if exList:
         fileConfig['exclude-dirs'] = ''.join([i + ',' for i in CVal(exList)])[:-1]
       fileConfig.save()
+      self.changed=False
 
     def load(self):  # Get daemon config from its config file
       if super(YDDaemon.DConfig, self).load():  # Call super class method to load config from file
@@ -447,13 +450,13 @@ class YDDaemon(object):       # Yandex.Disk daemon interface
 
 class Menu(Gtk.Menu):         # Menu
 
-  def __init__(self, daemon, config, icon, multiInstance):   # Create initial menu for daemon object with config
+  def __init__(self, daemon, config, icon, no, multiInstance):   # Create initial menu for daemon object with config
     self.daemon = daemon                      # Store reference to daemon object for future usage
     self.config = config                      # Store reference app config object for future usage
     self.dconf = daemon.config                # Store reference to daemon.config object
     Gtk.Menu.__init__(self)                   # Create menu
     if multiInstance:
-      yddir = Gtk.MenuItem(_('Folder: %s')%self.dconf['dir'].replace('_', u'\u02CD'))
+      yddir = Gtk.MenuItem(_('#%d.folder: ')%no + self.dconf['dir'].replace('_', u'\u02CD')))
       yddir.set_sensitive(False);   self.append(yddir)
     self.status = Gtk.MenuItem();   self.status.connect("activate", self.showOutput)
     self.append(self.status)
@@ -479,9 +482,9 @@ class Menu(Gtk.Menu):         # Menu
     open_web.connect("activate", self.openInBrowser, _('https://disk.yandex.com'))
     self.append(open_web)
     self.append(Gtk.SeparatorMenuItem.new())  # -----separator--------
-    preferences = Gtk.MenuItem(_('Preferences'))
-    preferences.connect("activate", self.Preferences, self.config, self.daemon, icon)
-    self.append(preferences)
+    self.preferences = Gtk.MenuItem(_('Preferences'))
+    self.preferences.connect("activate", Preferences)
+    self.append(self.preferences)
     open_help = Gtk.MenuItem(_('Help'))
     m_help = Gtk.Menu()
     help1 = Gtk.MenuItem(_('Yandex.Disk daemon'))
@@ -493,8 +496,8 @@ class Menu(Gtk.Menu):         # Menu
     m_help.append(help2)
     open_help.set_submenu(m_help)
     self.append(open_help)
-    about = Gtk.MenuItem(_('About'));    about.connect("activate", self.openAbout)
-    self.append(about)
+    self.about = Gtk.MenuItem(_('About'));    self.about.connect("activate", self.openAbout)
+    self.append(self.about)
     self.append(Gtk.SeparatorMenuItem.new())  # -----separator--------
     close = Gtk.MenuItem(_('Quit'))
     close.connect("activate", self.close)
@@ -504,8 +507,9 @@ class Menu(Gtk.Menu):         # Menu
                       'paused': _('Paused'), 'no_net': _('Not connected'), 'error':_('Error') }
 
   def openAbout(self, widget):            # Show About window
-    global logo
-    widget.set_sensitive(False)           # Disable menu item
+    global logo, indicators
+    for i in indicators:
+      i.menu.about.set_sensitive(False)           # Disable menu item
     aboutWindow = Gtk.AboutDialog()
     pic = GdkPixbuf.Pixbuf.new_from_file(logo)
     aboutWindow.set_logo(pic);   aboutWindow.set_icon(pic)
@@ -539,7 +543,8 @@ class Menu(Gtk.Menu):         # Menu
       _('   the Ubuntu.ru forum http://forum.ubuntu.ru/index.php?topic=241992)')])
     aboutWindow.run()
     aboutWindow.destroy()
-    widget.set_sensitive(True)            # Enable menu item
+    for i in indicators:
+      i.menu.about.set_sensitive(True)            # Enable menu item
 
   def showOutput(self, widget):           # Display daemon output in dialogue window
     global lang
@@ -575,212 +580,6 @@ class Menu(Gtk.Menu):         # Menu
       try:    os.startfile(path)
       except: subprocess.call(['xdg-open', path])
 
-  class Preferences(Gtk.Dialog):          # Preferences Window class
-
-    class excludeDirsList(Gtk.Dialog):                # Excluded list dialogue
-
-      def __init__(self, widget, parent):   # show current list
-        self.parent = parent
-        self.changed = False
-        Gtk.Dialog.__init__(self, title=_('Folders that are excluded from synchronization'),
-                            parent=parent, flags=1)
-        self.set_icon(GdkPixbuf.Pixbuf.new_from_file(logo))
-        self.set_border_width(6)
-        self.add_button(_('Add catalogue'),
-                        Gtk.ResponseType.APPLY).connect("clicked", self.addFolder, self)
-        self.add_button(_('Remove selected'),
-                        Gtk.ResponseType.REJECT).connect("clicked", self.deleteSelected)
-        self.add_button(_('Close'),
-                        Gtk.ResponseType.CLOSE).connect("clicked", self.exitFromDialog)
-        self.excludeList = Gtk.ListStore(bool , str)
-        view = Gtk.TreeView(model=self.excludeList)
-        render = Gtk.CellRendererToggle()
-        render.connect("toggled", self.lineToggled)
-        view.append_column(Gtk.TreeViewColumn(" ", render, active=0))
-        view.append_column(Gtk.TreeViewColumn(_('Path'), Gtk.CellRendererText(), text=1))
-        self.get_content_area().add(view)
-        # Populate list with paths from "exclude-dirs" property of daemon configuration
-        for val in CVal(daemon.config.get('exclude-dirs', None)):
-          self.excludeList.append([False, val])
-        self.show_all()
-
-      def exitFromDialog(self, widget):     # Save list from dialogue to "exclude-dirs" property
-        if self.changed:
-          exList = CVal()                                     # Store path value from dialogue rows
-          listIter = self.excludeList.get_iter_first()
-          while listIter != None:
-            exList.add(self.excludeList.get(listIter, 1)[0])
-            listIter = self.excludeList.iter_next(listIter)
-          daemon.config['exclude-dirs'] = exList.get()        # Save collected value
-          self.parent.daemonCfgUpdate = True                  # Inform parent about changed list
-        self.destroy()                                        # Close dialogue
-
-      def lineToggled(self, widget, path):  # Line click handler, it switch row selection
-        self.excludeList[path][0] = not self.excludeList[path][0]
-
-      def deleteSelected(self, widget):     # Remove selected rows from list
-        listIiter = self.excludeList.get_iter_first()
-        while listIiter != None and self.excludeList.iter_is_valid(listIiter):
-          if self.excludeList.get(listIiter, 0)[0]:
-            self.excludeList.remove(listIiter)
-            self.changed = True
-          else:
-            listIiter = self.excludeList.iter_next(listIiter)
-
-      def addFolder(self, widget, parent):  # Add new path to list via FileChooserDialog
-        dialog = Gtk.FileChooserDialog(_('Select catalogue to add to list'), parent,
-                                     Gtk.FileChooserAction.SELECT_FOLDER,
-                                     (_('Close'), Gtk.ResponseType.CANCEL,
-                                      _('Select'), Gtk.ResponseType.ACCEPT))
-        dialog.set_default_response(Gtk.ResponseType.CANCEL)
-        rootDir = self.parent.daemon.config['dir']
-        dialog.set_current_folder(rootDir)
-        if dialog.run() == Gtk.ResponseType.ACCEPT:
-          res = os.path.relpath(dialog.get_filename(), start=rootDir)
-          self.excludeList.append([False, res])
-          self.changed = True
-        dialog.destroy()
-
-    def __init__(self, widget, config, daemon, icon):      # Show preferences window
-      self.config = config
-      self.daemon = daemon
-      self.dconfig = daemon.config
-      self.icon = icon
-      # Preferences Window routine
-      widget.set_sensitive(False)                 # Disable menu item to avoid multiple windows creation
-      # Create Preferences window
-      Gtk.Dialog.__init__(self, _('Yandex.Disk-indicator and Yandex.Disk preferences'), flags=1)
-      self.set_icon(GdkPixbuf.Pixbuf.new_from_file(logo))
-      self.set_border_width(6)
-      self.add_button(_('Close'), Gtk.ResponseType.CLOSE)
-      pref_notebook = Gtk.Notebook()              # Create notebook for indicator and daemon options
-      self.get_content_area().add(pref_notebook)  # Put it inside the dialog content area
-      # --- Indicator preferences tab ---
-      preferencesBox = Gtk.VBox(spacing=5)
-      key = 'autostart'                           # Auto-start indicator on system start-up
-      сbAutoStart = Gtk.CheckButton(_('Start Yandex.Disk indicator when you start your computer'))
-      сbAutoStart.set_active(self.config[key])
-      сbAutoStart.connect("toggled", self.onButtonToggled, сbAutoStart, key)
-      preferencesBox.add(сbAutoStart)
-      key = 'startonstart'                        # Start daemon on indicator start
-      сbStOnStart = Gtk.CheckButton(_('Start Yandex.Disk daemon when indicator is starting'))
-      сbStOnStart.set_tooltip_text(_("When daemon was not started before."))
-      сbStOnStart.set_active(self.config[key])
-      сbStOnStart.connect("toggled", self.onButtonToggled, сbStOnStart, key)
-      preferencesBox.add(сbStOnStart)
-      key = 'stoponexit'                          # Stop daemon on exit
-      сbStoOnExit = Gtk.CheckButton(_('Stop Yandex.Disk daemon on closing of indicator'))
-      сbStoOnExit.set_active(self.config[key])
-      сbStoOnExit.connect("toggled", self.onButtonToggled, сbStoOnExit, key)
-      preferencesBox.add(сbStoOnExit)
-      key = 'notifications'                       # Notifications
-      сbNotify = Gtk.CheckButton(_('Show on-screen notifications'))
-      сbNotify.set_active(self.config[key])
-      сbNotify.connect("toggled", self.onButtonToggled, сbNotify, key)
-      preferencesBox.add(сbNotify)
-      key = 'theme'                               # Theme
-      сbTheme = Gtk.CheckButton(_('Prefer light icon theme'))
-      сbTheme.set_active(self.config[key])
-      сbTheme.connect("toggled", self.onButtonToggled, сbTheme, key)
-      preferencesBox.add(сbTheme)
-      key = 'fmextensions'                        # Activate file-manager extensions
-      сbExtensions = Gtk.CheckButton(_('Activate file manager extensions'))
-      сbExtensions.set_active(self.config[key])
-      сbExtensions.connect("toggled", self.onButtonToggled, сbExtensions, key)
-      preferencesBox.add(сbExtensions)
-      # --- End of Indicator preferences tab --- add it to notebook
-      pref_notebook.append_page(preferencesBox, Gtk.Label(_('Indicator settings')))
-      # --- Daemon start options tab ---
-      optionsBox = Gtk.VBox(spacing=5)
-      key = 'autostartdaemon'                     # Auto-start daemon on system start-up
-      сbASDaemon = Gtk.CheckButton(_('Start Yandex.Disk daemon when you start your computer'))
-      сbASDaemon.set_active(self.config[key])
-      сbASDaemon.connect("toggled", self.onButtonToggled, сbASDaemon, key)
-      optionsBox.add(сbASDaemon)
-      frame = Gtk.Frame()
-      frame.set_label(_("NOTE! You have to reload daemon to activate following settings"))
-      frame.set_border_width(6)
-      optionsBox.add(frame)
-      framedBox = Gtk.VBox(homogeneous=True, spacing=5)
-      frame.add(framedBox)
-      key = 'read-only'                           # Option Read-Only    # daemon config
-      сbRO = Gtk.CheckButton(_('Read-Only: Do not upload locally changed files to Yandex.Disk'))
-      сbRO.set_tooltip_text(_("Locally changed files will be renamed if a newer version of this " +
-                              "file appear in Yandex.Disk."))
-      сbRO.set_active(self.dconfig[key])
-      сbRO.connect("toggled", self.onButtonToggled, сbRO, key)
-      framedBox.add(сbRO)
-      key = 'overwrite'                           # Option Overwrite    # daemon config
-      self.overwrite = Gtk.CheckButton(_('Overwrite locally changed files by files' +
-                                         ' from Yandex.Disk (in read-only mode)'))
-      self.overwrite.set_tooltip_text(
-        _("Locally changed files will be overwritten if a newer version of this file appear " +
-          "in Yandex.Disk."))
-      self.overwrite.set_active(self.dconfig[key])
-      self.overwrite.set_sensitive(self.dconfig['read-only'])
-      self.overwrite.connect("toggled", self.onButtonToggled, self.overwrite, key)
-      framedBox.add(self.overwrite)
-      # Excude folders list
-      exListButton = Gtk.Button(_('Excluded folders List'))
-      exListButton.set_tooltip_text(_("Folders in the list will not be synchronized."))
-      upd = [False]
-      exListButton.connect("clicked", self.excludeDirsList, self)
-      framedBox.add(exListButton)
-      # --- End of Daemon start options tab --- add it to notebook
-      pref_notebook.append_page(optionsBox, Gtk.Label(_('Daemon options')))
-      self.show_all()
-      self.appCfgUpdate = False
-      self.daemonCfgUpdate = False
-      self.run()
-      if self.daemonCfgUpdate:
-        self.dconfig.save()                 # Save daemon options in config file
-      if self.appCfgUpdate:
-        self.config.save()                        # Save app config
-      widget.set_sensitive(True)                  # Enable menu item
-      self.destroy()
-
-    def onButtonToggled(self, widget, button, key):   # Handle clicks on check-buttons
-      toggleState = button.get_active()
-      logger.debug('Togged: %s  val: %s' % (key, str(toggleState)))
-      # Update configurations
-      if key in ['read-only', 'overwrite']:
-        self.dconfig[key] = toggleState         # Update daemon config
-        self.daemonCfgUpdate = True
-      else:
-        self.appCfgUpdate = True                      # Update application config
-        self.config[key] = toggleState
-      if key == 'theme':
-          self.icon.setTheme(toggleState)                  # Update icon theme
-          self.icon.update(self.daemon.status)             # Update current icon
-      elif key == 'notifications':
-        notify.switch(toggleState)                    # Update notification object
-      elif key == 'autostartdaemon':
-        if toggleState:
-          copyFile(autoStartDaemonSrc, autoStartDaemonDst)
-          notify.send(_('Yandex.Disk daemon'), _('Auto-start ON'))
-        else:
-          deleteFile(autoStartDaemonDst)
-          notify.send(_('Yandex.Disk daemon'), _('Auto-start OFF'))
-      elif key == 'autostart':
-        if toggleState:
-          copyFile(autoStartIndSrc, autoStartIndDst)
-          notify.send(_('Yandex.Disk Indicator'), _('Auto-start ON'))
-        else:
-          deleteFile(autoStartIndDst)
-          notify.send(_('Yandex.Disk Indicator'), _('Auto-start OFF'))
-      elif key == 'fmextensions':
-        if not button.get_inconsistent():             # It is a first call
-          if not activateActions():                   # When activation/deactivation is not success:
-            notify.send(_('Yandex.Disk Indicator'),
-                        _('ERROR in setting up of file manager extensions'))
-            toggleState = not toggleState             # revert settings back
-            button.set_inconsistent(True)             # set inconsistent state to detect second call
-            button.set_active(toggleState)            # set check-button to reverted status
-            # set_active will raise again the 'toggled' event
-        else:                                         # This is a second call
-          button.set_inconsistent(False)              # Just remove inconsistent status
-      elif key == 'read-only':
-        self.overwrite.set_sensitive(toggleState)
 
   def update(self):                       # Update information in menu
     # Update status data
@@ -875,6 +674,203 @@ class Icon(object):           # Indicator icon
     self.seqNum = self.seqNum % 5 + 1    # 5 icons in loop (1-2-3-4-5-1-2-3...)
     return True                          # True required to continue triggering by timer
 
+
+class Preferences(Gtk.Dialog):          # Preferences Window class
+
+  class excludeDirsList(Gtk.Dialog):                # Excluded list dialogue
+
+    def __init__(self, widget, parent, dcofig):   # show current list
+      self.dconfig = dcofig
+      self.parent = parent
+      Gtk.Dialog.__init__(self, title=_('Folders that are excluded from synchronization'),
+                          parent=parent, flags=1)
+      self.set_icon(GdkPixbuf.Pixbuf.new_from_file(logo))
+      self.set_border_width(6)
+      self.add_button(_('Add catalogue'),
+                      Gtk.ResponseType.APPLY).connect("clicked", self.addFolder, self)
+      self.add_button(_('Remove selected'),
+                      Gtk.ResponseType.REJECT).connect("clicked", self.deleteSelected)
+      self.add_button(_('Close'),
+                      Gtk.ResponseType.CLOSE).connect("clicked", self.exitFromDialog)
+      self.excludeList = Gtk.ListStore(bool , str)
+      view = Gtk.TreeView(model=self.excludeList)
+      render = Gtk.CellRendererToggle()
+      render.connect("toggled", self.lineToggled)
+      view.append_column(Gtk.TreeViewColumn(" ", render, active=0))
+      view.append_column(Gtk.TreeViewColumn(_('Path'), Gtk.CellRendererText(), text=1))
+      self.get_content_area().add(view)
+      # Populate list with paths from "exclude-dirs" property of daemon configuration
+      for val in CVal(self.dconfig.get('exclude-dirs', None)):
+        self.excludeList.append([False, val])
+      self.show_all()
+
+    def exitFromDialog(self, widget):     # Save list from dialogue to "exclude-dirs" property
+      if self.dconfig.changed:
+        exList = CVal()                                     # Store path value from dialogue rows
+        listIter = self.excludeList.get_iter_first()
+        while listIter != None:
+          exList.add(self.excludeList.get(listIter, 1)[0])
+          listIter = self.excludeList.iter_next(listIter)
+        self.dconfig['exclude-dirs'] = exList.get()         # Save collected value
+      self.destroy()                                        # Close dialogue
+
+    def lineToggled(self, widget, path):  # Line click handler, it switch row selection
+      self.excludeList[path][0] = not self.excludeList[path][0]
+
+    def deleteSelected(self, widget):     # Remove selected rows from list
+      listIiter = self.excludeList.get_iter_first()
+      while listIiter != None and self.excludeList.iter_is_valid(listIiter):
+        if self.excludeList.get(listIiter, 0)[0]:
+          self.excludeList.remove(listIiter)
+          self.dconfig.changed = True
+        else:
+          listIiter = self.excludeList.iter_next(listIiter)
+
+    def addFolder(self, widget, parent):  # Add new path to list via FileChooserDialog
+      dialog = Gtk.FileChooserDialog(_('Select catalogue to add to list'), parent,
+                                   Gtk.FileChooserAction.SELECT_FOLDER,
+                                   (_('Close'), Gtk.ResponseType.CANCEL,
+                                    _('Select'), Gtk.ResponseType.ACCEPT))
+      dialog.set_default_response(Gtk.ResponseType.CANCEL)
+      rootDir = self.dconfig['dir']
+      dialog.set_current_folder(rootDir)
+      if dialog.run() == Gtk.ResponseType.ACCEPT:
+        self.excludeList.append([False, os.path.relpath(dialog.get_filename(), start=rootDir)])
+        self.dconfig.changed = True
+      dialog.destroy()
+
+  def __init__(self, widget):      # Show preferences window
+    global config
+    global indicators
+    # Preferences Window routine
+    for i in indicators:
+      i.menu.preferences.set_sensitive(False)   # Disable menu items to avoid multi-dialogs creation
+    # Create Preferences window
+    Gtk.Dialog.__init__(self, _('Yandex.Disk-indicator and Yandex.Disks preferences'), flags=1)
+    self.set_icon(GdkPixbuf.Pixbuf.new_from_file(logo))
+    self.set_border_width(6)
+    self.add_button(_('Close'), Gtk.ResponseType.CLOSE)
+    pref_notebook = Gtk.Notebook()              # Create notebook for indicator and daemon options
+    self.get_content_area().add(pref_notebook)  # Put it inside the dialog content area
+    # --- Indicator preferences tab ---
+    preferencesBox = Gtk.VBox(spacing=5)
+    key = 'autostart'                           # Auto-start indicator on system start-up
+    сbAutoStart = Gtk.CheckButton(_('Start Yandex.Disk indicator when you start your computer'))
+    сbAutoStart.set_active(config[key])
+    сbAutoStart.connect("toggled", self.onButtonToggled, сbAutoStart, key)
+    preferencesBox.add(сbAutoStart)
+    key = 'startonstart'                        # Start daemon on indicator start
+    сbStOnStart = Gtk.CheckButton(_('Start Yandex.Disk daemon when indicator is starting'))
+    сbStOnStart.set_tooltip_text(_("When daemon was not started before."))
+    сbStOnStart.set_active(config[key])
+    сbStOnStart.connect("toggled", self.onButtonToggled, сbStOnStart, key)
+    preferencesBox.add(сbStOnStart)
+    key = 'stoponexit'                          # Stop daemon on exit
+    сbStoOnExit = Gtk.CheckButton(_('Stop Yandex.Disk daemon on closing of indicator'))
+    сbStoOnExit.set_active(config[key])
+    сbStoOnExit.connect("toggled", self.onButtonToggled, сbStoOnExit, key)
+    preferencesBox.add(сbStoOnExit)
+    key = 'notifications'                       # Notifications
+    сbNotify = Gtk.CheckButton(_('Show on-screen notifications'))
+    сbNotify.set_active(config[key])
+    сbNotify.connect("toggled", self.onButtonToggled, сbNotify, key)
+    preferencesBox.add(сbNotify)
+    key = 'theme'                               # Theme
+    сbTheme = Gtk.CheckButton(_('Prefer light icon theme'))
+    сbTheme.set_active(config[key])
+    сbTheme.connect("toggled", self.onButtonToggled, сbTheme, key)
+    preferencesBox.add(сbTheme)
+    key = 'fmextensions'                        # Activate file-manager extensions
+    сbExtensions = Gtk.CheckButton(_('Activate file manager extensions'))
+    сbExtensions.set_active(config[key])
+    сbExtensions.connect("toggled", self.onButtonToggled, сbExtensions, key)
+    preferencesBox.add(сbExtensions)
+    # --- End of Indicator preferences tab --- add it to notebook
+    pref_notebook.append_page(preferencesBox, Gtk.Label(_('Indicator settings')))
+    # Add daemos tabs
+    dcChanged = []
+    for i in range(len(indicators)):
+      dconfig = indicators[i].daemon.config
+      # --- Daemon start options tab ---
+      optionsBox = Gtk.VBox(spacing=5)
+      frame = Gtk.Frame()
+      frame.set_label(_("NOTE! You have to reload daemon #%d to activate following settings")%i)
+      frame.set_border_width(6)
+      optionsBox.add(frame)
+      framedBox = Gtk.VBox(homogeneous=True, spacing=5)
+      frame.add(framedBox)
+      key = 'read-only'                           # Option Read-Only    # daemon config
+      сbRO = Gtk.CheckButton(_('Read-Only: Do not upload locally changed files to Yandex.Disk'))
+      сbRO.set_tooltip_text(_("Locally changed files will be renamed if a newer version of this " +
+                              "file appear in Yandex.Disk."))
+      сbRO.set_active(dconfig[key])
+      key = 'overwrite'                           # Option Overwrite    # daemon config
+      overwrite = Gtk.CheckButton(_('Overwrite locally changed files by files' +
+                                         ' from Yandex.Disk (in read-only mode)'))
+      overwrite.set_tooltip_text(
+        _("Locally changed files will be overwritten if a newer version of this file appear " +
+          "in Yandex.Disk."))
+      overwrite.set_active(dconfig[key])
+      overwrite.set_sensitive(dconfig['read-only'])
+      сbRO.connect("toggled", self.onButtonToggled, сbRO, 'read-only', dconfig, overwrite)
+      framedBox.add(сbRO)
+      overwrite.connect("toggled", self.onButtonToggled, overwrite, key, dconfig)
+      framedBox.add(overwrite)
+      # Excude folders list
+      exListButton = Gtk.Button(_('Excluded folders List'))
+      exListButton.set_tooltip_text(_("Folders in the list will not be synchronized."))
+      exListButton.connect("clicked", self.excludeDirsList, self, dconfig)
+      framedBox.add(exListButton)
+      # --- End of Daemon start options tab --- add it to notebook
+      pref_notebook.append_page(optionsBox, Gtk.Label(_('Daemon #%d options')%i))
+    self.show_all()
+    self.run()
+    if config.changed:
+      config.save()                             # Save app config
+    for i in indicators:
+      if i.daemon.config.changed:
+        i.daemon.config.save()                  # Save daemon options in config file
+      i.menu.preferences.set_sensitive(True)    # Enable menu items
+    self.destroy()
+
+  def onButtonToggled(self, widget, button, key, dconfig=None, ow=None):   # Handle clicks on check-buttons
+    toggleState = button.get_active()
+    logger.debug('Togged: %s  val: %s' % (key, str(toggleState)))
+    # Update configurations
+    if key in ['read-only', 'overwrite']:
+      dconfig[key] = toggleState         # Update daemon config
+      dconfig.changed = True
+    else:
+      config.changed = True                      # Update application config
+      config[key] = toggleState
+    if key == 'theme':
+        for i in indicators:
+          i.icon.setTheme(toggleState)                  # Update icon theme
+          i.icon.update(i.daemon.status)                # Update current icon
+    elif key == 'notifications':
+      notify.switch(toggleState)                    # Update notification object
+    elif key == 'autostart':
+      if toggleState:
+        copyFile(autoStartIndSrc, autoStartIndDst)
+        notify.send(_('Yandex.Disk Indicator'), _('Auto-start ON'))
+      else:
+        deleteFile(autoStartIndDst)
+        notify.send(_('Yandex.Disk Indicator'), _('Auto-start OFF'))
+    elif key == 'fmextensions':
+      if not button.get_inconsistent():             # It is a first call
+        if not activateActions():                   # When activation/deactivation is not success:
+          notify.send(_('Yandex.Disk Indicator'),
+                      _('ERROR in setting up of file manager extensions'))
+          toggleState = not toggleState             # revert settings back
+          button.set_inconsistent(True)             # set inconsistent state to detect second call
+          button.set_active(toggleState)            # set check-button to reverted status
+          # set_active will raise again the 'toggled' event
+      else:                                         # This is a second call
+        button.set_inconsistent(False)              # Just remove inconsistent status
+    elif key == 'read-only':
+      ow.set_sensitive(toggleState)
+
+
 class LockFile(object):       # LockFile
 
   def __init__(self, fileName):
@@ -949,7 +945,7 @@ class Indicator(object):      # Yandex.Disk indicator
     self.ind = appIndicator.Indicator.new("yandex-disk-%s"%str(No), self.icon.pause,
                                           appIndicator.IndicatorCategory.APPLICATION_STATUS)
     self.ind.set_status(appIndicator.IndicatorStatus.ACTIVE)
-    self.menu = Menu(self.daemon, config, self.icon, multiInstance)    # Create menu for daemon
+    self.menu = Menu(self.daemon, config, self.icon, No, multiInstance)    # Create menu for daemon
     self.ind.set_menu(self.menu)                        # Prepare and attach menu to indicator
     self.icon.update(self.daemon.status, self.ind)      # Update indicator icon with current daemon status
 
