@@ -1168,14 +1168,12 @@ def argParse():               # Parse command line arguments
                    '30 - to show all messages except debugging and info messages (WARNING), ' +
                    '40 - to show only error and critical messages (ERROR), ' +
                    '50 - to show critical messages only (CRITICAL). Default: 30'))
-  group.add_argument('-c', '--config', dest='cfg', metavar='path',
-            default='~/.config/yandex-disk/config.cfg',
+  group.add_argument('-c', '--config', dest='cfg', metavar='path', default='',
             help=_('Path to configuration file of YandexDisk daemon. ' +
                    'This daemon will be added to daemons list' +
                    ' if it is not in the current configuration.' +
-                   'Default: ~/.config/yandex-disk/config.cfg'))
-  group.add_argument('-r', '--remove', dest='rcfg', metavar='path',
-            default='',
+                   'Default: \'\''))
+  group.add_argument('-r', '--remove', dest='rcfg', metavar='path', default='',
             help=_('Path to configuration file of daemon that should be removed' +
                    ' from daemos list. Default: \'\''))
   group.add_argument('-h', '--help', action='help', help=_('Show this help message and exit'))
@@ -1237,7 +1235,7 @@ if __name__ == '__main__':
   (in dictionary YDDaemon.config). Their values are saved to daemon config file also
   on exit from Menu.Preferences dialogue.
 
-  Additionaly 'startonstartofindicator' and 'stoponexitfromindicator' values are added into daemon
+  Additionally 'startonstartofindicator' and 'stoponexitfromindicator' values are added into daemon
   configuration file to provide the functionality of obsolete 'startonstart' and 'stoponexit'
   values for each daemon individually.              
   '''
@@ -1274,7 +1272,7 @@ if __name__ == '__main__':
   ### Get list of daemons ###
   daemons = config['daemons'] if isinstance(config['daemons'], list) else [config['daemons']]
   # Add new daemon if it is not in current list
-  if args.cfg not in daemons:
+  if args.cfg and args.cfg not in daemons:
     daemons.append(args.cfg)
     config.changed = True
   # Remove daemon if it is in the current list
