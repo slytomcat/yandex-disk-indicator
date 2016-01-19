@@ -281,10 +281,12 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       self.changed=False
 
     def load(self):  # Get daemon config from its config file
-      if super(YDDaemon.DConfig, self).load():  # Call super class method to load config from file
+      if super(YDDaemon.DConfig, self).load():            # Load config from file
         # Convert values representations
         self['read-only'] = (self.get('read-only', False) == '')
         self['overwrite'] = (self.get('overwrite', False) == '')
+        self.setdefault('startonstartindicator', True)      # New value to start daemon individualy
+        self.setdefault('stoponexitfromindicator', False)   # New value to stop daemon individualy
         exDirs = self.get('exclude-dirs', None)
         if exDirs is None:
           self['exclude-dirs'] = None
@@ -450,13 +452,13 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
 
 class Menu(Gtk.Menu):           # Menu
 
-  def __init__(self, daemon, config, icon, no, multiInstance):   # Create initial menu for daemon object with config
+  def __init__(self, daemon, config, icon, no):
     self.daemon = daemon                      # Store reference to daemon object for future usage
     self.config = config                      # Store reference app config object for future usage
     self.dconf = daemon.config                # Store reference to daemon.config object
     Gtk.Menu.__init__(self)                   # Create menu
-    if multiInstance:
-      yddir = Gtk.MenuItem(_('#%d  Folder: ')%no + self.dconf['dir'].replace('_', u'\u02CD'))
+    if no:
+      yddir = Gtk.MenuItem(no + _('  Folder: ') + self.dconf['dir'].replace('_', u'\u02CD'))
       yddir.set_sensitive(False);   self.append(yddir)
     self.status = Gtk.MenuItem();   self.status.connect("activate", self.showOutput)
     self.append(self.status)
@@ -756,17 +758,6 @@ class Preferences(Gtk.Dialog):  # Preferences Window
     сbAutoStart.set_active(config[key])
     сbAutoStart.connect("toggled", self.onButtonToggled, сbAutoStart, key)
     preferencesBox.add(сbAutoStart)
-    key = 'startonstart'                        # Start daemon on indicator start
-    сbStOnStart = Gtk.CheckButton(_('Start Yandex.Disk daemon when indicator is starting'))
-    сbStOnStart.set_tooltip_text(_("When daemon was not started before."))
-    сbStOnStart.set_active(config[key])
-    сbStOnStart.connect("toggled", self.onButtonToggled, сbStOnStart, key)
-    preferencesBox.add(сbStOnStart)
-    key = 'stoponexit'                          # Stop daemon on exit
-    сbStoOnExit = Gtk.CheckButton(_('Stop Yandex.Disk daemon on closing of indicator'))
-    сbStoOnExit.set_active(config[key])
-    сbStoOnExit.connect("toggled", self.onButtonToggled, сbStoOnExit, key)
-    preferencesBox.add(сbStoOnExit)
     key = 'notifications'                       # Notifications
     сbNotify = Gtk.CheckButton(_('Show on-screen notifications'))
     сbNotify.set_active(config[key])
@@ -788,10 +779,22 @@ class Preferences(Gtk.Dialog):  # Preferences Window
     dcChanged = []
     for i in range(len(indicators)):
       dconfig = indicators[i].daemon.config
+      No = '#%d '%i if len(indicators) > 1 else ''
       # --- Daemon start options tab ---
       optionsBox = Gtk.VBox(spacing=5)
+      key = 'startonstartindicator'               # Start daemon on indicator start
+      сbStOnStart = Gtk.CheckButton(_('Start Yandex.Disk daemon %swhen indicator is starting')%No)
+      сbStOnStart.set_tooltip_text(_("When daemon was not started before."))
+      сbStOnStart.set_active(dconfig[key])
+      сbStOnStart.connect("toggled", self.onButtonToggled, сbStOnStart, key, dconfig)
+      optionsBox.add(сbStOnStart)
+      key = 'stoponexitfromindicator'             # Stop daemon on exit
+      сbStoOnExit = Gtk.CheckButton(_('Stop Yandex.Disk daemon %son closing of indicator')%No)
+      сbStoOnExit.set_active(dconfig[key])
+      сbStoOnExit.connect("toggled", self.onButtonToggled, сbStoOnExit, key, dconfig)
+      optionsBox.add(сbStoOnExit)
       frame = Gtk.Frame()
-      frame.set_label(_("NOTE! You have to reload daemon #%d to activate following settings")%i)
+      frame.set_label(_("NOTE! You have to reload daemon %sto activate following settings")%No)
       frame.set_border_width(6)
       optionsBox.add(frame)
       framedBox = Gtk.VBox(homogeneous=True, spacing=5)
@@ -819,7 +822,7 @@ class Preferences(Gtk.Dialog):  # Preferences Window
       exListButton.connect("clicked", self.excludeDirsList, self, dconfig)
       framedBox.add(exListButton)
       # --- End of Daemon start options tab --- add it to notebook
-      pref_notebook.append_page(optionsBox, Gtk.Label(_('Daemon #%d options')%i))
+      pref_notebook.append_page(optionsBox, Gtk.Label(_('Daemon %soptions')%No))
     self.show_all()
     self.run()
     if config.changed:
@@ -834,7 +837,7 @@ class Preferences(Gtk.Dialog):  # Preferences Window
     toggleState = button.get_active()
     logger.debug('Togged: %s  val: %s' % (key, str(toggleState)))
     # Update configurations
-    if key in ['read-only', 'overwrite']:
+    if key in ['read-only', 'overwrite', 'startonstartindicator', 'stoponexitfromindicator']:
       dconfig[key] = toggleState                # Update daemon config
       dconfig.changed = True
     else:
@@ -928,7 +931,7 @@ class Timer(object):            # Timer for triggering a function periodically
 
 class Indicator(object):        # Yandex.Disk indicator
   def __init__(self, config, path, No, multiInstance):
-    self.No = No
+    self.No = _('#%d ')%No if multiInstance else ''
     self.multiInstance = multiInstance
     ### Initialize Yandex.Disk daemon connection object ###
     self.daemon = YDDaemon(path)
@@ -941,7 +944,7 @@ class Indicator(object):        # Yandex.Disk indicator
     self.ind = appIndicator.Indicator.new("yandex-disk-%s"%str(No), self.icon.pause,
                                           appIndicator.IndicatorCategory.APPLICATION_STATUS)
     self.ind.set_status(appIndicator.IndicatorStatus.ACTIVE)
-    self.menu = Menu(self.daemon, config, self.icon, No, multiInstance)    # Create menu for daemon
+    self.menu = Menu(self.daemon, config, self.icon, self.No)  # Create menu for daemon
     self.ind.set_menu(self.menu)                        # Prepare and attach menu to indicator
     self.icon.update(self.daemon.status, self.ind)      # Update indicator icon with current daemon status
 
@@ -964,7 +967,7 @@ class Indicator(object):        # Yandex.Disk indicator
     '''
     #global tCnt, wTimer
     self.daemon.updateStatus()                   # Get the latest status data from daemon
-    logger.info(('#%s: '% self.No if self.multiInstance else '')+
+    logger.info((self.No if self.multiInstance else '') +
                 ('iNonify ' if byNotifier else 'Timer   ') +
                 self.daemon.lastStatus + ' -> ' + self.daemon.status)
     self.menu.update()                           # Update information in menu
@@ -972,20 +975,20 @@ class Indicator(object):        # Yandex.Disk indicator
       self.icon.update(self.daemon.status)    # Update icon
       if self.daemon.lastStatus == 'none':    # Daemon has been started
         self.menu.updateSSS()                 # Change menu sensitivity
-        notify.send(_('Yandex.Disk')+_(' #%d')%self.No, _('Yandex.Disk daemon has been started'))
+        notify.send(_('Yandex.Disk ')+self.No, _('Yandex.Disk daemon has been started'))
       if self.daemon.status == 'busy':        # Just entered into 'busy'
-        notify.send(_('Yandex.Disk')+_(' #%d')%self.No, _('Synchronization started'))
+        notify.send(_('Yandex.Disk ')+self.No, _('Synchronization started'))
       elif self.daemon.status == 'idle':      # Just entered into 'idle'
         if self.daemon.lastStatus == 'busy':  # ...from 'busy' status
-          notify.send(_('Yandex.Disk')+_(' #%d')%self.No, _('Synchronization has been completed'))
+          notify.send(_('Yandex.Disk ')+self.No, _('Synchronization has been completed'))
       elif self.daemon.status =='paused':     # Just entered into 'paused'
         if self.daemon.lastStatus != 'none':  # ...not from 'none' status
-          notify.send(_('Yandex.Disk')+_(' #%d')%self.No, _('Synchronization has been paused'))
+          notify.send(_('Yandex.Disk ')+self.No, _('Synchronization has been paused'))
       elif self.daemon.status == 'none':      # Just entered into 'none' from some another status
         self.menu.updateSSS()                 # Change menu sensitivity as daemon not started
-        notify.send(_('Yandex.Disk')+_(' #%d')%self.No, _('Yandex.Disk daemon has been stopped'))
+        notify.send(_('Yandex.Disk ')+self.No, _('Yandex.Disk daemon has been stopped'))
       else:                                   # newStatus = 'error' or 'no-net'
-        notify.send(_('Yandex.Disk')+_(' #%d')%self.No, _('Synchronization ERROR'))
+        notify.send(_('Yandex.Disk ')+self.No, _('Synchronization ERROR'))
     # --- Handle timer delays ---
     if byNotifier:                            # True means that it is called by iNonifier
       self.wTimer.update(2000)                # Set timer interval to 2 sec.
@@ -1222,7 +1225,9 @@ if __name__ == '__main__':
   This file can contain comments (line starts with '#') and config values in
   form: key=value[,value[,value ...]] where keys and values can be quoted ("...") or not.
   The following key words are reserved for configuration:
-    autostart, startonstart, stoponexit, notifications, theme, fmextensions and autostartdaemon.
+    autostart, notifications, theme and fmextensions.
+  Foolwing values are obsolete:
+    startonstart, stoponexit and autostartdaemon.
 
   The dictionary 'config' stores the config settings for usage in code. Its values are saved to
   config file on exit from the Menu.Preferences dialogue or when there is no configuratin file when
@@ -1232,12 +1237,16 @@ if __name__ == '__main__':
   in ~/ .config/yandex-disk/config.cfg file. They are read in YDDaemon.__init__() method
   (in dictionary YDDaemon.config). Their values are saved to daemon config file also
   on exit from Menu.Preferences dialogue.
+
+  Additionaly 'startonstartindicator' and 'stoponexitfromindicator' values are added into daemon
+  configuration file to provide the functionality of obsolete startonstart and stoponexit values
+  for each daemon individualy.              
   '''
   config = Config(pathJoin(configPath, appName + '.conf'))
   # Read some settings to variables, set default values and update some values
   config['autostart'] = pathExists(autoStartIndDst)
-  config.setdefault('startonstart', True)
-  config.setdefault('stoponexit', False)
+  config['startonstart'] = None         # Obsolete value <- REMOVE IT IN NEXT REALIZE
+  config['stoponexit'] = None           # Obsolete value <- REMOVE IT IN NEXT REALIZE
   # Setup on-screen notification settings from config value
   notify = Notification(appName, config.setdefault('notifications', True))
   config.setdefault('theme', False)
@@ -1249,8 +1258,6 @@ if __name__ == '__main__':
     # Create app config folders in ~/.config
     try: os.makedirs(configPath)
     except: pass
-    # Save config with default settings
-    config.save()
     try: os.makedirs(pathJoin(configPath, 'icons', 'light'))
     except: pass
     try: os.makedirs(pathJoin(configPath, 'icons', 'dark'))
@@ -1259,7 +1266,9 @@ if __name__ == '__main__':
     copyFile(pathJoin(installDir, 'icons', 'readme'), pathJoin(configPath, 'icons', 'readme'))
     ### Activate FM actions according to config (as it is first run)
     activateActions()
-
+    # Save config with default settings
+  config.save()                         # to remove obsolete values <- INDENT IT IN NEXT REALIZE
+  
   ### Check for already running instance of the indicator application with the same config ###
   flock = LockFile(pathJoin(configPath, 'pid'))
 
