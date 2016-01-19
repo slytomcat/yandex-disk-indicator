@@ -342,7 +342,7 @@ class YDDaemon(object):       # Yandex.Disk daemon interface
     self.lastItems = ['*']          # To be shure that self.lastItemsChanged = True on next time
 
   def getOutput(self, origLang=False):          # Get result of 'yandex-disk status'
-    origLANG = os.getenv('LANG')
+    LANG = os.getenv('LANG')
     if not origLang:          # Change LANG settings when it requered
       os.putenv('LANG', 'en_US.UTF-8')
     try:
@@ -352,7 +352,7 @@ class YDDaemon(object):       # Yandex.Disk daemon interface
       self.output = ''        # daemon is not running or bad
     #logger.debug('output = %s' % daemonOutput)
     if not origLang:          # Restore LANG settings
-      os.putenv('LANG', origLANG)
+      os.putenv('LANG', LANG)
     return self.output
 
   def parseOutput(self):        # Parse the daemon output
@@ -1173,8 +1173,8 @@ def argParse():               # Parse command line arguments
                    '50 - to show critical messages only (CRITICAL). Default: 30'))
   group.add_argument('-c', '--config', dest='cfg', metavar='path',
             default='~/.config/yandex-disk/config.cfg',
-            help=_('Path to configuration file of YandexDisk daemon.' +
-                   'Daemon with this conf will be added to daemons list' +
+            help=_('Path to configuration file of YandexDisk daemon. ' +
+                   'This daemon will be added to daemons list' +
                    ' if it is not in the current configuration.' +
                    'Default: ~/.config/yandex-disk/config.cfg'))
   group.add_argument('-r', '--remove', dest='rcfg', metavar='path',
@@ -1198,8 +1198,6 @@ if __name__ == '__main__':
   # Define .desktop files locations for auto-start facility
   autoStartIndSrc = pathJoin(os.sep, 'usr', 'share', 'applications','Yandex.Disk-indicator.desktop')
   autoStartIndDst = pathJoin(userHome, '.config', 'autostart', 'Yandex.Disk-indicator.desktop')
-  autoStartDaemonSrc = pathJoin(os.sep, 'usr', 'share', 'applications', 'Yandex.Disk.desktop')
-  autoStartDaemonDst = pathJoin(userHome, '.config', 'autostart', 'Yandex.Disk.desktop')
 
   ### Logging ###
   logging.basicConfig(format='%(asctime)-15s %(levelname)-8s %(message)s')
@@ -1249,7 +1247,7 @@ if __name__ == '__main__':
   notify = Notification(appName, config.setdefault('notifications', True))
   config.setdefault('theme', False)
   config.setdefault('fmextensions', True)
-  config['autostartdaemon'] = pathExists(autoStartDaemonDst)
+  config['autostartdaemon'] = None      # Obsolete value <- REMOVE IT IN NEXT REALIZE
   config.setdefault('daemons', None)
   if not config.readSuccess:            # Is it a first run?
     logging.info('No config, probably it is a first run.')
@@ -1272,15 +1270,17 @@ if __name__ == '__main__':
 
   ### Get list of daemons ###
   daemons = config['daemons'] if isinstance(config['daemons'], list) else [config['daemons']]
-  daemonsSave = daemons.copy()
   # Add new daemon if it is not in current list
+  d_changed = False
   if args.cfg not in daemons:
     daemons.append(args.cfg)
+    d_changed = True
   # Remove daemon if it is in the current list
   if args.rcfg in daemons:
     daemons.remove(args.rcfg)
+    d_changed = True
   # Update config if daemons list has been changed
-  if daemonsSave != daemons:
+  if d_changed:
     daemonsSave = CVal()
     for d in daemons:
       daemonsSave.add(d)
