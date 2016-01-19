@@ -972,20 +972,20 @@ class Indicator(object):        # Yandex.Disk indicator
       self.icon.update(self.daemon.status)    # Update icon
       if self.daemon.lastStatus == 'none':    # Daemon has been started
         self.menu.updateSSS()                 # Change menu sensitivity
-        notify.send(_('Yandex.Disk'), _('Yandex.Disk daemon has been started'))
+        notify.send(_('Yandex.Disk')+_(' #%d')%self.No, _('Yandex.Disk daemon has been started'))
       if self.daemon.status == 'busy':        # Just entered into 'busy'
-        notify.send(_('Yandex.Disk'), _('Synchronization started'))
+        notify.send(_('Yandex.Disk')+_(' #%d')%self.No, _('Synchronization started'))
       elif self.daemon.status == 'idle':      # Just entered into 'idle'
         if self.daemon.lastStatus == 'busy':  # ...from 'busy' status
-          notify.send(_('Yandex.Disk'), _('Synchronization has been completed'))
+          notify.send(_('Yandex.Disk')+_(' #%d')%self.No, _('Synchronization has been completed'))
       elif self.daemon.status =='paused':     # Just entered into 'paused'
         if self.daemon.lastStatus != 'none':  # ...not from 'none' status
-          notify.send(_('Yandex.Disk'), _('Synchronization has been paused'))
+          notify.send(_('Yandex.Disk')+_(' #%d')%self.No, _('Synchronization has been paused'))
       elif self.daemon.status == 'none':      # Just entered into 'none' from some another status
         self.menu.updateSSS()                 # Change menu sensitivity as daemon not started
-        notify.send(_('Yandex.Disk'), _('Yandex.Disk daemon has been stopped'))
+        notify.send(_('Yandex.Disk')+_(' #%d')%self.No, _('Yandex.Disk daemon has been stopped'))
       else:                                   # newStatus = 'error' or 'no-net'
-        notify.send(_('Yandex.Disk'), _('Synchronization ERROR'))
+        notify.send(_('Yandex.Disk')+_(' #%d')%self.No, _('Synchronization ERROR'))
     # --- Handle timer delays ---
     if byNotifier:                            # True means that it is called by iNonifier
       self.wTimer.update(2000)                # Set timer interval to 2 sec.
@@ -1266,16 +1266,15 @@ if __name__ == '__main__':
   ### Get list of daemons ###
   daemons = config['daemons'] if isinstance(config['daemons'], list) else [config['daemons']]
   # Add new daemon if it is not in current list
-  d_changed = False
   if args.cfg not in daemons:
     daemons.append(args.cfg)
-    d_changed = True
+    config.changed = True
   # Remove daemon if it is in the current list
   if args.rcfg in daemons:
     daemons.remove(args.rcfg)
-    d_changed = True
+    config.changed = True
   # Update config if daemons list has been changed
-  if d_changed:
+  if config.changed:
     daemonsSave = CVal()
     for d in daemons:
       daemonsSave.add(d)
