@@ -49,6 +49,7 @@ chmod a+x debian/pre*
 chmod a+x usr/share/yd-tools/*
 chmod a+x usr/share/yd-tools/fm-actions/Nautilus_Nemo/*
 chmod a+x usr/share/yd-tools/fm-actions/Dolphin/*
+chmod a+x usr/share/yd-tools/fm-actions/pantheon-files/*.sh
 chmod a+x usr/bin/*
 chmod a+x usr/share/applications/*
 cd ..
