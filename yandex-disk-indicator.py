@@ -78,13 +78,13 @@ class CVal(object):             # Multivalue helper
         self.index = None
         raise StopIteration           # Stop iterations
     else:                             # CVal has scalar type.
-      self.index = None               # Remember that there is no more iterations posible
+      self.index = None               # Remember that there is no more iterations possible
       return self.val
 
   def __str__(self):              # String representation of CVal
     return str(self.val)
 
-  def __getitem__(self, index):   # Accsess to cVal items by index
+  def __getitem__(self, index):   # Access to cVal items by index
     if isinstance(self.val, list):
       return self.val[index]
     elif self.val is None:
@@ -106,9 +106,9 @@ class Config(dict):             # Configuration
                boolval=['yes', 'no'], usequotes=True, delimiter='='):
     super(Config, self).__init__(self)
     self.fileName = filename
-    self.bools = bools             # Values to detect booleans in self.load
-    self.boolval = boolval         # Values to write booleans in self.save
-    self.usequotes = usequotes     # Use qoutes for keys and values in self.save
+    self.bools = bools             # Values to detect boolean in self.load
+    self.boolval = boolval         # Values to write boolean in self.save
+    self.usequotes = usequotes     # Use quotes for keys and values in self.save
     self.delimiter = delimiter     # Use specified delimiter between key and value
     self.changed = False           # Change flag (for use outside of the class)
     if load:
@@ -142,11 +142,11 @@ class Config(dict):             # Configuration
 
   def load(self, bools=[['true', 'yes', 'y'], ['false', 'no', 'n']], delimiter='='):
     """
-    Reads config file to dictionalry (OrderedDict).
-    Config file shoud conain key=value rows.
+    Reads config file to dictionary (OrderedDict).
+    Config file should contain key=value rows.
     Key can be quoted or not.
     Value can be one item or list of comma-separated items. Each value item can be quoted or not.
-    When value is a single item then it creates key:value item in dictionalry
+    When value is a single item then it creates key:value item in dictionary
     When value is a list of items it creates key:[value, value,...] dictionary's item.
     """
     self.bools = bools
@@ -285,8 +285,8 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
         # Convert values representations
         self['read-only'] = (self.get('read-only', False) == '')
         self['overwrite'] = (self.get('overwrite', False) == '')
-        self.setdefault('startonstartindicator', True)      # New value to start daemon individualy
-        self.setdefault('stoponexitfromindicator', False)   # New value to stop daemon individualy
+        self.setdefault('startonstartofindicator', True)    # New value to start daemon individually
+        self.setdefault('stoponexitfromindicator', False)   # New value to stop daemon individually
         exDirs = self.get('exclude-dirs', None)
         if exDirs is None:
           self['exclude-dirs'] = None
@@ -323,9 +323,9 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
           self.errorDialog('')
           appExit('Critical error: Bad daemon can\'t be killed')
       except:
-        logger.info("yandex-disk daemon is not running")
+        logger.info('yandex-disk daemon is not running')
         msg = ''
-      if msg == '' and not config["startonstart"]:
+      if msg == '' and not self.config.get('startonstartofindicator', True):
         break                       # Daemon is not started and should not be started
       else:
         err = self.start()          # Try to start it
@@ -337,15 +337,15 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     else:
       logger.info('yandex-disk daemon is installed, configured and responding.')
     self.status = 'none'
-    self.lastStatus = 'idle'        # Fallback status for "index" status substitution at start time
+    self.lastStatus = 'idle'        # Fall-back status for "index" status substitution at start time
     self.lastItems = []
     self.parseOutput()              # To update all status variables
     self.lastStatus = self.status
-    self.lastItems = ['*']          # To be shure that self.lastItemsChanged = True on next time
+    self.lastItems = ['*']          # To be sure that self.lastItemsChanged = True on next time
 
   def getOutput(self, origLang=False):    # Get result of 'yandex-disk status'
     LANG = os.getenv('LANG')
-    if not origLang:          # Change LANG settings when it requered
+    if not origLang:          # Change LANG settings when it required
       os.putenv('LANG', 'en_US.UTF-8')
     try:
       self.output = subprocess.check_output(['yandex-disk','-c', self.cfgFile, 'status'],
@@ -390,7 +390,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     if self.lastItemsChanged:
       self.lastItems = buf                            # Store the new file list
 
-  def updateStatus(self):                 # Get daemon output and update all daemon daemon vars
+  def updateStatus(self):                 # Get daemon output and update all daemon daemon variables
     self.getOutput()
     self.parseOutput()
 
@@ -569,7 +569,7 @@ class Menu(Gtk.Menu):           # Menu
   def startDaemon(self, widget):          # Start daemon
     err = self.daemon.start()        # Try to start yandex-disk daemon
     if err != '':
-      self.daemon.errorDialog(err)   # Hangle the starting error
+      self.daemon.errorDialog(err)   # Handle the starting error
     self.updateSSS()                 # Change the menu items sensitivity
 
   def stopDaemon(self, widget):           # Stop daemon
@@ -604,7 +604,7 @@ class Menu(Gtk.Menu):           # Menu
           widget.set_sensitive(True)                # If it exists then it can be opened
           widget.connect("activate", self.openPath, filePath)
         else:
-          widget.set_sensitive(False)               # Don't allow to open nonexisting path
+          widget.set_sensitive(False)               # Don't allow to open non-existing path
         self.lastItems.append(widget)
         widget.show()
       if len(self.daemon.lastItems) == 0:           # No items in list?
@@ -750,7 +750,7 @@ class Preferences(Gtk.Dialog):  # Preferences Window
     self.set_border_width(6)
     self.add_button(_('Close'), Gtk.ResponseType.CLOSE)
     pref_notebook = Gtk.Notebook()              # Create notebook for indicator and daemon options
-    self.get_content_area().add(pref_notebook)  # Put it inside the dialog content area
+    self.get_content_area().add(pref_notebook)  # Put it inside the dialogue content area
     # --- Indicator preferences tab ---
     preferencesBox = Gtk.VBox(spacing=5)
     key = 'autostart'                           # Auto-start indicator on system start-up
@@ -782,13 +782,13 @@ class Preferences(Gtk.Dialog):  # Preferences Window
       No = '#%d '%i if len(indicators) > 1 else ''
       # --- Daemon start options tab ---
       optionsBox = Gtk.VBox(spacing=5)
-      key = 'startonstartindicator'               # Start daemon on indicator start
+      key = 'startonstartofindicator'           # Start daemon on indicator start
       сbStOnStart = Gtk.CheckButton(_('Start Yandex.Disk daemon %swhen indicator is starting')%No)
       сbStOnStart.set_tooltip_text(_("When daemon was not started before."))
       сbStOnStart.set_active(dconfig[key])
       сbStOnStart.connect("toggled", self.onButtonToggled, сbStOnStart, key, dconfig)
       optionsBox.add(сbStOnStart)
-      key = 'stoponexitfromindicator'             # Stop daemon on exit
+      key = 'stoponexitfromindicator'           # Stop daemon on exit
       сbStoOnExit = Gtk.CheckButton(_('Stop Yandex.Disk daemon %son closing of indicator')%No)
       сbStoOnExit.set_active(dconfig[key])
       сbStoOnExit.connect("toggled", self.onButtonToggled, сbStoOnExit, key, dconfig)
@@ -837,7 +837,7 @@ class Preferences(Gtk.Dialog):  # Preferences Window
     toggleState = button.get_active()
     logger.debug('Togged: %s  val: %s' % (key, str(toggleState)))
     # Update configurations
-    if key in ['read-only', 'overwrite', 'startonstartindicator', 'stoponexitfromindicator']:
+    if key in ['read-only', 'overwrite', 'startonstartofindicator', 'stoponexitfromindicator']:
       dconfig[key] = toggleState                # Update daemon config
       dconfig.changed = True
     else:
@@ -889,9 +889,9 @@ class LockFile(object):         # LockFile
   def release(self):
     fcntl.flock(self.lockFile, fcntl.LOCK_UN)
     self.lockFile.close()
-    logger.debug('Lock file %s succesfully unlocked.' % self.fileName)
+    logger.debug('Lock file %s successfully unlocked.' % self.fileName)
     deleteFile(self.fileName)
-    logger.debug('Lock file %s succesfully deleted.' % self.fileName)
+    logger.debug('Lock file %s successfully deleted.' % self.fileName)
 
 class Timer(object):            # Timer for triggering a function periodically
 
@@ -901,7 +901,7 @@ class Timer(object):            # Timer for triggering a function periodically
     self.par = par                    # Parameter of handler function
     self.active = False               # Current activity status
     if start:
-      self.start()                    # Start timer if requered
+      self.start()                    # Start timer if required
 
   def start(self, interval = None):   # Start inactive timer or update if it is active
     if interval is None:
@@ -946,7 +946,7 @@ class Indicator(object):        # Yandex.Disk indicator
     self.ind.set_status(appIndicator.IndicatorStatus.ACTIVE)
     self.menu = Menu(self.daemon, config, self.icon, self.No)  # Create menu for daemon
     self.ind.set_menu(self.menu)                        # Prepare and attach menu to indicator
-    self.icon.update(self.daemon.status, self.ind)      # Update indicator icon with current daemon status
+    self.icon.update(self.daemon.status, self.ind)      # Update indicator icon with daemon status
 
     ### Create file updates watcher ###
     self.inotify = INotify(pathJoin(self.daemon.config['dir'], '.sync/cli.log'),
@@ -960,7 +960,7 @@ class Indicator(object):        # Yandex.Disk indicator
 
   def handleEvent(self, byNotifier):  # Perform status update
     '''
-    It handles daemon status changes by updating icon, creting messages and also update
+    It handles daemon status changes by updating icon, creating messages and also update
     status information in menu (status, sizes and list of last synchronized items).
     It can be called by timer (when byNotifier=False) or by iNonifier
     (when byNotifier=True)
@@ -1010,11 +1010,10 @@ def deleteFile(source):
 
 def appExit(msg = None):
   flock.release()
-  if config['stoponexit']:
-    logger.info('Stopping active daemons')
-    for i in indicators:
-      if i.daemon.status != 'none':
-        i.daemon.stop()
+  for i in indicators:
+    if i.daemon.status != 'none' and i.daemon.config.get('stoponexitfromindicator', False):
+      i.daemon.stop()
+      logger.info('Demon %sstopped'%i.No)
   sys.exit(msg)
 
 def activateActions():        # Install/deinstall file extensions
@@ -1225,22 +1224,22 @@ if __name__ == '__main__':
   This file can contain comments (line starts with '#') and config values in
   form: key=value[,value[,value ...]] where keys and values can be quoted ("...") or not.
   The following key words are reserved for configuration:
-    autostart, notifications, theme and fmextensions.
+    autostart, notifications, theme, fmextensions and daemons.
   Foolwing values are obsolete:
     startonstart, stoponexit and autostartdaemon.
 
   The dictionary 'config' stores the config settings for usage in code. Its values are saved to
-  config file on exit from the Menu.Preferences dialogue or when there is no configuratin file when
-  application starts.
+  config file on exit from the Menu.Preferences dialogue or when there is no configuration file
+  when application starts.
 
-  Note that daemon settings ("dir", "read-only", "overwrite" and "exclude_dir") are stored
+  Note that daemon settings ('dir', 'read-only', 'overwrite' and 'exclude_dir') are stored
   in ~/ .config/yandex-disk/config.cfg file. They are read in YDDaemon.__init__() method
   (in dictionary YDDaemon.config). Their values are saved to daemon config file also
   on exit from Menu.Preferences dialogue.
 
-  Additionaly 'startonstartindicator' and 'stoponexitfromindicator' values are added into daemon
-  configuration file to provide the functionality of obsolete startonstart and stoponexit values
-  for each daemon individualy.              
+  Additionaly 'startonstartofindicator' and 'stoponexitfromindicator' values are added into daemon
+  configuration file to provide the functionality of obsolete 'startonstart' and 'stoponexit'
+  values for each daemon individually.              
   '''
   config = Config(pathJoin(configPath, appName + '.conf'))
   # Read some settings to variables, set default values and update some values
