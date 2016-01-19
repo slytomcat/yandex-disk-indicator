@@ -1,7 +1,6 @@
 usr/bin/yandex-disk-indicator usr/bin/
 usr/share/locale/ru/LC_MESSAGES/yandex-disk-indicator.mo usr/share/locale/ru/LC_MESSAGES/
 usr/share/locale/el/LC_MESSAGES/yandex-disk-indicator.mo usr/share/locale/el/LC_MESSAGES/
-usr/share/applications/Yandex.Disk.desktop usr/share/applications/
 usr/share/applications/Yandex.Disk-indicator.desktop usr/share/applications/
 usr/share/yd-tools/ya-setup usr/share/yd-tools/
 usr/share/yd-tools/icons/readme usr/share/yd-tools/icons/
