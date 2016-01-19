@@ -1173,8 +1173,14 @@ def argParse():               # Parse command line arguments
                    '50 - to show critical messages only (CRITICAL). Default: 30'))
   group.add_argument('-c', '--config', dest='cfg', metavar='path',
             default='~/.config/yandex-disk/config.cfg',
-            help=_('Path to configuration file of YandexDisk daemon. ' +
+            help=_('Path to configuration file of YandexDisk daemon.' +
+                   'Daemon with this conf will be added to daemons list' +
+                   ' if it is not in the current configuration.' +
                    'Default: ~/.config/yandex-disk/config.cfg'))
+  group.add_argument('-r', '--remove', dest='rcfg', metavar='path',
+            default='',
+            help=_('Path to configuration file of daemon that should be removed' +
+                   ' from daemos list. Default: \'\''))
   group.add_argument('-h', '--help', action='help', help=_('Show this help message and exit'))
   group.add_argument('-v', '--version', action='version', version='%(prog)s v.' + appVer,
             help=_('Print version and exit'))
@@ -1244,7 +1250,7 @@ if __name__ == '__main__':
   config.setdefault('theme', False)
   config.setdefault('fmextensions', True)
   config['autostartdaemon'] = pathExists(autoStartDaemonDst)
-  daemons = CVal(config.setdefault('daemons', None))
+  config.setdefault('daemons', None)
   if not config.readSuccess:            # Is it a first run?
     logging.info('No config, probably it is a first run.')
     # Create app config folders in ~/.config
@@ -1264,16 +1270,25 @@ if __name__ == '__main__':
   ### Check for already running instance of the indicator application with the same config ###
   flock = LockFile(pathJoin(configPath, 'pid'))
 
-  # Check that args.cfg is alredy in daemons list
-  allOk = False
-  for d in daemons:
-    if d == args.cfg:
-      allOk = True
-  if not allOk:
-    config['daemons'] = daemons.add(args.cfg)
+  ### Get list of daemons ###
+  daemons = config['daemons'] if isinstance(config['daemons'], list) else [config['daemons']]
+  daemonsSave = daemons.copy()
+  # Add new daemon if it is not in current list
+  if args.cfg not in daemons:
+    daemons.append(args.cfg)
+  # Remove daemon if it is in the current list
+  if args.rcfg in daemons:
+    daemons.remove(args.rcfg)
+  # Update config if daemons list has been changed
+  if daemonsSave != daemons:
+    daemonsSave = CVal()
+    for d in daemons:
+      daemonsSave.add(d)
+    print(daemonsSave)
+    config['daemons'] = daemonsSave.get()
     config.save()                 # Update configuration file
 
-  # Make indicator objets
+  ### Make indicator objects
   indicators = []
   for d in daemons:
     indicators.append(Indicator(config, d, len(indicators), len(daemons) > 1))
