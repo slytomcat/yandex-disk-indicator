@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: yd-tools\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-01-19 01:19+0300\n"
-"PO-Revision-Date: 2016-01-19 01:19+0300\n"
+"POT-Creation-Date: 2016-01-19 15:40+0300\n"
+"PO-Revision-Date: 2016-01-19 15:40+0300\n"
 "Last-Translator: Sly_tom_cat <slytomcat@mail.ru>\n"
 "Language-Team: ubuntu.ru local team <slytomcat@mail.ru>\n"
 "Language: el_GR\n"
@@ -13,7 +13,7 @@ msgstr ""
 "X-Poedit-KeywordsList: _;gettext;gettext_noop\n"
 "X-Poedit-Basepath: /home/stc/Yandex.Disk/YD-tools\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 1.7.5\n"
+"X-Generator: Poedit 1.5.4\n"
 "X-Poedit-SearchPath-0: /home/stc/Yandex.Disk/YD-tools\n"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:399
@@ -458,15 +458,22 @@ msgstr ""
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1176
 msgid ""
-"Path to configuration file of YandexDisk daemon. Default: ~/.config/yandex-"
-"disk/config.cfg"
+"Path to configuration file of YandexDisk daemon. This daemon will be added "
+"to daemons list if it is not in the current configuration.Default: ~/.config/"
+"yandex-disk/config.cfg"
 msgstr ""
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1178
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1182
+msgid ""
+"Path to configuration file of daemon that should be removed from daemos "
+"list. Default: ''"
+msgstr ""
+
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1184
 msgid "Show this help message and exit"
 msgstr ""
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1180
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1186
 msgid "Print version and exit"
 msgstr ""
 

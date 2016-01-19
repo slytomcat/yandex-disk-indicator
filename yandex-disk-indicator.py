@@ -342,7 +342,7 @@ class YDDaemon(object):       # Yandex.Disk daemon interface
     self.lastItems = ['*']          # To be shure that self.lastItemsChanged = True on next time
 
   def getOutput(self, origLang=False):          # Get result of 'yandex-disk status'
-    origLANG = os.getenv('LANG')
+    LANG = os.getenv('LANG')
     if not origLang:          # Change LANG settings when it requered
       os.putenv('LANG', 'en_US.UTF-8')
     try:
@@ -352,7 +352,7 @@ class YDDaemon(object):       # Yandex.Disk daemon interface
       self.output = ''        # daemon is not running or bad
     #logger.debug('output = %s' % daemonOutput)
     if not origLang:          # Restore LANG settings
-      os.putenv('LANG', origLANG)
+      os.putenv('LANG', LANG)
     return self.output
 
   def parseOutput(self):        # Parse the daemon output
@@ -1174,7 +1174,13 @@ def argParse():               # Parse command line arguments
   group.add_argument('-c', '--config', dest='cfg', metavar='path',
             default='~/.config/yandex-disk/config.cfg',
             help=_('Path to configuration file of YandexDisk daemon. ' +
+                   'This daemon will be added to daemons list' +
+                   ' if it is not in the current configuration.' +
                    'Default: ~/.config/yandex-disk/config.cfg'))
+  group.add_argument('-r', '--remove', dest='rcfg', metavar='path',
+            default='',
+            help=_('Path to configuration file of daemon that should be removed' +
+                   ' from daemos list. Default: \'\''))
   group.add_argument('-h', '--help', action='help', help=_('Show this help message and exit'))
   group.add_argument('-v', '--version', action='version', version='%(prog)s v.' + appVer,
             help=_('Print version and exit'))
@@ -1192,8 +1198,6 @@ if __name__ == '__main__':
   # Define .desktop files locations for auto-start facility
   autoStartIndSrc = pathJoin(os.sep, 'usr', 'share', 'applications','Yandex.Disk-indicator.desktop')
   autoStartIndDst = pathJoin(userHome, '.config', 'autostart', 'Yandex.Disk-indicator.desktop')
-  autoStartDaemonSrc = pathJoin(os.sep, 'usr', 'share', 'applications', 'Yandex.Disk.desktop')
-  autoStartDaemonDst = pathJoin(userHome, '.config', 'autostart', 'Yandex.Disk.desktop')
 
   ### Logging ###
   logging.basicConfig(format='%(asctime)-15s %(levelname)-8s %(message)s')
@@ -1243,8 +1247,8 @@ if __name__ == '__main__':
   notify = Notification(appName, config.setdefault('notifications', True))
   config.setdefault('theme', False)
   config.setdefault('fmextensions', True)
-  config['autostartdaemon'] = pathExists(autoStartDaemonDst)
-  daemons = CVal(config.setdefault('daemons', None))
+  config['autostartdaemon'] = None      # Obsolete value <- REMOVE IT IN NEXT REALIZE
+  config.setdefault('daemons', None)
   if not config.readSuccess:            # Is it a first run?
     logging.info('No config, probably it is a first run.')
     # Create app config folders in ~/.config
@@ -1264,16 +1268,27 @@ if __name__ == '__main__':
   ### Check for already running instance of the indicator application with the same config ###
   flock = LockFile(pathJoin(configPath, 'pid'))
 
-  # Check that args.cfg is alredy in daemons list
-  allOk = False
-  for d in daemons:
-    if d == args.cfg:
-      allOk = True
-  if not allOk:
-    config['daemons'] = daemons.add(args.cfg)
+  ### Get list of daemons ###
+  daemons = config['daemons'] if isinstance(config['daemons'], list) else [config['daemons']]
+  # Add new daemon if it is not in current list
+  d_changed = False
+  if args.cfg not in daemons:
+    daemons.append(args.cfg)
+    d_changed = True
+  # Remove daemon if it is in the current list
+  if args.rcfg in daemons:
+    daemons.remove(args.rcfg)
+    d_changed = True
+  # Update config if daemons list has been changed
+  if d_changed:
+    daemonsSave = CVal()
+    for d in daemons:
+      daemonsSave.add(d)
+    print(daemonsSave)
+    config['daemons'] = daemonsSave.get()
     config.save()                 # Update configuration file
 
-  # Make indicator objets
+  ### Make indicator objects
   indicators = []
   for d in daemons:
     indicators.append(Indicator(config, d, len(indicators), len(daemons) > 1))
