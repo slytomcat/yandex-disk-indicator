@@ -1,5 +1,5 @@
-yd-tools (1.8.0) trusty; urgency=medium
+yd-tools (1.8.1) trusty; urgency=medium
 
   * Changes:
-    -- Multi-indicators support
- -- Sly_tom_cat <slytomcat@mail.ru>  Wed, 20 Jan 2016 01:34:54 +0300
+    -- Fix for first run without daemons value in configuration file
+ -- Sly_tom_cat <slytomcat@mail.ru>  Wed, 20 Jan 2016 12:21:54 +0300
