@@ -34,7 +34,6 @@ from os.path import exists as pathExists, join as pathJoin
 from shutil import copy as fileCopy
 from webbrowser import open_new as openNewBrowser
 
-
 class CVal(object):             # Multivalue helper
   ''' Class to work with value that can be None, scalar value or list of values depending
       of number of elementary values added within it. '''
@@ -384,7 +383,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       status = 'no_net'
     # Status 'error' covers 'error', 'failed to connect to daemon process' and other messages...
     self.status = status if status in ['busy', 'idle', 'paused', 'none', 'no_net'] else 'error'
-
+    # Parse last synchronized items
     buf = re.findall(r"\t.+: '(.*)'\n", files)        # Get file list
     self.lastItemsChanged = (self.lastItems != buf)   # Check if file list has been changed
     if self.lastItemsChanged:
@@ -934,7 +933,7 @@ class Indicator(object):        # Yandex.Disk indicator
     self.No = _('#%d ')%No if multiInstance else ''
     self.multiInstance = multiInstance
     ### Initialize Yandex.Disk daemon connection object ###
-    self.daemon = YDDaemon(path.replace('~', userHome))
+    self.daemon = YDDaemon(path)
 
     ### Application Indicator ###
     ## Icons ##
@@ -1206,8 +1205,6 @@ if __name__ == '__main__':
 
   ### Get command line arguments ###
   args = argParse()
-  # Make a full path to daemon configuration file
-  args.cfg = args.cfg.replace('~', userHome)
 
   # Set user specified logging level
   logger.setLevel(args.level)
@@ -1249,7 +1246,7 @@ if __name__ == '__main__':
   config.setdefault('theme', False)
   config.setdefault('fmextensions', True)
   config['autostartdaemon'] = None      # Obsolete value <- REMOVE IT IN NEXT REALIZE
-  config.setdefault('daemons', None)
+  config.setdefault('daemons', '~/.config/yandex-disk/config.cfg')
   if not config.readSuccess:            # Is it a first run?
     logging.info('No config, probably it is a first run.')
     # Create app config folders in ~/.config
@@ -1271,21 +1268,18 @@ if __name__ == '__main__':
 
   ### Get list of daemons ###
   daemons = config['daemons']
-  daemons = (daemons if isinstance(daemons, list) else
-            [daemons] if isinstance(daemons, str) else
-            [])
+  daemons = (daemons if isinstance(daemons, list) else [] if daemons is None else [daemons])
   # Add new daemon if it is not in current list
   if args.cfg and args.cfg not in daemons:
     daemons.append(args.cfg)
     config.changed = True
   # Remove daemon if it is in the current list
-  if args.rcfg in daemons:
+  if args.rcfg and args.rcfg in daemons:
     daemons.remove(args.rcfg)
     config.changed = True
   # Update config if daemons list has been changed
-  if not daemons:                       # No daemons: Try to run with default daemon
-    daemons=['~/.config/yandex-disk/config.cfg']
-    config.changed = True
+  if not daemons:                       # No daemons
+    appExit(_('No daemons specified. Check correctness of -r and -c options'))
   if config.changed:
     config['daemons'] = daemons if isinstance(daemons, list) else daemons[0]
     config.save()                       # Update configuration file
@@ -1293,7 +1287,8 @@ if __name__ == '__main__':
   ### Make indicator objects
   indicators = []
   for d in daemons:
-    indicators.append(Indicator(config, d, len(indicators), len(daemons) > 1))
+    indicators.append(Indicator(config, d.replace('~', userHome),
+                      len(indicators), len(daemons) > 1))
 
   ### Start GTK Main loop ###
   Gtk.main()
