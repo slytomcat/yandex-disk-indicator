@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.8.0'
+appVer = '1.8.1'
 #
 #  Copyright 2014+ Sly_tom_cat <slytomcat@mail.ru>
 #  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
@@ -934,7 +934,7 @@ class Indicator(object):        # Yandex.Disk indicator
     self.No = _('#%d ')%No if multiInstance else ''
     self.multiInstance = multiInstance
     ### Initialize Yandex.Disk daemon connection object ###
-    self.daemon = YDDaemon(path)
+    self.daemon = YDDaemon(path.replace('~', userHome))
 
     ### Application Indicator ###
     ## Icons ##
@@ -1237,7 +1237,7 @@ if __name__ == '__main__':
 
   Additionally 'startonstartofindicator' and 'stoponexitfromindicator' values are added into daemon
   configuration file to provide the functionality of obsolete 'startonstart' and 'stoponexit'
-  values for each daemon individually.              
+  values for each daemon individually.
   '''
   config = Config(pathJoin(configPath, appName + '.conf'))
   # Read some settings to variables, set default values and update some values
@@ -1265,12 +1265,15 @@ if __name__ == '__main__':
     activateActions()
     # Save config with default settings
   config.save()                         # to remove obsolete values <- INDENT IT IN NEXT REALIZE
-  
+
   ### Check for already running instance of the indicator application with the same config ###
   flock = LockFile(pathJoin(configPath, 'pid'))
 
   ### Get list of daemons ###
-  daemons = config['daemons'] if isinstance(config['daemons'], list) else [config['daemons']]
+  daemons = config['daemons']
+  daemons = (daemons if isinstance(daemons, list) else
+            [daemons] if isinstance(daemons, str) else
+            [])
   # Add new daemon if it is not in current list
   if args.cfg and args.cfg not in daemons:
     daemons.append(args.cfg)
@@ -1280,12 +1283,11 @@ if __name__ == '__main__':
     daemons.remove(args.rcfg)
     config.changed = True
   # Update config if daemons list has been changed
+  if not daemons:                       # No daemons: Try to run with default daemon
+    daemons=['~/.config/yandex-disk/config.cfg']
+    config.changed = True
   if config.changed:
-    daemonsSave = CVal()
-    for d in daemons:
-      daemonsSave.add(d)
-    print(daemonsSave)
-    config['daemons'] = daemonsSave.get()
+    config['daemons'] = daemons if isinstance(daemons, list) else daemons[0]
     config.save()                       # Update configuration file
 
   ### Make indicator objects
