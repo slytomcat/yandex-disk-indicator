@@ -1,5 +1,6 @@
-yd-tools (1.8.1) trusty; urgency=medium
+yd-tools (1.8.2) trusty; urgency=medium
 
   * Changes:
-    -- Fix for first run without daemons value in configuration file
- -- Sly_tom_cat <slytomcat@mail.ru>  Wed, 20 Jan 2016 12:21:54 +0300
+    -- Corrected daemon initialization procedure (additional checks for daemon config correctness and additional error handling on daemon start)
+
+ -- Sly_tom_cat <slytomcat@mail.ru>  Thu, 21 Jan 2016 14:30:23 +0300
