@@ -1,6 +1,6 @@
-yd-tools (1.6.3) trusty; urgency=medium
+yd-tools (1.8.2) trusty; urgency=medium
 
   * Changes:
-   -- FM actions for Pantheon-files added
+    -- Corrected daemon initialization procedure (additional checks for daemon config correctness and additional error handling on daemon start)
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Tue, 29 Dec 2015 15:34:15 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Thu, 21 Jan 2016 14:30:23 +0300

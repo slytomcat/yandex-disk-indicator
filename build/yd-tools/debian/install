@@ -1,7 +1,6 @@
 usr/bin/yandex-disk-indicator usr/bin/
 usr/share/locale/ru/LC_MESSAGES/yandex-disk-indicator.mo usr/share/locale/ru/LC_MESSAGES/
 usr/share/locale/el/LC_MESSAGES/yandex-disk-indicator.mo usr/share/locale/el/LC_MESSAGES/
-usr/share/applications/Yandex.Disk.desktop usr/share/applications/
 usr/share/applications/Yandex.Disk-indicator.desktop usr/share/applications/
 usr/share/yd-tools/ya-setup usr/share/yd-tools/
 usr/share/yd-tools/icons/readme usr/share/yd-tools/icons/
@@ -27,3 +26,7 @@ usr/share/yd-tools/fm-actions/Nautilus_Nemo/publish usr/share/yd-tools/fm-action
 usr/share/yd-tools/fm-actions/Nautilus_Nemo/unpublish usr/share/yd-tools/fm-actions/Nautilus_Nemo/
 usr/share/yd-tools/fm-actions/Dolphin/publish.desktop usr/share/yd-tools/fm-actions/Dolphin/
 usr/share/yd-tools/fm-actions/Dolphin/unpublish.desktop usr/share/yd-tools/fm-actions/Dolphin/
+usr/share/yd-tools/fm-actions/pantheon-files/publish.sh usr/share/yd-tools/fm-actions/pantheon-files/
+usr/share/yd-tools/fm-actions/pantheon-files/unpublish.sh usr/share/yd-tools/fm-actions/pantheon-files/
+usr/share/yd-tools/fm-actions/pantheon-files/yandex-disk-indicator-publish.contract usr/share/yd-tools/fm-actions/pantheon-files/
+usr/share/yd-tools/fm-actions/pantheon-files/yandex-disk-indicator-unpublish.contract usr/share/yd-tools/fm-actions/pantheon-files/

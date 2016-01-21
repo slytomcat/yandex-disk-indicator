@@ -2,19 +2,39 @@
 # yandex-disk-indicator
 Desktop panel indicator for YandexDisk CLI client for Linux
 
-Usage: yandex-disk-indicator [-l\<n\>]
+usage: yandex-disk-indicator.py [-l {10,20,30,40,50}] [-c path] [-h] [-v]
+
+Desktop indicator for yandex-disk daemon
 
 Options:
- -l\<n\>   Set logging level to value \<n\>.
- 
-         Logging level value can be:
-            10 - to show all messages (DEBUG)
-            20 - to show all messages except debugging messages (INFO)
-            30 - to show all messages except debugging and info messages (WARNING)
-            40 - to show only error and critical messages (ERROR)
-            50 - to show critical messages only (CRITICAL)
+  -l {10,20,30,40,50}, --log {10,20,30,40,50}
+                        Sets the logging level: 
+                         10 - to show all messages (DEBUG), 
+                         20 - to show all messages except debugging messages (INFO),
+                         30 - to show all messages except debugging and info messages (WARNING),
+                         40 - to show only error and critical messages (ERROR),
+                         50 - to show critical messages only (CRITICAL). 
+                        Default: 30
+  -c path, --config path
+                        Path to configuration file of YandexDisk daemon.
+                        Default: ~/.config/yandex-disk/config.cfg
+  -h, --help            Show this help message and exit
+  -v, --version         Print version and exit
 
-Ubuntu deb packages available from LaunchPad PPA: https://launchpad.net/~slytomcat/+archive/ubuntu/ppa
+
+INSTALLATION:
+
+Note that yandex-disk CLI utility have to be installed before the indicator. Visit https://yandex.com/support/disk/cli-clients.xml#cli-install for instructions.
+
+Installation from Github: 
+
+ 1. Download ZIP with project sources (either master branch or last releaze)
+
+ 2. Run build/install.sh script.
+
+Installation from Launchpad PPA: 
+ - Visit PPA: https://launchpad.net/~slytomcat/+archive/ubuntu/ppa and follow the instructions.
+
 
 NOTES:
 
