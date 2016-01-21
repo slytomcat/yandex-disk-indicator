@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.8.1'
+appVer = '1.8.2'
 #
 #  Copyright 2014+ Sly_tom_cat <slytomcat@mail.ru>
 #  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
@@ -301,10 +301,10 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       self.ErrorDialog('NOTINSTALLED')
       appExit('Daemon is not installed')
     self.config = self.DConfig(self.cfgFile, load=False)
-    while not self.config.load():   # Try to read Yandex.Disk configuration file
+    # Try to read Yandex.Disk configuration file and make sure that it is correctly configured
+    while not (self.config.load() and self.config.get('dir', '') and self.config.get('auth', '')):
       if self.errorDialog('NOCONFIG', self.cfgFile) != 0:
         appExit('Daemon is not configured')
-    self.config.setdefault('dir', '')
     while not self.getOutput():     # Check for correct daemon response and check that it is running
       try:                          # Try to find daemon running process with current CFG file path
         msg = subprocess.check_output(['pgrep', '-f',
@@ -329,10 +329,11 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       else:
         err = self.start()          # Try to start it
         if err != '':
-          if self.errorDialog(err) != 0:
-            appExit('Critical error: Daemon can\'t start')
+          if self.errorDialog('CANTSTART') != 0:
+            appExit('Error: Daemon can\'t start')
           else:
-            break                   # Daemon was not started but user decided to start indicator
+            logger.info('Daemon was not started but user decided to continue')
+            break
     else:
       logger.info('yandex-disk daemon is installed, configured and responding.')
     self.status = 'none'
@@ -395,11 +396,17 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
 
   def errorDialog(self, err, cfg=None):   # Show error messages according to the error
     global logo
-    if err == 'NOCONFIG':
+    logger.error('Daemon initialization failed: %s', err)
+    logger.crit
+    if err == 'NOCONFIG' or err == 'CANTSTART':
       dialog = Gtk.MessageDialog(None, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK_CANCEL,
                                  _('Yandex.Disk Indicator: daemon start failed'))
-      dialog.format_secondary_text(_('Yandex.Disk daemon failed to start because it is not' +
-        ' configured properly\n  To configure it up: press OK button.\n  Press Cancel to exit.'))
+      if err == 'NOCONFIG':
+        dialog.format_secondary_text(_('Yandex.Disk daemon failed to start because it is not' +
+         ' configured properly\n  To configure it up: press OK button.\n  Press Cancel to exit.'))
+      else:
+        dialog.format_secondary_text(_('Yandex.Disk daemon failed to start.' +
+         '\n  Press OK to continue without started daemon or Cancel to exit.'))
     else:
       dialog = Gtk.MessageDialog(None, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK,
                                  _('Yandex.Disk Indicator: daemon start failed'))
@@ -416,7 +423,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     dialog.set_icon(GdkPixbuf.Pixbuf.new_from_file(logo))
     response = dialog.run()
     dialog.destroy()
-    if (err == 'NOCONFIG') and (response == Gtk.ResponseType.OK):  # Launch Set-up utility
+    if (err == 'NOCONFIG') and (response == Gtk.ResponseType.OK) and cfg:  # Launch Set-up utility
       logger.debug('starting configuration utility: %s' % pathJoin(installDir, 'ya-setup'))
       retCode = subprocess.call([pathJoin(installDir,'ya-setup'), cfg])
     else:
@@ -440,7 +447,8 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
         return 'NOTINSTALLED'
       err = ('NONET' if 'Proxy' in e.output else
              'BADDAEMON' if 'daemon' in e.output else
-             'NOCONFIG')
+             'NOCONFIG' if "'dir'" in e.output or 'OAuth' in e.output else
+             err)
       return err
 
   def stop(self):                         # Execute 'yandex-disk stop'
