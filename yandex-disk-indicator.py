@@ -231,17 +231,20 @@ class Notification(object):     # On-screen notification
     self.notifier = Notify.Notification()
     self.switch(mode)
 
+  def send(self, title, message):      # Send notification
+    pass                               # This method is redefined by switch method
+
   def switch(self, mode):             # Change show mode
     if mode:
-      self.send = self.message
+      self.send = self.__message__    # Redefine send as real notification routine
     else:
-      self.send = lambda t, m: None
+      self.send = lambda t, m: None   # Redefine send as fake routine
 
-  def message(self, title, message):  # Show on-screen notification message
+  def __message__(self, t, m):        # Show on-screen notification message
     global logo
-    logger.debug('Message: %s | %s' % (title, message))
-    self.notifier.update(title, message, logo)  # Update notification
-    self.notifier.show()                        # Display new notification
+    logger.debug('Message: %s | %s' % (t, m))
+    self.notifier.update(t, m, logo)  # Update notification
+    self.notifier.show()              # Display new notification
 
 class INotify(object):          # File change watcher
 
@@ -295,7 +298,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       else:
         return False
 
-  def __init__(self, cfgFile):            # Check that daemon installed, configured and started
+  def __init__(self, cfgFile, multi):     # Check that daemon installed, configured and started
     self.cfgFile = cfgFile          # Remember path to config file
     if not pathExists('/usr/bin/yandex-disk'):
       self.ErrorDialog('NOTINSTALLED')
@@ -304,7 +307,10 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     # Try to read Yandex.Disk configuration file and make sure that it is correctly configured
     while not (self.config.load() and self.config.get('dir', '') and self.config.get('auth', '')):
       if self.errorDialog('NOCONFIG', self.cfgFile) != 0:
-        appExit('Daemon is not configured')
+        if multi:
+          break                     # Exit from loop in multi-instance configuration
+        else:
+          appExit('Daemon is not configured')
     while not self.getOutput():     # Check for correct daemon response and check that it is running
       try:                          # Try to find daemon running process with current CFG file path
         msg = subprocess.check_output(['pgrep', '-f',
@@ -423,9 +429,11 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     dialog.set_icon(GdkPixbuf.Pixbuf.new_from_file(logo))
     response = dialog.run()
     dialog.destroy()
-    if (err == 'NOCONFIG') and (response == Gtk.ResponseType.OK) and cfg:  # Launch Set-up utility
+    if err == 'NOCONFIG' and response == Gtk.ResponseType.OK and cfg:  # Launch Set-up utility
       logger.debug('starting configuration utility: %s' % pathJoin(installDir, 'ya-setup'))
       retCode = subprocess.call([pathJoin(installDir,'ya-setup'), cfg])
+    elif err == 'CANTSTART' and response == Gtk.ResponseType.OK:
+      retCode = 0
     else:
       retCode = 0 if err == 'NONET' else 1
     dialog.destroy()
@@ -452,9 +460,11 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       return err
 
   def stop(self):                         # Execute 'yandex-disk stop'
-    try:    msg = subprocess.check_output(['yandex-disk', '-c', self.cfgFile, 'stop'],
-                                          universal_newlines=True)
-    except: msg = ''
+    try:
+      msg = subprocess.check_output(['yandex-disk', '-c', self.cfgFile, 'stop'],
+                                    universal_newlines=True)
+    except:
+      msg = ''
     return (msg != '')
 
 class Menu(Gtk.Menu):           # Menu
@@ -563,7 +573,7 @@ class Menu(Gtk.Menu):           # Menu
     statusWindow.set_border_width(6)
     statusWindow.add_button(_('Close'), Gtk.ResponseType.CLOSE)
     textBox = Gtk.TextView()                            # Create text-box to display daemon output
-    # Set test to daemon output in user language
+    # Set output buffer with daemon output in user language
     textBox.get_buffer().set_text(self.daemon.getOutput(origLang = True))
     textBox.set_editable(False)
     statusWindow.get_content_area().add(textBox)        # Put it inside the dialogue content area
@@ -633,7 +643,7 @@ class Icon(object):             # Indicator icon
 
   def __init__(self, theme):              # Initialize icon paths
     self.setTheme(theme)
-    # Create timer object for the icon animation
+    # Create timer object for icon animation support (don't start it here)
     self.timer = Timer(777, self.animation, start=False)
 
   def setTheme(self, theme):              # Determine paths to icons according to current theme
@@ -851,11 +861,13 @@ class Preferences(Gtk.Dialog):  # Preferences Window
       config.changed = True                     # Update application config
       config[key] = toggleState
     if key == 'theme':
-        for i in indicators:
+        for i in indicators:                    # Update all indicators' icons
           i.icon.setTheme(toggleState)          # Update icon theme
           i.icon.update(i.daemon.status)        # Update current icon
     elif key == 'notifications':
-      notify.switch(toggleState)                # Update notification object
+      notify.switch(toggleState)                # Update application notification engine
+      for i in indicators:                      # Update all notification engines
+        i.notify.switch(toggleState)
     elif key == 'autostart':
       if toggleState:
         copyFile(autoStartIndSrc, autoStartIndDst)
@@ -940,15 +952,20 @@ class Indicator(object):        # Yandex.Disk indicator
   def __init__(self, config, path, No, multiInstance):
     self.No = _('#%d ')%No if multiInstance else ''
     self.multiInstance = multiInstance
+    indicatorName = "yandex-disk-%s"%str(No)
     ### Initialize Yandex.Disk daemon connection object ###
-    self.daemon = YDDaemon(path)
+    self.daemon = YDDaemon(path, self.multiInstance)
 
     ### Application Indicator ###
+
+    ## Indicator notification engine
+    self.notify = Notification(indicatorName, config['notifications'])
+
     ## Icons ##
     self.icon = Icon(config['theme'])                   # Initialize icon object
 
     ## Indicator ##
-    self.ind = appIndicator.Indicator.new("yandex-disk-%s"%str(No), self.icon.pause,
+    self.ind = appIndicator.Indicator.new(indicatorName, self.icon.pause,
                                           appIndicator.IndicatorCategory.APPLICATION_STATUS)
     self.ind.set_status(appIndicator.IndicatorStatus.ACTIVE)
     self.menu = Menu(self.daemon, config, self.icon, self.No)  # Create menu for daemon
@@ -982,20 +999,20 @@ class Indicator(object):        # Yandex.Disk indicator
       self.icon.update(self.daemon.status)    # Update icon
       if self.daemon.lastStatus == 'none':    # Daemon has been started
         self.menu.updateSSS()                 # Change menu sensitivity
-        notify.send(_('Yandex.Disk ')+self.No, _('Yandex.Disk daemon has been started'))
+        self.notify.send(_('Yandex.Disk ')+self.No, _('Yandex.Disk daemon has been started'))
       if self.daemon.status == 'busy':        # Just entered into 'busy'
-        notify.send(_('Yandex.Disk ')+self.No, _('Synchronization started'))
+        self.notify.send(_('Yandex.Disk ')+self.No, _('Synchronization started'))
       elif self.daemon.status == 'idle':      # Just entered into 'idle'
         if self.daemon.lastStatus == 'busy':  # ...from 'busy' status
-          notify.send(_('Yandex.Disk ')+self.No, _('Synchronization has been completed'))
+          self.notify.send(_('Yandex.Disk ')+self.No, _('Synchronization has been completed'))
       elif self.daemon.status =='paused':     # Just entered into 'paused'
         if self.daemon.lastStatus != 'none':  # ...not from 'none' status
-          notify.send(_('Yandex.Disk ')+self.No, _('Synchronization has been paused'))
+          self.notify.send(_('Yandex.Disk ')+self.No, _('Synchronization has been paused'))
       elif self.daemon.status == 'none':      # Just entered into 'none' from some another status
         self.menu.updateSSS()                 # Change menu sensitivity as daemon not started
-        notify.send(_('Yandex.Disk ')+self.No, _('Yandex.Disk daemon has been stopped'))
+        self.notify.send(_('Yandex.Disk ')+self.No, _('Yandex.Disk daemon has been stopped'))
       else:                                   # newStatus = 'error' or 'no-net'
-        notify.send(_('Yandex.Disk ')+self.No, _('Synchronization ERROR'))
+        self.notify.send(_('Yandex.Disk ')+self.No, _('Synchronization ERROR'))
     # --- Handle timer delays ---
     if byNotifier:                            # True means that it is called by iNonifier
       self.wTimer.update(2000)                # Set timer interval to 2 sec.
@@ -1250,7 +1267,7 @@ if __name__ == '__main__':
   config['startonstart'] = None         # Obsolete value <- REMOVE IT IN NEXT REALIZE
   config['stoponexit'] = None           # Obsolete value <- REMOVE IT IN NEXT REALIZE
   # Setup on-screen notification settings from config value
-  notify = Notification(appName, config.setdefault('notifications', True))
+  config.setdefault('notifications', True)
   config.setdefault('theme', False)
   config.setdefault('fmextensions', True)
   config['autostartdaemon'] = None      # Obsolete value <- REMOVE IT IN NEXT REALIZE
@@ -1297,6 +1314,8 @@ if __name__ == '__main__':
   for d in daemons:
     indicators.append(Indicator(config, d.replace('~', userHome),
                       len(indicators), len(daemons) > 1))
+  ### Notification engine for application messages (it is used in Preferences dialogue)
+  notify = Notification(appName, config['notifications'])
 
   ### Start GTK Main loop ###
   Gtk.main()
