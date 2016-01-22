@@ -10,7 +10,7 @@ Installation from Github:
 
  1. Download ZIP with project sources (either master branch or last releaze)
 
- 2. Run build/install.sh script.
+ 2. Run build/install.sh script with root privileges
 
 Installation from Launchpad PPA: 
  - Visit PPA: https://launchpad.net/~slytomcat/+archive/ubuntu/ppa and follow the instructions.
