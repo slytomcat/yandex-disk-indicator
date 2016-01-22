@@ -3,8 +3,8 @@ msgstr ""
 "Project-Id-Version: yd-tools\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-01-21 14:33+0300\n"
-"PO-Revision-Date: 2016-01-21 14:34+0300\n"
-"Last-Translator: Sly_tom_cat <slytomcat@mail.ru>\n"
+"PO-Revision-Date: 2016-01-22 15:36+0200\n"
+"Last-Translator: Sergey Tsabolov <linuxmangr@yandex.ru>\n"
 "Language-Team: ubuntu.ru local team <slytomcat@mail.ru>\n"
 "Language: el_GR\n"
 "MIME-Version: 1.0\n"
@@ -37,6 +37,8 @@ msgid ""
 "Yandex.Disk daemon failed to start.\n"
 "  Press OK to continue without started daemon or Cancel to exit."
 msgstr ""
+"Yandex.Disk δαίμονας απέτυχε να ξεκινήσει.\n"
+"  Πατήστε OK για να συνεχίσετε χωρίς εκκίνηση δαίμονα ή Άκυρο για έξοδο."
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:414
 msgid ""
@@ -62,7 +64,7 @@ msgstr "Εκκίνηση υπηρεσίας Yandex.Disk κατά την εκκί
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:468
 msgid "  Folder: "
-msgstr ""
+msgstr "Φάκελος:"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:476
 msgid "Last synchronized items"
@@ -322,6 +324,8 @@ msgstr "Διακοπή υπηρεσίας Yandex.Disk %sμε κλείσιμο τ
 #, python-format
 msgid "NOTE! You have to reload daemon %sto activate following settings"
 msgstr ""
+"ΣΗΜΕΙΩΣΗ! Θα πρέπει να φορτώσετε εκ νέου το δαίμονα %s για ενεργοποιήσετε "
+"ακόλουθες ρυθμίσεις"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:810
 msgid "Read-Only: Do not upload locally changed files to Yandex.Disk"
@@ -362,7 +366,7 @@ msgstr "Folders in the list will not be synchronized."
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:832
 #, python-format
 msgid "Daemon %soptions"
-msgstr ""
+msgstr "Επιλογές %s δαίμονα"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:862
 msgid "Auto-start ON"
@@ -388,7 +392,7 @@ msgstr ""
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:941
 #, python-format
 msgid "#%d "
-msgstr ""
+msgstr "#%d"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:985
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:987
@@ -451,12 +455,11 @@ msgstr "Διεύθυνσης URL στο αρχείο: %f  έχει αντιγρ�
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1168
 msgid "Desktop indicator for yandex-disk daemon"
-msgstr ""
+msgstr "Η ένδειξη επιφάνεια εργασίας για το δαίμονα yandex-disk"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1170
-#, fuzzy
 msgid "Options"
-msgstr "Επιλογές"
+msgstr "Επιλογές "
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1172
 msgid ""
@@ -465,27 +468,39 @@ msgid ""
 "debugging and info messages (WARNING), 40 - to show only error and critical "
 "messages (ERROR), 50 - to show critical messages only (CRITICAL). Default: 30"
 msgstr ""
+"Ρυθμίζει το επίπεδο καταγραφής: 10 - για να δείτε όλα τα μηνύματα (DEBUG), "
+"20 - για να δείτε όλα τα μηνύματα εκτός από τον εντοπισμό σφαλμάτων μηνύματα "
+"(INFO), 30 - για να δείτε όλα τα μηνύματα εκτός από τα μηνύματα εντοπισμού "
+"σφαλμάτων και πληροφορίες (ΠΡΟΣΟΧΗ), 40 - για να εμφανίσετε μόνο σφάλμα και "
+"τα κρίσιμα μηνύματα (ΣΦΑΛΜΑ), 50 - για να εμφανίσετε μόνο τα κρίσιμα "
+"μηνύματα (κρίσιμη). Προεπιλογή: 30"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1179
 msgid ""
 "Path to configuration file of YandexDisk daemon. This daemon will be added "
 "to daemons list if it is not in the current configuration.Default: ''"
 msgstr ""
+"Διαδρομή προς αρχείο ρυθμίσεων του δαίμονα Yandex δίσκου. Αυτό δαίμονας θα "
+"προστεθεί στη λίστα με δαίμονες αν δεν είναι στην τρέχουσα διαμόρφωση."
+"Προεπιλογή:\""
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1184
 msgid ""
 "Path to configuration file of daemon that should be removed from daemos "
 "list. Default: ''"
 msgstr ""
+"Διαδρομή προς αρχείο ρυθμίσεων του δαίμονα που πρέπει να αφαιρεθεί από τη "
+"λίστα του δαίμονα. Προεπιλογή:\""
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1186
 msgid "Show this help message and exit"
-msgstr ""
+msgstr "Εμφάνιση μηνύματος βοήθειας και έξοδος"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1188
 msgid "Print version and exit"
-msgstr ""
+msgstr "Εμφάνιση έκδοσης και έξοδος"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1290
 msgid "No daemons specified. Check correctness of -r and -c options"
 msgstr ""
+"Δεν καθορίζεται ο δαίμονας. Ελέγξτε την ορθογραφία των -r και -c επιλογών"
