@@ -339,6 +339,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
             appExit('Error: Daemon can\'t start')
           else:
             logger.info('Daemon was not started but user decided to continue')
+            self.config['dir'] = '<NOT CONFIGURED>'
             break
     else:
       logger.info('yandex-disk daemon is installed, configured and responding.')
@@ -403,7 +404,6 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
   def errorDialog(self, err, cfg=None):   # Show error messages according to the error
     global logo
     logger.error('Daemon initialization failed: %s', err)
-    logger.crit
     if err == 'NOCONFIG' or err == 'CANTSTART':
       dialog = Gtk.MessageDialog(None, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK_CANCEL,
                                  _('Yandex.Disk Indicator: daemon start failed'))
@@ -474,9 +474,9 @@ class Menu(Gtk.Menu):           # Menu
     self.config = config                      # Store reference app config object for future usage
     self.dconf = daemon.config                # Store reference to daemon.config object
     Gtk.Menu.__init__(self)                   # Create menu
-    if no:
-      yddir = Gtk.MenuItem(no + _('  Folder: ') + self.dconf['dir'].replace('_', u'\u02CD'))
-      yddir.set_sensitive(False);   self.append(yddir)
+    self.no = no
+    if self.no:
+      self.yddir = Gtk.MenuItem('');   self.yddir.set_sensitive(False);   self.append(self.yddir)
     self.status = Gtk.MenuItem();   self.status.connect("activate", self.showOutput)
     self.append(self.status)
     self.used = Gtk.MenuItem();     self.used.set_sensitive(False)
@@ -584,14 +584,18 @@ class Menu(Gtk.Menu):           # Menu
     openNewBrowser(url)
 
   def startDaemon(self, widget):          # Start daemon
-    err = self.daemon.start()        # Try to start yandex-disk daemon
-    if err != '':
-      self.daemon.errorDialog(err)   # Handle the starting error
-    self.updateSSS()                 # Change the menu items sensitivity
+    while True:
+      err = self.daemon.start()        # Try to start yandex-disk daemon
+      # Handle the starting error
+      if err != '' and self.daemon.errorDialog(err, self.daemon.config.fileName) == 0:
+          self.daemon.config.load()         # Reload created configuration file
+      else:
+        break
+    self.updateStatic()                 # Change the menu items sensitivity
 
   def stopDaemon(self, widget):           # Stop daemon
     self.daemon.stop()
-    self.updateSSS()                 # Change the menu items sensitivity
+    self.updateStatic()                 # Change the menu items sensitivity
 
   def openPath(self, widget, path):       # Open path
     logger.info('Opening %s' % path)
@@ -630,7 +634,9 @@ class Menu(Gtk.Menu):           # Menu
         self.last.set_sensitive(True)
       logger.info("Sub-menu 'Last synchronized' has been updated")
 
-  def updateSSS(self):                    # Update daemon start, stop & status menu availability
+  def updateStatic(self):                 # Update menu static elements
+    if self.no:
+      self.yddir.set_label(self.no + _('  Folder: ') + self.dconf['dir'].replace('_', u'\u02CD'))
     started = self.daemon.status != 'none'
     self.daemon_stop.set_sensitive(started)
     self.status.set_sensitive(started)
@@ -980,7 +986,7 @@ class Indicator(object):        # Yandex.Disk indicator
     # Timer triggered event staff #
     self.wTimer = Timer(2000, self.handleEvent, False)  # Timer object
     self.handleEvent(True)                              # Update menu info on initialization
-    self.menu.updateSSS()
+    self.menu.updateStatic()
 
   def handleEvent(self, byNotifier):  # Perform status update
     '''
@@ -998,7 +1004,7 @@ class Indicator(object):        # Yandex.Disk indicator
     if self.daemon.status != self.daemon.lastStatus:  # Handle status change
       self.icon.update(self.daemon.status)    # Update icon
       if self.daemon.lastStatus == 'none':    # Daemon has been started
-        self.menu.updateSSS()                 # Change menu sensitivity
+        self.menu.updateStatic()                 # Change menu sensitivity
         self.notify.send(_('Yandex.Disk ')+self.No, _('Yandex.Disk daemon has been started'))
       if self.daemon.status == 'busy':        # Just entered into 'busy'
         self.notify.send(_('Yandex.Disk ')+self.No, _('Synchronization started'))
@@ -1009,7 +1015,7 @@ class Indicator(object):        # Yandex.Disk indicator
         if self.daemon.lastStatus != 'none':  # ...not from 'none' status
           self.notify.send(_('Yandex.Disk ')+self.No, _('Synchronization has been paused'))
       elif self.daemon.status == 'none':      # Just entered into 'none' from some another status
-        self.menu.updateSSS()                 # Change menu sensitivity as daemon not started
+        self.menu.updateStatic()                 # Change menu sensitivity as daemon not started
         self.notify.send(_('Yandex.Disk ')+self.No, _('Yandex.Disk daemon has been stopped'))
       else:                                   # newStatus = 'error' or 'no-net'
         self.notify.send(_('Yandex.Disk ')+self.No, _('Synchronization ERROR'))
@@ -1275,14 +1281,23 @@ if __name__ == '__main__':
   if not config.readSuccess:            # Is it a first run?
     logging.info('No config, probably it is a first run.')
     # Create app config folders in ~/.config
-    try: os.makedirs(configPath)
-    except: pass
-    try: os.makedirs(pathJoin(configPath, 'icons', 'light'))
-    except: pass
-    try: os.makedirs(pathJoin(configPath, 'icons', 'dark'))
-    except: pass
-    # Copy icon themes description readme to user config catalogue
-    copyFile(pathJoin(installDir, 'icons', 'readme'), pathJoin(configPath, 'icons', 'readme'))
+    try:
+      os.makedirs(configPath)
+      os.makedirs(pathJoin(configPath, 'icons', 'light'))
+      os.makedirs(pathJoin(configPath, 'icons', 'dark'))
+      # Copy icon themes description readme to user config catalogue
+      copyFile(pathJoin(installDir, 'icons', 'readme'), pathJoin(configPath, 'icons', 'readme'))
+    except:
+      appExit('Can\'t create configuration file in %s' % configPath)
+    # Activate indicator automatic start on system start-up
+    if not pathExists(autoStartIndDst):
+      try:
+        os.makedirs(pathJoin(userHome, '.config', 'autostart'))
+        copyFile(autoStartIndSrc, autoStartIndDst)
+        config['autostart'] = True
+      except:
+        logger.error('Can\'t activate indicator automatic start on system start-up')
+
     ### Activate FM actions according to config (as it is first run)
     activateActions()
     # Save config with default settings
