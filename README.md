@@ -2,26 +2,6 @@
 # yandex-disk-indicator
 Desktop panel indicator for YandexDisk CLI client for Linux
 
-usage: yandex-disk-indicator.py [-l {10,20,30,40,50}] [-c path] [-h] [-v]
-
-Desktop indicator for yandex-disk daemon
-
-Options:
-  -l {10,20,30,40,50}, --log {10,20,30,40,50}
-                        Sets the logging level: 
-                         10 - to show all messages (DEBUG), 
-                         20 - to show all messages except debugging messages (INFO),
-                         30 - to show all messages except debugging and info messages (WARNING),
-                         40 - to show only error and critical messages (ERROR),
-                         50 - to show critical messages only (CRITICAL). 
-                        Default: 30
-  -c path, --config path
-                        Path to configuration file of YandexDisk daemon.
-                        Default: ~/.config/yandex-disk/config.cfg
-  -h, --help            Show this help message and exit
-  -v, --version         Print version and exit
-
-
 INSTALLATION:
 
 Note that yandex-disk CLI utility have to be installed before the indicator. Visit https://yandex.com/support/disk/cli-clients.xml#cli-install for instructions.
@@ -47,3 +27,4 @@ Code assumes that:
 
 build - everything that need to build the .deb package or source.changes file (only change key for signatures). Additional tools are required: devscripts, debhelper and dput (if you want to upload package, for example, to launcpad PPA).
 
+See the wiki page for details: https://github.com/slytomcat/yandex-disk-indicator/wiki.
