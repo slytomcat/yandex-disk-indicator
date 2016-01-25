@@ -153,14 +153,14 @@ class Config(dict):             # Configuration
     try:                              # Read configuration file into dictionary ignoring blank
                                       # lines, lines without delimiter, and lines with comments.
       with open(self.fileName) as cf:
-        res = dict([re.findall(r'^\s*(.+?)\s*%s\s*(.*)$' % self.delimiter, l)[0]
-                    for l in cf if l and self.delimiter in l and l.lstrip()[0] != '#'])
+        res = [re.findall(r'^\s*(.+?)\s*%s\s*(.*)$' % self.delimiter, l)[0]
+               for l in cf if l and self.delimiter in l and l.lstrip()[0] != '#']
       self.readSuccess = True
     except:
       logger.warning('Config file read error: %s' % self.fileName)
       self.readSuccess = False
       return False
-    for kv, vv in res.items():        # Parse each line
+    for kv, vv in res:        # Parse each line
       # check key
       key = re.findall(r'"([\w-]+)"$|^([\w-]+)$', kv)
       if not key:
@@ -174,6 +174,9 @@ class Config(dict):             # Configuration
           if value is None:
             logger.warning('Wrong value(s) in line \'%s %s %s\'' % (kv, self.delimiter, vv))
           else:                       # Value is OK
+            if key in self.keys():    # Check duble values 
+              logger.warning(('Double values for one key:\n%s = %s\nand\n%s = %s\n' +
+                              'Last one is stored.') % (key,self[key],key,value))
             self[key] = value         # Store correct values
             logger.debug('Config value read as: %s = %s' % (key, str(value)))
     logger.info('Config read: %s' % self.fileName)
@@ -236,11 +239,11 @@ class Notification(object):     # On-screen notification
 
   def switch(self, mode):             # Change show mode
     if mode:
-      self.send = self.__message__    # Redefine send as real notification routine
+      self.send = self._message       # Redefine send as real notification routine
     else:
       self.send = lambda t, m: None   # Redefine send as fake routine
 
-  def __message__(self, t, m):        # Show on-screen notification message
+  def _message(self, t, m):        # Show on-screen notification message
     global logo
     logger.debug('Message: %s | %s' % (t, m))
     self.notifier.update(t, m, logo)  # Update notification
@@ -939,7 +942,8 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       val = res.get(srch, '')
       if key == 'status':                   # Convert status to internal representation
         #logger.debug('Raw status : \'%s\', previous status: %s'%(val, self.vals['status']))
-        self.vals['laststatus'] = self.vals['status']       # Store previous status
+        # Store previous status
+        self.vals['laststatus'] = self.vals['status']
         # Convert daemon raw status to internal representation
         val = ('none' if not val else
                # Ignore index status
@@ -1011,14 +1015,14 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     '''
     err = ''
     while not self.getOutput():
-      try:                                # Try to start
+      try:                                          # Try to start
         msg = subprocess.check_output(['yandex-disk', '-c', self._cfgFile, 'start'],
                                       universal_newlines=True)
         logger.info('Start success, message: %s' % msg)
         err =  ''
       except subprocess.CalledProcessError as e:
         logger.error('Daemon start failed:%s' % e.output)
-        if e.output == '':                # probably 'os: no file'
+        if e.output == '':                          # Probably 'os: no file'
           return 'NOTINSTALLED'
         err = ('NONET' if 'Proxy' in e.output else
                'BADDAEMON' if 'daemon' in e.output else
@@ -1026,17 +1030,17 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
                err)
       # Handle the starting error
       if err != '' and self._errorDialog(err, self.config.fileName) == 0:
-          self.config.load()              # Reload created configuration file and try again
+          self.config.load()                        # Reload created configuration file & try again
       else:
         break
     if err == '':
-      self.vals = YDDaemon._dvals.copy()      # Initialise default values
-      self._parseOutput(self.getOutput(workLang=True))
-      self.update.add('init')             # Add special flag for initial change event
-      self.vals['status'] = 'paused'      # Set current status
-      self.vals['laststatus'] = 'none'    # Set previous status
-      self.change(self.vals, self.update)            # Manually raise initial change event# trigger handler manually
-      self._iNtfyWatcher.start(self.config['dir']) # Activate watcher with self.handler
+      self.vals = YDDaemon._dvals.copy()            # Initialise default values
+      self._parseOutput(self.getOutput(True))       # Parse fresh daemon output
+      self.update.add('init')                       # Add special flag for initial change event
+      self.vals['status'] = 'paused'                # Set current status
+      self.vals['laststatus'] = 'none'              # Set previous status
+      self.change(self.vals, self.update)           # Manually raise initial change event
+      self._iNtfyWatcher.start(self.config['dir'])  # Activate watcher with self.handler
     return err
 
   def stop(self):                       # Execute 'yandex-disk stop'
@@ -1413,4 +1417,3 @@ if __name__ == '__main__':
 
   ### Start GTK Main loop ###
   Gtk.main()
-
