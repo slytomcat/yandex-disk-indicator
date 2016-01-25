@@ -180,10 +180,10 @@ class Config(dict):             # Configuration
     return True
 
   def encode(self, val):                # Convert value to string before save it
-    if isinstance(val, bool):  # Treat Boolean
+    if isinstance(val, bool):       # Treat Boolean
       val = self.boolval[0] if val else self.boolval[1]
     if self.usequotes:
-      val = '"' + val + '"'    # Put value within quotes
+      val = '"' + val + '"'         # Put value within quotes
     return val
 
   def save(self, boolval=['yes', 'no'], usequotes=True, delimiter='='):
@@ -231,8 +231,8 @@ class Notification(object):     # On-screen notification
     self.notifier = Notify.Notification()
     self.switch(mode)
 
-  def send(self, title, message):      # Send notification
-    pass                               # This method is redefined by switch method
+  def send(self, title, message):     # Send notification
+    pass                              # This method is redefined by switch method
 
   def switch(self, mode):             # Change show mode
     if mode:
@@ -248,7 +248,7 @@ class Notification(object):     # On-screen notification
 
 class Menu(Gtk.Menu):           # Menu
 
-  def __init__(self, daemon, icon, ID):
+  def __init__(self, daemon, ID):
     self.daemon = daemon                      # Store reference to daemon object for future usage
     Gtk.Menu.__init__(self)                   # Create menu
     self.ID = ID
@@ -371,7 +371,7 @@ class Menu(Gtk.Menu):           # Menu
       try:    os.startfile(path)
       except: subprocess.call(['xdg-open', path])
 
-  def update(self, vals, update, yddir):                       # Update information in menu
+  def update(self, vals, update, yddir):  # Update information in menu
     # Update status data
     if 'stat' in update or 'init' in update:
       self.status.set_label(_('Status: ') + self.YD_STATUS.get(vals['status']) +
@@ -429,7 +429,7 @@ class Icon(object):             # Indicator icon
     # Create timer object for icon animation support (don't start it here)
     self.timer = Timer(777, self.animation, start=False)
 
-  def setTheme(self, theme):              # Determine paths to icons according to current theme
+  def setTheme(self, theme):            # Determine paths to icons according to current theme
     global installDir, configPath
     theme = 'light' if theme else 'dark'
     # Determine theme from application configuration settings
@@ -450,10 +450,10 @@ class Icon(object):             # Indicator icon
       self.busy = pathJoin(defaultPath, 'yd-busy1.png')
       self.themePath = defaultPath
 
-  def update(self, status):   # Change indicator icon according to daemon status
+  def update(self, status):             # Change indicator icon according to daemon status
     ind = self.parent.ind
     if status == 'busy':                # Just entered into 'busy' status
-      ind.set_icon(self.busy)      # Start animation from first busy icon
+      ind.set_icon(self.busy)           # Start animation from first busy icon
       self.seqNum = 2                   # Next icon for animation
       self.timer.start()                # Start animation timer
     else:
@@ -470,13 +470,13 @@ class Icon(object):             # Indicator icon
   def animation(self):                    # Changes busy icon by loop (triggered by self.timer)
     seqFile = 'yd-busy' + str(self.seqNum) + '.png'
     self.parent.ind.set_icon(pathJoin(self.themePath, seqFile))
-    # calculate next icon number
+    # Calculate next icon number
     self.seqNum = self.seqNum % 5 + 1   # 5 icons in loop (1-2-3-4-5-1-2-3...)
     return True                         # True required to continue triggering by timer
 
 class Preferences(Gtk.Dialog):  # Preferences Window
 
-  class excludeDirsList(Gtk.Dialog):                # Excluded list dialogue
+  class excludeDirsList(Gtk.Dialog):                                      # Excluded list dialogue
 
     def __init__(self, widget, parent, dcofig):   # show current list
       self.dconfig = dcofig
@@ -630,7 +630,7 @@ class Preferences(Gtk.Dialog):  # Preferences Window
       i.menu.preferences.set_sensitive(True)    # Enable menu items
     self.destroy()
 
-  def onButtonToggled(self, widget, button, key, dconfig=None, ow=None):   # Handle clicks
+  def onButtonToggled(self, widget, button, key, dconfig=None, ow=None):  # Handle clicks
     toggleState = button.get_active()
     logger.debug('Togged: %s  val: %s' % (key, str(toggleState)))
     # Update configurations
@@ -732,7 +732,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
   '''
   This is the fully automated class that serves as daemon interface.
   Public methods:
-  __init__ - Handles initialisation of the object and as a tart - auto-start daemon if it
+  __init__ - Handles initialization of the object and as a part - auto-start daemon if it
              is required by configuration settings.
   getOuput - Provides daemon output (in user language if optional parameter workLang is
              False or missed)
@@ -741,13 +741,25 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
   exit     - Handles 'Stop on exit' facility according to daemon configuration settings.
   change   - Call back function for handling daemon status changes outside the class.
              It have to be redefined by UI update routine.
-             The parameter of the call - is the set with with 3 possible keys:
+             The parameters of the call - values and the set with with 3 possible keys:
               'stat' when some status values has been changed,
               'last' when list of last synchronized has been changed,
               'init' when initial update event is raised.
+  Class interface variables:
+  config   - The daemon configuration dictionary (object of _DConfig(Config) class)
+  vars     - status values
+  ID       - the daemon identity string (empty in single daemon configuration)
   '''
 
-  class _Watcher(object):                # Daemon watcher
+  # Search values for daemon status values
+  _skeys = {'Synchronization core status':'status', 'Sync progress': 'progress',
+           'Total':'total', 'Used':'used', 'Available':'free', 'Trash size':'trash'}
+
+  # Default daemon status values
+  _dvals = {'status':'none', 'progress':'', 'laststatus':'idle', 'total':'...',
+           'used':'...', 'free':'...', 'trash':'...', 'lastitems':[]}
+
+  class _Watcher(object):               # Daemon watcher
     '''
     iNotify watcher object for monitor of changes daemon internal log for the fastest
     reaction on status change.
@@ -760,7 +772,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       self._watchMngr = pyinotify.WatchManager()   # Create watch manager
       # Create PyiNotifier
       self._iNotifier = pyinotify.Notifier(self._watchMngr, _EH(), timeout=0.5)
-      # Timer will call iNotifier handler every .7 seconds
+      # Timer will call iNotifier handler every .7 seconds (not started initially)
       self._timer = Timer(700, self._iNhandle, start=False)
 
     def _iNhandle(self):                 # iNotify working routine (called by timer)
@@ -769,16 +781,21 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
         self._iNotifier.process_events()
       return True
 
-    def start(self, path):
+    def start(self, path):               # Activate iNotify watching
+      # Prepare path
       self._path = pathJoin(path.replace('~', userHome), '.sync/cli.log')
-      self._watch = self._watchMngr.add_watch(self._path, pyinotify.IN_MODIFY, rec = False)  # Add watch
+      # Add watch
+      self._watch = self._watchMngr.add_watch(self._path, pyinotify.IN_MODIFY, rec = False)
+      # Activate timer
       self._timer.start()
 
-    def stop(self):
-      self._watchMngr.rm_watch(self._watch[self._path])
+    def stop(self):                      # Stop iNotify watching
+      # Stop timer
       self._timer.stop()
+      # Remove watch
+      self._watchMngr.rm_watch(self._watch[self._path])
 
-  class _DConfig(Config):                # Redefined class for daemon config
+  class _DConfig(Config):               # Redefined class for daemon config
 
     def save(self):  # Update daemon config file
       # Make a copy of Self as super class
@@ -796,7 +813,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       self.changed=False
 
     def load(self):  # Get daemon config from its config file
-      if super(YDDaemon._DConfig, self).load():            # Load config from file
+      if super(YDDaemon._DConfig, self).load():             # Load config from file
         # Convert values representations
         self['read-only'] = (self.get('read-only', False) == '')
         self['overwrite'] = (self.get('overwrite', False) == '')
@@ -811,55 +828,52 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       else:
         return False
 
-  # Search values for daemon status values
-  _skeys = {'Synchronization core status':'status', 'Sync progress': 'progress',
-           'Total':'total', 'Used':'used', 'Available':'free', 'Trash size':'trash'}
-
-  # Default daemon status values
-  _dvals = {'status':'none', 'progress':'', 'laststatus':'idle', 'total':'...',
-           'used':'...', 'free':'...', 'trash':'...', 'lastitems':[]}
-
   def __init__(self, cfgFile, ID):      # Check that daemon installed and configured
     '''cfgFile  - path to config file (can contain ~)
        ID       - identity string '#<n>' in multi-instance environment or
                   '' in single instance environment'''
-    self._cfgFile = cfgFile          # Remember path to config file
-    self.ID = ID                    # Remember identity
+    self._cfgFile = cfgFile                           # Remember path to config file
+    self.ID = ID                                      # Remember identity
     self._origLang = os.getenv('LANG')
     if not pathExists('/usr/bin/yandex-disk'):
       self._ErrorDialog('NOTINSTALLED')
       appExit('Daemon is not installed')
-    self.config = self._DConfig(self._cfgFile, load=False)
     # Try to read Yandex.Disk configuration file and make sure that it is correctly configured
+    self.config = self._DConfig(self._cfgFile, load=False)
     while not (self.config.load() and
                pathExists(self.config.get('dir', '')) and
                pathExists(self.config.get('auth', ''))):
       if self._errorDialog('NOCONFIG', self._cfgFile) != 0:
         if ID:
           self.config['dir'] = ''
-          break                     # Exit from loop in multi-instance configuration
+          # Exit from loop in multi-instance configuration
+          break
         else:
           appExit('Daemon is not configured')
-    # Default daemon status values
-    self.vals = YDDaemon._dvals.copy()      # Store initial default values
     # Initialize watching staff
     self._wTimer = Timer(2000, self._eventHandler, par=False, start=True)
     self._tCnt = 0
     self._iNtfyWatcher = self._Watcher(self._eventHandler, par=True)
-    # Start daemon if it is required
-    if self.config.get('startonstartofindicator', True):
-      self.start()
-    # Try to update all status variables if daemon is running
+    self.vals = YDDaemon._dvals.copy()                # Load default daemon status values
+    # Check that daemon is running
     out = self.getOutput(workLang=True)
-    if out:
-      self._parseOutput(out)
-      self._iNtfyWatcher.start(self.config['dir'])
-    else:
-      self.update = set()
-    self.update.add('init')             # Add special flag for initial change event
-    self.change(self.vals, self.update)            # Manually raise initial change event
+    if out:                                           # Daemon is running
+      self._parseOutput(out)                          # Update status values
+      self.vals['laststatus'] = self.vals['status']   # Set unknown last status as current status
+      self.update.add('init')                         # Add special flag for initial change event
+      self.change(self.vals, self.update)             # Manually raise initial change event
+      self._iNtfyWatcher.start(self.config['dir'])    # Activate iNotify watcher
+    else:                                             # Daemon is not running
+      started = False
+      if self.config.get('startonstartofindicator', True):
+        started = not self.start()                    # Start daemon if it is required
+      if not started:
+        self.update = set(['init'])                   # Add special flag for initial change event
+        self.vals['status'] = 'none'                  # Set current status as 'none'
+        self.vals['laststatus'] = 'none'              # Set unknown last status also as 'none'
+        self.change(self.vals, self.update)           # Manually raise initial change event
 
-  def _eventHandler(self, iNtf):         # Daemon event handler
+  def _eventHandler(self, iNtf):        # Daemon event handler
     '''
     Handle iNotify and and Timer based events.
     After receiving and parsing the daemon output it raises outside change event if daemon changes
@@ -872,20 +886,20 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     logger.debug((self.ID) + ('iNtfy ' if iNtf else 'Timer ') + (' U ' if updated else ' N ') +
                 self.vals['laststatus'] + ' -> ' + self.vals['status'])
     if updated:
-      self.change(self.vals, self.update)                # Raise outside update event
+      self.change(self.vals, self.update)     # Raise outside update event
     # --- Handle timer delays ---
     if iNtf:                                  # True means that it is called by iNonifier
-      self._wTimer.update(2000)                # Set timer interval to 2 sec.
-      self._tCnt = 0                           # Reset counter as it was triggered not by timer
+      self._wTimer.update(2000)               # Set timer interval to 2 sec.
+      self._tCnt = 0                          # Reset counter as it was triggered not by timer
     else:                                     # It called by timer
       if self.vals['status'] != 'busy':       # In 'busy' keep update interval (2 sec.)
-        if self._tCnt < 9:                     # Increase interval up to 10 sec (2 + 8)
+        if self._tCnt < 9:                    # Increase interval up to 10 sec (2 + 8)
           self._wTimer.update((2 + self._tCnt)*1000)
-          self._tCnt += 1                      # Increase counter to increase delay next activation.
+          self._tCnt += 1                     # Increase counter to increase delay next activation.
     return True                               # True is required to continue activations by timer.
 
-  def change(self, update):                   # Redefined update handler
-    logger.debug('Update : %s'%str(update))
+  def change(self, vals, update):       # Redefined update handler
+    logger.debug('Update event: %s \nValues : %s' % (str(update), str(vals)))
 
   def getOutput(self, workLang=False):  # Get result of 'yandex-disk status'
     if workLang:          # Change LANG settings when it required
@@ -894,22 +908,22 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       output = subprocess.check_output(['yandex-disk','-c', self._cfgFile, 'status'],
                                             universal_newlines=True)
     except:
-      output = ''        # daemon is not running or bad
+      output = ''         # daemon is not running or bad
     #logger.debug('output = %s' % daemonOutput)
     if workLang:          # Restore LANG settings
       os.putenv('LANG', self._origLang)
 
     return output
 
-  def _parseOutput(self, out):        # Parse the daemon output
+  def _parseOutput(self, out):          # Parse the daemon output
     '''
     It parses the daemon output and check that something changed from last daemon status.
     When status values changed then self.update set contain 'stat' key.
     When last synchronized changed then self.update set contain 'last' key.
     Additionally self.update set can contain 'init' key on initial daemon initialization.
     But 'init' key is added to set in __init__ method.'''
-    self.update = set()                     # reset updates
-    # split output on two parts: list of named values and file list
+    self.update = set()                     # Reset updates
+    # Split output on two parts: list of named values and file list
     pos = out.find('Last synchronized items:')
     if pos > 0:
       output = out[:pos].splitlines()
@@ -919,35 +933,39 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       files = ''
     # Make a dictionary from named values (use only lines containing ':')
     res = dict([re.findall(r'\t*(.+): (.*)' , l)[0] for l in output if ':' in l])
-    # Get necessary values or default values
+    # Parse named status values
     sUpd = False
     for srch, key in YDDaemon._skeys.items():
       val = res.get(srch, '')
       if key == 'status':                   # Convert status to internal representation
+        #logger.debug('Raw status : \'%s\', previous status: %s'%(val, self.vals['status']))
         self.vals['laststatus'] = self.vals['status']       # Store previous status
+        # Convert daemon raw status to internal representation
         val = ('none' if not val else
-               self.vals['laststatus'] if val == 'index' else        # Ignore index status
+               # Ignore index status
+               self.vals['laststatus'] if val == 'index' else
+               # Rename long status
                'no_net' if val == 'no internet access' else
                # Status 'error' covers 'error', 'failed to connect to daemon process' and other.
                val if val in ['busy', 'idle', 'paused', 'none', 'no_net'] else
                'error')
       elif key != 'progress' and not val:   # 'progress' can be '' the rest - can't
         val = '...'                         # Make default filling for empty values
-      # Check value change and store if changed
+      # Check value change and store changed
       if self.vals[key] != val:             # Check change of value
-        sUpd = True                         # Remember that something changed in statuses valuses
         self.vals[key] = val                # Store new value
+        sUpd = True                         # Remember that something changed in status values
     if sUpd:
-      self.update.add('stat')
+      self.update.add('stat')               # Add key 'stat' in update set if something changed
     # Parse last synchronized items
     buf = re.findall(r"\t.+: '(.*)'\n", files)
     # Check if file list has been changed
     if self.vals['lastitems'] != buf:
       self.vals['lastitems'] = buf          # Store the new file list
       self.update.add('last')               # Remember that it is changed
-    return len(self.update)
+    return self.update
 
-  def _errorDialog(self, err):           # Show error messages according to the error
+  def _errorDialog(self, err):          # Show error messages according to the error
     global logo
     logger.error('Daemon initialization failed: %s', err)
     if err == 'NOCONFIG' or err == 'CANTSTART':
@@ -987,9 +1005,10 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
 
   def start(self):                      # Execute 'yandex-disk start'
     '''
-    Execute 'yandex-disk start'
-    and return '' if success or error message if not
-    ... but sometime it starts successfully with error message '''
+    Execute 'yandex-disk start' and return '' if success or error message if not
+    ... but sometime it starts successfully with error message
+    Additionally it starts iNotify monitoring in case of success start
+    '''
     err = ''
     while not self.getOutput():
       try:                                # Try to start
@@ -1014,9 +1033,10 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       self.vals = YDDaemon._dvals.copy()      # Initialise default values
       self._parseOutput(self.getOutput(workLang=True))
       self.update.add('init')             # Add special flag for initial change event
+      self.vals['status'] = 'paused'      # Set current status
+      self.vals['laststatus'] = 'none'    # Set previous status
       self.change(self.vals, self.update)            # Manually raise initial change event# trigger handler manually
-      # Activate watcher with self.handler
-      self._iNtfyWatcher.start(self.config['dir'])
+      self._iNtfyWatcher.start(self.config['dir']) # Activate watcher with self.handler
     return err
 
   def stop(self):                       # Execute 'yandex-disk stop'
@@ -1048,36 +1068,35 @@ class Indicator(YDDaemon):      # Yandex.Disk indicator
     self.notify = Notification(indicatorName, config['notifications'])
 
     ## Icons ##
-    self.icon = Icon(self, config['theme'])                   # Initialize icon object
+    self.icon = Icon(self, config['theme'])       # Initialize icon object
 
-    ## Indicator ##
+    ## App Indicator ##
     self.ind = appIndicator.Indicator.new(indicatorName, self.icon.pause,
                                           appIndicator.IndicatorCategory.APPLICATION_STATUS)
     self.ind.set_status(appIndicator.IndicatorStatus.ACTIVE)
-    self.menu = Menu(self, self.icon, ID)  # Create menu for daemon
-    self.ind.set_menu(self.menu)                        # Prepare and attach menu to indicator
+    self.menu = Menu(self, ID)                    # Create menu for daemon
+    self.ind.set_menu(self.menu)                  # Attach menu to indicator
 
     ### Initialize Yandex.Disk daemon connection object ###
     super(Indicator, self).__init__(path, ID)
 
-  def change(self, vals, update):  # Redefinition of daemon class call-back function
+  def change(self, vals, update):   # Redefinition of daemon class call-back function
     '''
     It handles daemon status changes by updating icon, creating messages and also update
     status information in menu (status, sizes and list of last synchronized items).
     It is called when daemon detects any change of its status.
     '''
-    logger.info('Change event: %s'%str(update))
+    logger.info(self.ID + 'Change event: %s'%str(update))
     logger.info(vals['laststatus'] + ' -> ' + vals['status'])
     # Update information in menu
     self.menu.update(vals, update, self.config['dir'])
-    # Handle daemon status change by icon change and notifications
-    if vals['status'] != vals['laststatus']:
-      # Update icon
+    # Handle daemon status change by icon change
+    if vals['status'] != vals['laststatus'] or 'init' in update:
       self.icon.update(vals['status'])    # Update icon
-      # Create notifications for events
+    # Create notifications for status change events
+    if vals['status'] != vals['laststatus']:
       if vals['laststatus'] == 'none':    # Daemon has been started
-        if vals['status'] == 'paused':
-          self.notify.send(_('Yandex.Disk ')+self.ID, _('Yandex.Disk daemon has been started'))
+        self.notify.send(_('Yandex.Disk ')+self.ID, _('Yandex.Disk daemon has been started'))
       if vals['status'] == 'busy':        # Just entered into 'busy'
         self.notify.send(_('Yandex.Disk ')+self.ID, _('Synchronization started'))
       elif vals['status'] == 'idle':      # Just entered into 'idle'
@@ -1087,9 +1106,8 @@ class Indicator(YDDaemon):      # Yandex.Disk indicator
         if vals['laststatus'] != 'none':  # ...not from 'none' status
           self.notify.send(_('Yandex.Disk ')+self.ID, _('Synchronization has been paused'))
       elif vals['status'] == 'none':      # Just entered into 'none' from some another status
-        if not 'init' in update:
           self.notify.send(_('Yandex.Disk ')+self.ID, _('Yandex.Disk daemon has been stopped'))
-      else:                                 # newStatus = 'error' or 'no-net'
+      else:                               # newStatus = 'error' or 'no-net'
         self.notify.send(_('Yandex.Disk ')+self.ID, _('Synchronization ERROR'))
 
 def copyFile(src, dst):
