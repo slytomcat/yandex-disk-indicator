@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.8.2_refactoring'
+appVer = '1.8.2'
 #
 #  Copyright 2014+ Sly_tom_cat <slytomcat@mail.ru>
 #  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
@@ -150,17 +150,17 @@ class Config(dict):             # Configuration
     """
     self.bools = bools
     self.delimiter = delimiter
-    try:                              # Read configuration file into dictionary ignoring blank
+    try:                              # Read configuration file into list of tuples ignoring blank
                                       # lines, lines without delimiter, and lines with comments.
       with open(self.fileName) as cf:
-        res = dict([re.findall(r'^\s*(.+?)\s*%s\s*(.*)$' % self.delimiter, l)[0]
-                    for l in cf if l and self.delimiter in l and l.lstrip()[0] != '#'])
+        res = [re.findall(r'^\s*(.+?)\s*%s\s*(.*)$' % self.delimiter, l)[0]
+               for l in cf if l and self.delimiter in l and l.lstrip()[0] != '#']
       self.readSuccess = True
     except:
-      logger.warning('Config file read error: %s' % self.fileName)
+      logger.error('Config file read error: %s' % self.fileName)
       self.readSuccess = False
       return False
-    for kv, vv in res.items():        # Parse each line
+    for kv, vv in res:        # Parse each line
       # check key
       key = re.findall(r'"([\w-]+)"$|^([\w-]+)$', kv)
       if not key:
@@ -174,7 +174,10 @@ class Config(dict):             # Configuration
           if value is None:
             logger.warning('Wrong value(s) in line \'%s %s %s\'' % (kv, self.delimiter, vv))
           else:                       # Value is OK
-            self[key] = value         # Store correct values
+            if key in self.keys():    # Check duble values
+              logger.warning(('Double values for one key:\n%s = %s\nand\n%s = %s\n' +
+                              'Last one is stored.') % (key,self[key],key,value))
+            self[key] = value         # Store correct value
             logger.debug('Config value read as: %s = %s' % (key, str(value)))
     logger.info('Config read: %s' % self.fileName)
     return True
@@ -236,11 +239,11 @@ class Notification(object):     # On-screen notification
 
   def switch(self, mode):             # Change show mode
     if mode:
-      self.send = self.__message__    # Redefine send as real notification routine
+      self.send = self._message       # Redefine send as real notification routine
     else:
       self.send = lambda t, m: None   # Redefine send as fake routine
 
-  def __message__(self, t, m):        # Show on-screen notification message
+  def _message(self, t, m):        # Show on-screen notification message
     global logo
     logger.debug('Message: %s | %s' % (t, m))
     self.notifier.update(t, m, logo)  # Update notification
@@ -423,11 +426,11 @@ class Menu(Gtk.Menu):           # Menu
 
 class Icon(object):             # Indicator icon
 
-  def __init__(self, parent, theme):              # Initialize icon paths
-    self.parent = parent
+  def __init__(self, ind, theme):              # Initialize icon paths
+    self.ind = ind
     self.setTheme(theme)
     # Create timer object for icon animation support (don't start it here)
-    self.timer = Timer(777, self.animation, start=False)
+    self.timer = Timer(777, self._animation, start=False)
 
   def setTheme(self, theme):            # Determine paths to icons according to current theme
     global installDir, configPath
@@ -451,9 +454,8 @@ class Icon(object):             # Indicator icon
       self.themePath = defaultPath
 
   def update(self, status):             # Change indicator icon according to daemon status
-    ind = self.parent.ind
     if status == 'busy':                # Just entered into 'busy' status
-      ind.set_icon(self.busy)           # Start animation from first busy icon
+      self.ind.set_icon(self.busy)      # Start animation from first busy icon
       self.seqNum = 2                   # Next icon for animation
       self.timer.start()                # Start animation timer
     else:
@@ -461,15 +463,15 @@ class Icon(object):             # Indicator icon
         self.timer.stop()               # Stop icon animation
       # --- Set icon for non-animated statuses ---
       if status == 'idle':
-        ind.set_icon(self.idle)
+        self.ind.set_icon(self.idle)
       elif status == 'error':
-        ind.set_icon(self.error)
+        self.ind.set_icon(self.error)
       else:                             # status is 'none' or 'paused'
-        ind.set_icon(self.pause)
+        self.ind.set_icon(self.pause)
 
-  def animation(self):                    # Changes busy icon by loop (triggered by self.timer)
+  def _animation(self):                    # Changes busy icon by loop (triggered by self.timer)
     seqFile = 'yd-busy' + str(self.seqNum) + '.png'
-    self.parent.ind.set_icon(pathJoin(self.themePath, seqFile))
+    self.ind.set_icon(pathJoin(self.themePath, seqFile))
     # Calculate next icon number
     self.seqNum = self.seqNum % 5 + 1   # 5 icons in loop (1-2-3-4-5-1-2-3...)
     return True                         # True required to continue triggering by timer
@@ -553,43 +555,42 @@ class Preferences(Gtk.Dialog):  # Preferences Window
     # --- Indicator preferences tab ---
     preferencesBox = Gtk.VBox(spacing=5)
     key = 'autostart'                           # Auto-start indicator on system start-up
-    сbAutoStart = Gtk.CheckButton(_('Start Yandex.Disk indicator when you start your computer'))
-    сbAutoStart.set_active(config[key])
-    сbAutoStart.connect("toggled", self.onButtonToggled, сbAutoStart, key)
-    preferencesBox.add(сbAutoStart)
+    cbAutoStart = Gtk.CheckButton(_('Start Yandex.Disk indicator when you start your computer'))
+    cbAutoStart.set_active(config[key])
+    cbAutoStart.connect("toggled", self.onButtonToggled, cbAutoStart, key)
+    preferencesBox.add(cbAutoStart)
     key = 'notifications'                       # Notifications
-    сbNotify = Gtk.CheckButton(_('Show on-screen notifications'))
-    сbNotify.set_active(config[key])
-    сbNotify.connect("toggled", self.onButtonToggled, сbNotify, key)
-    preferencesBox.add(сbNotify)
+    cbNotify = Gtk.CheckButton(_('Show on-screen notifications'))
+    cbNotify.set_active(config[key])
+    cbNotify.connect("toggled", self.onButtonToggled, cbNotify, key)
+    preferencesBox.add(cbNotify)
     key = 'theme'                               # Theme
-    сbTheme = Gtk.CheckButton(_('Prefer light icon theme'))
-    сbTheme.set_active(config[key])
-    сbTheme.connect("toggled", self.onButtonToggled, сbTheme, key)
-    preferencesBox.add(сbTheme)
+    cbTheme = Gtk.CheckButton(_('Prefer light icon theme'))
+    cbTheme.set_active(config[key])
+    cbTheme.connect("toggled", self.onButtonToggled, cbTheme, key)
+    preferencesBox.add(cbTheme)
     key = 'fmextensions'                        # Activate file-manager extensions
-    сbExtensions = Gtk.CheckButton(_('Activate file manager extensions'))
-    сbExtensions.set_active(config[key])
-    сbExtensions.connect("toggled", self.onButtonToggled, сbExtensions, key)
-    preferencesBox.add(сbExtensions)
+    cbExtensions = Gtk.CheckButton(_('Activate file manager extensions'))
+    cbExtensions.set_active(config[key])
+    cbExtensions.connect("toggled", self.onButtonToggled, cbExtensions, key)
+    preferencesBox.add(cbExtensions)
     # --- End of Indicator preferences tab --- add it to notebook
     pref_notebook.append_page(preferencesBox, Gtk.Label(_('Indicator settings')))
     # Add daemos tabs
-    dcChanged = []
     for i in indicators:
       # --- Daemon start options tab ---
       optionsBox = Gtk.VBox(spacing=5)
       key = 'startonstartofindicator'           # Start daemon on indicator start
-      сbStOnStart = Gtk.CheckButton(_('Start Yandex.Disk daemon %swhen indicator is starting')%i.ID)
-      сbStOnStart.set_tooltip_text(_("When daemon was not started before."))
-      сbStOnStart.set_active(i.config[key])
-      сbStOnStart.connect("toggled", self.onButtonToggled, сbStOnStart, key, i.config)
-      optionsBox.add(сbStOnStart)
+      cbStOnStart = Gtk.CheckButton(_('Start Yandex.Disk daemon %swhen indicator is starting')%i.ID)
+      cbStOnStart.set_tooltip_text(_("When daemon was not started before."))
+      cbStOnStart.set_active(i.config[key])
+      cbStOnStart.connect("toggled", self.onButtonToggled, cbStOnStart, key, i.config)
+      optionsBox.add(cbStOnStart)
       key = 'stoponexitfromindicator'           # Stop daemon on exit
-      сbStoOnExit = Gtk.CheckButton(_('Stop Yandex.Disk daemon %son closing of indicator')%i.ID)
-      сbStoOnExit.set_active(i.config[key])
-      сbStoOnExit.connect("toggled", self.onButtonToggled, сbStoOnExit, key, i.config)
-      optionsBox.add(сbStoOnExit)
+      cbStoOnExit = Gtk.CheckButton(_('Stop Yandex.Disk daemon %son closing of indicator')%i.ID)
+      cbStoOnExit.set_active(i.config[key])
+      cbStoOnExit.connect("toggled", self.onButtonToggled, cbStoOnExit, key, i.config)
+      optionsBox.add(cbStoOnExit)
       frame = Gtk.Frame()
       frame.set_label(_("NOTE! You have to reload daemon %sto activate following settings")%i.ID)
       frame.set_border_width(6)
@@ -597,10 +598,10 @@ class Preferences(Gtk.Dialog):  # Preferences Window
       framedBox = Gtk.VBox(homogeneous=True, spacing=5)
       frame.add(framedBox)
       key = 'read-only'                         # Option Read-Only    # daemon config
-      сbRO = Gtk.CheckButton(_('Read-Only: Do not upload locally changed files to Yandex.Disk'))
-      сbRO.set_tooltip_text(_("Locally changed files will be renamed if a newer version of this " +
+      cbRO = Gtk.CheckButton(_('Read-Only: Do not upload locally changed files to Yandex.Disk'))
+      cbRO.set_tooltip_text(_("Locally changed files will be renamed if a newer version of this " +
                               "file appear in Yandex.Disk."))
-      сbRO.set_active(i.config[key])
+      cbRO.set_active(i.config[key])
       key = 'overwrite'                         # Option Overwrite    # daemon config
       overwrite = Gtk.CheckButton(_('Overwrite locally changed files by files' +
                                          ' from Yandex.Disk (in read-only mode)'))
@@ -609,8 +610,8 @@ class Preferences(Gtk.Dialog):  # Preferences Window
           "in Yandex.Disk."))
       overwrite.set_active(i.config[key])
       overwrite.set_sensitive(i.config['read-only'])
-      сbRO.connect("toggled", self.onButtonToggled, сbRO, 'read-only', i.config, overwrite)
-      framedBox.add(сbRO)
+      cbRO.connect("toggled", self.onButtonToggled, cbRO, 'read-only', i.config, overwrite)
+      framedBox.add(cbRO)
       overwrite.connect("toggled", self.onButtonToggled, overwrite, key, i.config)
       framedBox.add(overwrite)
       # Excude folders list
@@ -822,7 +823,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
         exDirs = self.get('exclude-dirs', None)
         if exDirs is None:
           self['exclude-dirs'] = None
-        else:
+        elif not isinstance(exDirs, list):
           self['exclude-dirs'] = self.getValue(exDirs)
         return True
       else:
@@ -883,8 +884,8 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
 
     # Parse fresh daemon output. Parsing returns true when something changed
     updated = self._parseOutput(self.getOutput(workLang=True))
-    logger.debug((self.ID) + ('iNtfy ' if iNtf else 'Timer ') + (' U ' if updated else ' N ') +
-                self.vals['laststatus'] + ' -> ' + self.vals['status'])
+    logger.debug(self.ID + ('iNtfy ' if iNtf else 'Timer ') +
+                 self.vals['laststatus'] + ' -> ' + self.vals['status'])
     if updated:
       self.change(self.vals, self.update)     # Raise outside update event
     # --- Handle timer delays ---
@@ -939,7 +940,8 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       val = res.get(srch, '')
       if key == 'status':                   # Convert status to internal representation
         #logger.debug('Raw status : \'%s\', previous status: %s'%(val, self.vals['status']))
-        self.vals['laststatus'] = self.vals['status']       # Store previous status
+        # Store previous status
+        self.vals['laststatus'] = self.vals['status']
         # Convert daemon raw status to internal representation
         val = ('none' if not val else
                # Ignore index status
@@ -1011,14 +1013,14 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     '''
     err = ''
     while not self.getOutput():
-      try:                                # Try to start
+      try:                                          # Try to start
         msg = subprocess.check_output(['yandex-disk', '-c', self._cfgFile, 'start'],
                                       universal_newlines=True)
         logger.info('Start success, message: %s' % msg)
         err =  ''
       except subprocess.CalledProcessError as e:
         logger.error('Daemon start failed:%s' % e.output)
-        if e.output == '':                # probably 'os: no file'
+        if e.output == '':                          # Probably 'os: no file'
           return 'NOTINSTALLED'
         err = ('NONET' if 'Proxy' in e.output else
                'BADDAEMON' if 'daemon' in e.output else
@@ -1026,17 +1028,17 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
                err)
       # Handle the starting error
       if err != '' and self._errorDialog(err, self.config.fileName) == 0:
-          self.config.load()              # Reload created configuration file and try again
+          self.config.load()                        # Reload created configuration file & try again
       else:
         break
     if err == '':
-      self.vals = YDDaemon._dvals.copy()      # Initialise default values
-      self._parseOutput(self.getOutput(workLang=True))
-      self.update.add('init')             # Add special flag for initial change event
-      self.vals['status'] = 'paused'      # Set current status
-      self.vals['laststatus'] = 'none'    # Set previous status
-      self.change(self.vals, self.update)            # Manually raise initial change event# trigger handler manually
-      self._iNtfyWatcher.start(self.config['dir']) # Activate watcher with self.handler
+      self.vals = YDDaemon._dvals.copy()            # Initialise default values
+      self._parseOutput(self.getOutput(True))       # Parse fresh daemon output
+      self.update.add('init')                       # Add special flag for initial change event
+      self.vals['status'] = 'paused'                # Set current status
+      self.vals['laststatus'] = 'none'              # Set previous status
+      self.change(self.vals, self.update)           # Manually raise initial change event
+      self._iNtfyWatcher.start(self.config['dir'])  # Activate watcher with self.handler
     return err
 
   def stop(self):                       # Execute 'yandex-disk stop'
@@ -1067,15 +1069,15 @@ class Indicator(YDDaemon):      # Yandex.Disk indicator
     ## Indicator notification engine
     self.notify = Notification(indicatorName, config['notifications'])
 
-    ## Icons ##
-    self.icon = Icon(self, config['theme'])       # Initialize icon object
-
     ## App Indicator ##
-    self.ind = appIndicator.Indicator.new(indicatorName, self.icon.pause,
+    self.ind = appIndicator.Indicator.new(indicatorName, '',
                                           appIndicator.IndicatorCategory.APPLICATION_STATUS)
     self.ind.set_status(appIndicator.IndicatorStatus.ACTIVE)
     self.menu = Menu(self, ID)                    # Create menu for daemon
     self.ind.set_menu(self.menu)                  # Attach menu to indicator
+
+    ## Icons ##
+    self.icon = Icon(self.ind, config['theme'])       # Initialize icon object
 
     ### Initialize Yandex.Disk daemon connection object ###
     super(Indicator, self).__init__(path, ID)
@@ -1413,4 +1415,3 @@ if __name__ == '__main__':
 
   ### Start GTK Main loop ###
   Gtk.main()
-
