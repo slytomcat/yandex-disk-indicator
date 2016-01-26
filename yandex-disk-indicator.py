@@ -819,11 +819,6 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
         self['overwrite'] = (self.get('overwrite', False) == '')
         self.setdefault('startonstartofindicator', True)    # New value to start daemon individually
         self.setdefault('stoponexitfromindicator', False)   # New value to stop daemon individually
-        exDirs = self.get('exclude-dirs', None)
-        if exDirs is None:
-          self['exclude-dirs'] = None
-        else:
-          self['exclude-dirs'] = self.getValue(exDirs)
         return True
       else:
         return False
