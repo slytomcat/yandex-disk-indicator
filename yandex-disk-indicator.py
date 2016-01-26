@@ -1058,12 +1058,11 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
   def exit(self):                       # Handle daemon closing on exit according to the daemon configuration
     if self.vals['status'] != 'none' and self.config.get('stoponexitfromindicator', False):
       self.stop()
-      logger.info('Demon %sstopped'%i.No)
+      logger.info('Demon %sstopped'%self.ID)
 
 class Indicator(YDDaemon):      # Yandex.Disk indicator
   def __init__(self, path, ID):
-    indicatorName = "yandex-disk-%s"%ID
-
+    indicatorName = "yandex-disk-%s"%ID[1:-1]
     ### Application Indicator initialization ###
 
     ## Indicator notification engine
