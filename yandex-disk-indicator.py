@@ -1062,8 +1062,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
 
 class Indicator(YDDaemon):      # Yandex.Disk indicator
   def __init__(self, path, ID):
-    indicatorName = "yandex-disk-%s"%ID
-
+    indicatorName = "yandex-disk-%s"%ID[1:-1]
     ### Application Indicator initialization ###
 
     ## Indicator notification engine
