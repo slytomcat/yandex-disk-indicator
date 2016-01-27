@@ -35,8 +35,7 @@ cp ../../icons/light/yd-ind-idle.png usr/share/yd-tools/icons/light/
 cp ../../icons/light/yd-ind-pause.png usr/share/yd-tools/icons/light/
 cp ../../fm-actions/Nautilus_Nemo/publish usr/share/yd-tools/fm-actions/Nautilus_Nemo/
 cp ../../fm-actions/Nautilus_Nemo/unpublish usr/share/yd-tools/fm-actions/Nautilus_Nemo/
-cp ../../fm-actions/Dolphin/publish.desktop usr/share/yd-tools/fm-actions/Dolphin/
-cp ../../fm-actions/Dolphin/unpublish.desktop usr/share/yd-tools/fm-actions/Dolphin/
+cp ../../fm-actions/Dolphin/ydpublish.desktop usr/share/yd-tools/fm-actions/Dolphin/
 cp ../../fm-actions/pantheon-files/publish.sh usr/share/yd-tools/fm-actions/pantheon-files/
 cp ../../fm-actions/pantheon-files/unpublish.sh usr/share/yd-tools/fm-actions/pantheon-files/
 cp ../../fm-actions/pantheon-files/yandex-disk-indicator-publish.contract usr/share/yd-tools/fm-actions/pantheon-files/
