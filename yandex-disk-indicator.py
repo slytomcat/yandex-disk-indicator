@@ -1212,6 +1212,7 @@ def activateActions():          # Install/deinstall file extensions
   if ret == 0:
     if activate:        # Install actions for Dolphin
       try:
+        os.makedirs(pathJoin(userHome, '.local/share/kservices5/ServiceMenus'))
         copyFile(pathJoin(installDir, "fm-actions/Dolphin/ydpublish.desktop"),
                  pathJoin(userHome, ".local/share/kservices5/ServiceMenus/ydpublish.desktop"))
         result = True
