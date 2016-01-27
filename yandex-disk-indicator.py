@@ -327,26 +327,15 @@ class Preferences(Gtk.Dialog):  # Preferences Window
     self.get_content_area().add(pref_notebook)  # Put it inside the dialogue content area
     # --- Indicator preferences tab ---
     preferencesBox = Gtk.VBox(spacing=5)
-    key = 'autostart'                           # Auto-start indicator on system start-up
-    cbAutoStart = Gtk.CheckButton(_('Start Yandex.Disk indicator when you start your computer'))
-    cbAutoStart.set_active(config[key])
-    cbAutoStart.connect("toggled", self.onButtonToggled, cbAutoStart, key)
-    preferencesBox.add(cbAutoStart)
-    key = 'notifications'                       # Notifications
-    cbNotify = Gtk.CheckButton(_('Show on-screen notifications'))
-    cbNotify.set_active(config[key])
-    cbNotify.connect("toggled", self.onButtonToggled, cbNotify, key)
-    preferencesBox.add(cbNotify)
-    key = 'theme'                               # Theme
-    cbTheme = Gtk.CheckButton(_('Prefer light icon theme'))
-    cbTheme.set_active(config[key])
-    cbTheme.connect("toggled", self.onButtonToggled, cbTheme, key)
-    preferencesBox.add(cbTheme)
-    key = 'fmextensions'                        # Activate file-manager extensions
-    cbExtensions = Gtk.CheckButton(_('Activate file manager extensions'))
-    cbExtensions.set_active(config[key])
-    cbExtensions.connect("toggled", self.onButtonToggled, cbExtensions, key)
-    preferencesBox.add(cbExtensions)
+    cb = []
+    for key, msg in [('autostart', _('Start Yandex.Disk indicator when you start your computer')),
+                     ('notifications', _('Show on-screen notifications')),
+                     ('theme', _('Prefer light icon theme')),
+                     ('fmextensions', _('Activate file manager extensions'))]:
+      cb.append(Gtk.CheckButton(msg))
+      cb[-1].set_active(config[key])
+      cb[-1].connect("toggled", self.onButtonToggled, cb[-1], key)
+      preferencesBox.add(cb[-1])
     # --- End of Indicator preferences tab --- add it to notebook
     pref_notebook.append_page(preferencesBox, Gtk.Label(_('Indicator settings')))
     # Add daemos tabs
@@ -416,8 +405,8 @@ class Preferences(Gtk.Dialog):  # Preferences Window
       config[key] = toggleState
     if key == 'theme':
         for i in indicators:                    # Update all indicators' icons
-          i.setIcoTheme(toggleState)            # Update icon theme
-          i.updateico()                         # Update current icon
+          i.setIconTheme(toggleState)            # Update icon theme
+          i.updateIcon()                         # Update current icon
     elif key == 'notifications':
       notify.switch(toggleState)                # Update application notification engine
       for i in indicators:                      # Update all notification engines
@@ -853,11 +842,11 @@ class Indicator(YDDaemon):      # Yandex.Disk indicator
     # Create indicator notification engine
     self.notify = Notification(indicatorName, config['notifications'])
     # Setup icons theme
-    self.setIcoTheme(config['theme'])
+    self.setIconTheme(config['theme'])
     # Create timer object for icon animation support (don't start it here)
-    self.timer = Timer(777, self._icoAanimation, start=False)
+    self.timer = Timer(777, self._iconAnimation, start=False)
     # Create App Indicator
-    self.ind = appIndicator.Indicator.new(indicatorName, self.ico['paused'],
+    self.ind = appIndicator.Indicator.new(indicatorName, self.icon['paused'],
                                           appIndicator.IndicatorCategory.APPLICATION_STATUS)
     self.ind.set_status(appIndicator.IndicatorStatus.ACTIVE)
     self.menu = self.Menu(self, ID)               # Create menu for daemon
@@ -877,7 +866,7 @@ class Indicator(YDDaemon):      # Yandex.Disk indicator
     self.menu.update(vals, update, self.config['dir'])
     # Handle daemon status change by icon change
     if vals['status'] != vals['laststatus'] or 'init' in update:
-      self.updateico()                    # Update icon
+      self.updateIcon()                    # Update icon
     # Create notifications for status change events
     if vals['status'] != vals['laststatus']:
       if vals['laststatus'] == 'none':    # Daemon has been started
@@ -895,39 +884,39 @@ class Indicator(YDDaemon):      # Yandex.Disk indicator
       else:                               # status is 'error' or 'no-net'
         self.notify.send(_('Yandex.Disk ')+self.ID, _('Synchronization ERROR'))
 
-  def setIcoTheme(self, theme):     # Determine paths to icons according to current theme
+  def setIconTheme(self, theme):     # Determine paths to icons according to current theme
     global installDir, configPath
     theme = 'light' if theme else 'dark'
     # Determine theme from application configuration settings
     defaultPath = pathJoin(installDir, 'icons', theme)
     userPath = pathJoin(configPath, 'icons', theme)
     # Set appropriate paths to icons
-    self.ico = dict()
+    self.icon = dict()
     for status in ['idle', 'error', 'paused', 'none', 'no_net', 'busy']:
       name = ('yd-ind-pause.png' if status in ['paused', 'none', 'no_net'] else
               'yd-busy1.png' if status == 'busy' else
               'yd-ind-'+status+'.png')
       userIcon = pathJoin(userPath, name)
-      self.ico[status] = userIcon if pathExists(userIcon) else pathJoin(defaultPath, name)
+      self.icon[status] = userIcon if pathExists(userIcon) else pathJoin(defaultPath, name)
       # userIcon corresponds to busy icon on exit from this loop
     # Set theme paths according to existence of first busy icon
     self.themePath = userPath if pathExists(userIcon) else defaultPath
 
-  def updateico(self):              # Change indicator icon according to just changed daemon status
+  def updateIcon(self):              # Change indicator icon according to just changed daemon status
     # Set icon according to status
-    self.ind.set_icon(self.ico[self.vals['status']])
+    self.ind.set_icon(self.icon[self.vals['status']])
     if self.vals['status'] == 'busy':   # Just entered into 'busy' status
-      self.seqNum = 2                   # Next icon for animation
+      self._seqNum = 2                  # Next busy icon number for animation
       self.timer.start()                # Start animation timer
-    elif self.timer.active:             # Not 'busy' and animation is on
-        self.timer.stop()               # Stop icon animation
+    else:
+        self.timer.stop()               # Stop animation timer when status is not busy 
 
-  def _icoAanimation(self):         # Changes busy icon by loop (triggered by self.timer)
-    seqFile = 'yd-busy' + str(self.seqNum) + '.png'
-    self.ind.set_icon(pathJoin(self.themePath, seqFile))
+  def _iconAnimation(self):         # Changes busy icon by loop (triggered by self.timer)
+    # Set next animation icon
+    self.ind.set_icon(pathJoin(self.themePath, 'yd-busy' + str(self._seqNum) + '.png'))
     # Calculate next icon number
-    self.seqNum = self.seqNum % 5 + 1   # 5 icons in loop (1-2-3-4-5-1-2-3...)
-    return True                         # True required to continue triggering by timer
+    self._seqNum = self._seqNum % 5 + 1   # 5 icon numbers in loop (1-2-3-4-5-1-2-3...)
+    return True                           # True required to continue triggering by timer
 
   class Menu(Gtk.Menu):             # Indicator menu
 
@@ -1065,7 +1054,7 @@ class Indicator(YDDaemon):      # Yandex.Disk indicator
       if ('last' in update or 'init' in update) and vals['status'] != 'none':
         for widget in self.lastItems.get_children():  # Clear last synchronized sub-menu
           self.lastItems.remove(widget)
-        for filePath in vals['lastitems']:        # Create new sub-menu items
+        for filePath in vals['lastitems']:            # Create new sub-menu items
           # Make menu label as file path (shorten to 50 symbols if path length > 50 symbols),
           # with replaced underscore (to disable menu acceleration feature of GTK menu).
           widget = Gtk.MenuItem.new_with_label(
@@ -1080,7 +1069,7 @@ class Indicator(YDDaemon):      # Yandex.Disk indicator
             widget.set_sensitive(False)               # Don't allow to open non-existing path
           self.lastItems.append(widget)
           widget.show()
-        if len(vals['lastitems']) == 0:           # No items in list?
+        if len(vals['lastitems']) == 0:               # No items in list?
           self.last.set_sensitive(False)
         else:                                         # There are some items in list
           self.last.set_sensitive(True)
@@ -1088,8 +1077,8 @@ class Indicator(YDDaemon):      # Yandex.Disk indicator
       # Update 'static' elements of menu
       if 'none' in [vals['status'], vals['laststatus']] or 'init' in update:
         started = vals['status'] != 'none'
-        self.daemon_stop.set_sensitive(started)
         self.status.set_sensitive(started)
+        self.daemon_stop.set_sensitive(started)
         self.daemon_start.set_sensitive(not started)
         self.last.set_sensitive(started)
         if self.ID:
@@ -1220,17 +1209,14 @@ def activateActions():          # Install/deinstall file extensions
   if ret == 0:
     if activate:        # Install actions for Dolphin
       try:
-        copyFile(pathJoin(installDir, "fm-actions/Dolphin/publish.desktop"),
-                 pathJoin(userHome, ".kde/share/kde4/services/publish.desktop"))
-        copyFile(pathJoin(installDir, "fm-actions/Dolphin/unpublish.desktop"),
-                 pathJoin(userHome, ".kde/share/kde4/services/unpublish.desktop"))
+        copyFile(pathJoin(installDir, "fm-actions/Dolphin/ydpublish.desktop"),
+                 pathJoin(userHome, ".local/share/kservices5/ServiceMenus/ydpublish.desktop"))
         result = True
       except:
         pass
     else:               # Remove actions for Dolphin
       try:
-        deleteFile(pathJoin(userHome, ".kde/share/kde4/services/publish.desktop"))
-        deleteFile(pathJoin(userHome," .kde/share/kde4/services/unpublish.desktop"))
+        deleteFile(pathJoin(userHome, ".local/share/kservices5/ServiceMenus/ydpublish.desktop"))
         result = True
       except:
         pass
