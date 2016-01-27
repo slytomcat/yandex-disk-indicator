@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.8.2'
+appVer = '1.8.3'
 #
 #  Copyright 2014+ Sly_tom_cat <slytomcat@mail.ru>
 #  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
@@ -249,233 +249,6 @@ class Notification(object):     # On-screen notification
     self.notifier.update(t, m, logo)  # Update notification
     self.notifier.show()              # Display new notification
 
-class Menu(Gtk.Menu):           # Menu
-
-  def __init__(self, daemon, ID):
-    self.daemon = daemon                      # Store reference to daemon object for future usage
-    Gtk.Menu.__init__(self)                   # Create menu
-    self.ID = ID
-    if self.ID:
-      self.yddir = Gtk.MenuItem('');   self.yddir.set_sensitive(False);   self.append(self.yddir)
-    self.status = Gtk.MenuItem();   self.status.connect("activate", self.showOutput)
-    self.append(self.status)
-    self.used = Gtk.MenuItem();     self.used.set_sensitive(False)
-    self.append(self.used)
-    self.free = Gtk.MenuItem();     self.free.set_sensitive(False)
-    self.append(self.free)
-    self.last = Gtk.MenuItem(_('Last synchronized items'))
-    self.lastItems = Gtk.Menu()               # Sub-menu: list of last synchronized files/folders
-    self.last.set_submenu(self.lastItems)     # Add submenu (empty at the start)
-    self.append(self.last)
-    self.append(Gtk.SeparatorMenuItem.new())  # -----separator--------
-    self.daemon_start = Gtk.MenuItem(_('Start Yandex.Disk daemon'))
-    self.daemon_start.connect("activate", self.startDaemon)
-    self.append(self.daemon_start)
-    self.daemon_stop = Gtk.MenuItem(_('Stop Yandex.Disk daemon'))
-    self.daemon_stop.connect("activate", self.stopDaemon);
-    self.append(self.daemon_stop)
-    self.open_folder = Gtk.MenuItem(_('Open Yandex.Disk Folder'))
-    self.append(self.open_folder)
-    open_web = Gtk.MenuItem(_('Open Yandex.Disk on the web'))
-    open_web.connect("activate", self.openInBrowser, _('https://disk.yandex.com'))
-    self.append(open_web)
-    self.append(Gtk.SeparatorMenuItem.new())  # -----separator--------
-    self.preferences = Gtk.MenuItem(_('Preferences'))
-    self.preferences.connect("activate", Preferences)
-    self.append(self.preferences)
-    open_help = Gtk.MenuItem(_('Help'))
-    m_help = Gtk.Menu()
-    help1 = Gtk.MenuItem(_('Yandex.Disk daemon'))
-    help1.connect("activate", self.openInBrowser, _('https://yandex.com/support/disk/'))
-    m_help.append(help1)
-    help2 = Gtk.MenuItem(_('Yandex.Disk Indicator'))
-    help2.connect("activate", self.openInBrowser,
-                  _('https://github.com/slytomcat/yandex-disk-indicator/wiki'))
-    m_help.append(help2)
-    open_help.set_submenu(m_help)
-    self.append(open_help)
-    self.about = Gtk.MenuItem(_('About'));    self.about.connect("activate", self.openAbout)
-    self.append(self.about)
-    self.append(Gtk.SeparatorMenuItem.new())  # -----separator--------
-    close = Gtk.MenuItem(_('Quit'))
-    close.connect("activate", self.close)
-    self.append(close)
-    self.show_all()
-    self.YD_STATUS = {'idle': _('Synchronized'), 'busy': _('Sync.: '), 'none': _('Not started'),
-                      'paused': _('Paused'), 'no_net': _('Not connected'), 'error':_('Error') }
-
-  def openAbout(self, widget):            # Show About window
-    global logo, indicators
-    for i in indicators:
-      i.menu.about.set_sensitive(False)           # Disable menu item
-    aboutWindow = Gtk.AboutDialog()
-    pic = GdkPixbuf.Pixbuf.new_from_file(logo)
-    aboutWindow.set_logo(pic);   aboutWindow.set_icon(pic)
-    aboutWindow.set_program_name(_('Yandex.Disk indicator'))
-    aboutWindow.set_version(_('Version ') + appVer)
-    aboutWindow.set_copyright('Copyright ' + u'\u00a9' + ' 2013-' +
-                              datetime.datetime.now().strftime("%Y") + '\nSly_tom_cat')
-    aboutWindow.set_comments(_('Yandex.Disk indicator \n(Grive Tools was used as example)'))
-    aboutWindow.set_license(
-      'This program is free software: you can redistribute it and/or \n' +
-      'modify it under the terms of the GNU General Public License as \n' +
-      'published by the Free Software Foundation, either version 3 of \n' +
-      'the License, or (at your option) any later version.\n\n' +
-      'This program is distributed in the hope that it will be useful, \n' +
-      'but WITHOUT ANY WARRANTY; without even the implied warranty \n' +
-      'of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. \n' +
-      'See the GNU General Public License for more details.\n\n' +
-      'You should have received a copy of the GNU General Public License \n' +
-      'along with this program.  If not, see http://www.gnu.org/licenses')
-    aboutWindow.set_authors([_('Sly_tom_cat (slytomcat@mail.ru) '),
-      _('ya-setup utility author: Snow Dimon (snowdimon.ru)'),
-      _('\nSpecial thanks to:'),
-      _(' - Christiaan Diedericks (www.thefanclub.co.za) - Grive tools autor'),
-      _(' - ryukusu_luminarius (my-faios@ya.ru) - icons designer'),
-      _(' - metallcorn (metallcorn@jabber.ru) - icons designer'),
-      _(' - Chibiko (zenogears@jabber.ru) - deb package creation assistance'),
-      _(' - RingOV (ringov@mail.ru) - localization assistance'),
-      _(' - GreekLUG team (https://launchpad.net/~greeklug) - Greek translation'),
-      _(' - Eldar Fahreev (fahreeve@yandex.ru) - FM actions for Pantheon-files'),
-      _(' - And to all other people who contributed to this project through'),
-      _('   the Ubuntu.ru forum http://forum.ubuntu.ru/index.php?topic=241992)')])
-    aboutWindow.run()
-    aboutWindow.destroy()
-    for i in indicators:
-      i.menu.about.set_sensitive(True)            # Enable menu item
-
-  def showOutput(self, widget):           # Display daemon output in dialogue window
-    global lang
-    widget.set_sensitive(False)                         # Disable menu item
-    statusWindow = Gtk.Dialog(_('Yandex.Disk daemon output message'))
-    statusWindow.set_icon(GdkPixbuf.Pixbuf.new_from_file(logo))
-    statusWindow.set_border_width(6)
-    statusWindow.add_button(_('Close'), Gtk.ResponseType.CLOSE)
-    textBox = Gtk.TextView()                            # Create text-box to display daemon output
-    # Set output buffer with daemon output in user language
-    textBox.get_buffer().set_text(self.daemon.getOutput())
-    textBox.set_editable(False)
-    statusWindow.get_content_area().add(textBox)        # Put it inside the dialogue content area
-    statusWindow.show_all();  statusWindow.run();   statusWindow.destroy()
-    widget.set_sensitive(True)                          # Enable menu item
-
-  def openInBrowser(self, widget, url):   # Open URL
-    openNewBrowser(url)
-
-  def startDaemon(self, widget):          # Start daemon
-    self.daemon.start()
-
-  def stopDaemon(self, widget):           # Stop daemon
-    self.daemon.stop()
-
-  def openPath(self, widget, path):       # Open path
-    logger.info('Opening %s' % path)
-    if pathExists(path):
-      try:    os.startfile(path)
-      except: subprocess.call(['xdg-open', path])
-
-  def update(self, vals, update, yddir):  # Update information in menu
-    # Update status data
-    if 'stat' in update or 'init' in update:
-      self.status.set_label(_('Status: ') + self.YD_STATUS.get(vals['status']) +
-                            (vals['progress'] if vals['status'] == 'busy' else ''))
-      self.used.set_label(_('Used: ') + vals['used'] + '/' + vals['total'])
-      self.free.set_label(_('Free: ') + vals['free'] + _(', trash: ') + vals['trash'])
-    # --- Update last synchronized sub-menu ---
-    if ('last' in update or 'init' in update) and vals['status'] != 'none':
-      for widget in self.lastItems.get_children():  # Clear last synchronized sub-menu
-        self.lastItems.remove(widget)
-      for filePath in vals['lastitems']:        # Create new sub-menu items
-        # Make menu label as file path (shorten to 50 symbols if path length > 50 symbols),
-        # with replaced underscore (to disable menu acceleration feature of GTK menu).
-        widget = Gtk.MenuItem.new_with_label(
-                     (filePath[: 20] + '...' + filePath[-27: ] if len(filePath) > 50 else
-                      filePath).replace('_', u'\u02CD'))
-        # Make full path
-        filePath = pathJoin(yddir, filePath)
-        if pathExists(filePath):
-          widget.set_sensitive(True)                # If it exists then it can be opened
-          widget.connect("activate", self.openPath, filePath)
-        else:
-          widget.set_sensitive(False)               # Don't allow to open non-existing path
-        self.lastItems.append(widget)
-        widget.show()
-      if len(vals['lastitems']) == 0:           # No items in list?
-        self.last.set_sensitive(False)
-      else:                                         # There are some items in list
-        self.last.set_sensitive(True)
-      logger.info("Sub-menu 'Last synchronized' has been updated")
-    # Update 'static' elements of menu
-    if 'none' in [vals['status'], vals['laststatus']] or 'init' in update:
-      started = vals['status'] != 'none'
-      self.daemon_stop.set_sensitive(started)
-      self.status.set_sensitive(started)
-      self.daemon_start.set_sensitive(not started)
-      self.last.set_sensitive(started)
-      if self.ID:
-        folder = (yddir.replace('_', u'\u02CD') if yddir else '< NOT CONFIGURED >')
-        self.yddir.set_label(self.ID + _('  Folder: ') + folder)
-      if yddir:
-        self.open_folder.connect("activate", self.openPath, yddir)
-        self.open_folder.set_sensitive(True)
-      else:
-        self.open_folder.set_sensitive(False)
-
-  def close(self, widget):                # Quit from indicator
-    appExit()
-
-class Icon(object):             # Indicator icon
-
-  def __init__(self, ind, theme):              # Initialize icon paths
-    self.ind = ind
-    self.setTheme(theme)
-    # Create timer object for icon animation support (don't start it here)
-    self.timer = Timer(777, self._animation, start=False)
-
-  def setTheme(self, theme):            # Determine paths to icons according to current theme
-    global installDir, configPath
-    theme = 'light' if theme else 'dark'
-    # Determine theme from application configuration settings
-    defaultPath = pathJoin(installDir, 'icons', theme)
-    userPath = pathJoin(configPath, 'icons', theme)
-    # Set appropriate paths to icons
-    userIcon = pathJoin(userPath, 'yd-ind-idle.png')
-    self.idle = (userIcon if pathExists(userIcon) else pathJoin(defaultPath, 'yd-ind-idle.png'))
-    userIcon = pathJoin(userPath, 'yd-ind-pause.png')
-    self.pause = (userIcon if pathExists(userIcon) else pathJoin(defaultPath, 'yd-ind-pause.png'))
-    userIcon = pathJoin(userPath, 'yd-ind-error.png')
-    self.error = (userIcon if pathExists(userIcon) else pathJoin(defaultPath, 'yd-ind-error.png'))
-    userIcon = pathJoin(userPath, 'yd-busy1.png')
-    if pathExists(userIcon):
-      self.busy = userIcon
-      self.themePath = userPath
-    else:
-      self.busy = pathJoin(defaultPath, 'yd-busy1.png')
-      self.themePath = defaultPath
-
-  def update(self, status):             # Change indicator icon according to daemon status
-    if status == 'busy':                # Just entered into 'busy' status
-      self.ind.set_icon(self.busy)      # Start animation from first busy icon
-      self.seqNum = 2                   # Next icon for animation
-      self.timer.start()                # Start animation timer
-    else:
-      if self.timer.active:             # Not 'busy' and animation is on
-        self.timer.stop()               # Stop icon animation
-      # --- Set icon for non-animated statuses ---
-      if status == 'idle':
-        self.ind.set_icon(self.idle)
-      elif status == 'error':
-        self.ind.set_icon(self.error)
-      else:                             # status is 'none' or 'paused'
-        self.ind.set_icon(self.pause)
-
-  def _animation(self):                    # Changes busy icon by loop (triggered by self.timer)
-    seqFile = 'yd-busy' + str(self.seqNum) + '.png'
-    self.ind.set_icon(pathJoin(self.themePath, seqFile))
-    # Calculate next icon number
-    self.seqNum = self.seqNum % 5 + 1   # 5 icons in loop (1-2-3-4-5-1-2-3...)
-    return True                         # True required to continue triggering by timer
-
 class Preferences(Gtk.Dialog):  # Preferences Window
 
   class excludeDirsList(Gtk.Dialog):                                      # Excluded list dialogue
@@ -643,8 +416,8 @@ class Preferences(Gtk.Dialog):  # Preferences Window
       config[key] = toggleState
     if key == 'theme':
         for i in indicators:                    # Update all indicators' icons
-          i.icon.setTheme(toggleState)          # Update icon theme
-          i.icon.update(i.daemon.status)        # Update current icon
+          i.setIcoTheme(toggleState)            # Update icon theme
+          i.updateico()                         # Update current icon
     elif key == 'notifications':
       notify.switch(toggleState)                # Update application notification engine
       for i in indicators:                      # Update all notification engines
@@ -820,10 +593,10 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
         self['overwrite'] = (self.get('overwrite', False) == '')
         self.setdefault('startonstartofindicator', True)    # New value to start daemon individually
         self.setdefault('stoponexitfromindicator', False)   # New value to stop daemon individually
-        exDirs = self.get('exclude-dirs', None)
-        if exDirs is None:
-          self['exclude-dirs'] = None
-        elif not isinstance(exDirs, list):
+        exDirs = self.setdefault('exclude-dirs', None)
+        if isinstance(exDirs, str):
+          # Additional parsing required when quoted value like "dir,dir,dir" is specified.
+          # When the value specified without quotes it will be already list like [dir, dir, dir].
           self['exclude-dirs'] = self.getValue(exDirs)
         return True
       else:
@@ -922,7 +695,20 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     When status values changed then self.update set contain 'stat' key.
     When last synchronized changed then self.update set contain 'last' key.
     Additionally self.update set can contain 'init' key on initial daemon initialization.
-    But 'init' key is added to set in __init__ method.'''
+    But 'init' key is added to set in __init__ method.
+
+    self.vals dict contain updated values ('status', 'progress', 'laststatus', 'total',
+    'used', 'free', 'trash', 'lastitems'). self.vals['lastitems'] is a list of last synchronized
+    items (can be empty list).
+
+    Status is converted to internal representation ('busy', 'idle', 'paused', 'none', 'no_net',
+    'error'):
+     - empty status converted to 'none'
+     - statuses 'busy', 'idle', 'paused' are passed 'as is'
+     - 'index' is ignored (previous status is kept)
+     - 'no internet access' converted to 'no_net'
+     - 'error' covers all other errors, except 'no internet access'
+    '''
     self.update = set()                     # Reset updates
     # Split output on two parts: list of named values and file list
     pos = out.find('Last synchronized items:')
@@ -1061,24 +847,22 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       logger.info('Demon %sstopped'%self.ID)
 
 class Indicator(YDDaemon):      # Yandex.Disk indicator
+
   def __init__(self, path, ID):
     indicatorName = "yandex-disk-%s"%ID[1:-1]
-    ### Application Indicator initialization ###
-
-    ## Indicator notification engine
+    # Create indicator notification engine
     self.notify = Notification(indicatorName, config['notifications'])
-
-    ## App Indicator ##
-    self.ind = appIndicator.Indicator.new(indicatorName, '',
+    # Setup icons theme
+    self.setIcoTheme(config['theme'])
+    # Create timer object for icon animation support (don't start it here)
+    self.timer = Timer(777, self._icoAanimation, start=False)
+    # Create App Indicator
+    self.ind = appIndicator.Indicator.new(indicatorName, self.ico['paused'],
                                           appIndicator.IndicatorCategory.APPLICATION_STATUS)
     self.ind.set_status(appIndicator.IndicatorStatus.ACTIVE)
-    self.menu = Menu(self, ID)                    # Create menu for daemon
+    self.menu = self.Menu(self, ID)               # Create menu for daemon
     self.ind.set_menu(self.menu)                  # Attach menu to indicator
-
-    ## Icons ##
-    self.icon = Icon(self.ind, config['theme'])       # Initialize icon object
-
-    ### Initialize Yandex.Disk daemon connection object ###
+    #Initialize Yandex.Disk daemon connection object
     super(Indicator, self).__init__(path, ID)
 
   def change(self, vals, update):   # Redefinition of daemon class call-back function
@@ -1093,7 +877,7 @@ class Indicator(YDDaemon):      # Yandex.Disk indicator
     self.menu.update(vals, update, self.config['dir'])
     # Handle daemon status change by icon change
     if vals['status'] != vals['laststatus'] or 'init' in update:
-      self.icon.update(vals['status'])    # Update icon
+      self.updateico()                    # Update icon
     # Create notifications for status change events
     if vals['status'] != vals['laststatus']:
       if vals['laststatus'] == 'none':    # Daemon has been started
@@ -1108,8 +892,217 @@ class Indicator(YDDaemon):      # Yandex.Disk indicator
           self.notify.send(_('Yandex.Disk ')+self.ID, _('Synchronization has been paused'))
       elif vals['status'] == 'none':      # Just entered into 'none' from some another status
           self.notify.send(_('Yandex.Disk ')+self.ID, _('Yandex.Disk daemon has been stopped'))
-      else:                               # newStatus = 'error' or 'no-net'
+      else:                               # status is 'error' or 'no-net'
         self.notify.send(_('Yandex.Disk ')+self.ID, _('Synchronization ERROR'))
+
+  def setIcoTheme(self, theme):     # Determine paths to icons according to current theme
+    global installDir, configPath
+    theme = 'light' if theme else 'dark'
+    # Determine theme from application configuration settings
+    defaultPath = pathJoin(installDir, 'icons', theme)
+    userPath = pathJoin(configPath, 'icons', theme)
+    # Set appropriate paths to icons
+    self.ico = dict()
+    for status in ['idle', 'error', 'paused', 'none', 'no_net', 'busy']:
+      name = ('yd-ind-pause.png' if status in ['paused', 'none', 'no_net'] else
+              'yd-busy1.png' if status == 'busy' else
+              'yd-ind-'+status+'.png')
+      userIcon = pathJoin(userPath, name)
+      self.ico[status] = userIcon if pathExists(userIcon) else pathJoin(defaultPath, name)
+      # userIcon corresponds to busy icon on exit from this loop
+    # Set theme paths according to existence of first busy icon
+    self.themePath = userPath if pathExists(userIcon) else defaultPath
+
+  def updateico(self):              # Change indicator icon according to just changed daemon status
+    # Set icon according to status
+    self.ind.set_icon(self.ico[self.vals['status']])
+    if self.vals['status'] == 'busy':   # Just entered into 'busy' status
+      self.seqNum = 2                   # Next icon for animation
+      self.timer.start()                # Start animation timer
+    elif self.timer.active:             # Not 'busy' and animation is on
+        self.timer.stop()               # Stop icon animation
+
+  def _icoAanimation(self):         # Changes busy icon by loop (triggered by self.timer)
+    seqFile = 'yd-busy' + str(self.seqNum) + '.png'
+    self.ind.set_icon(pathJoin(self.themePath, seqFile))
+    # Calculate next icon number
+    self.seqNum = self.seqNum % 5 + 1   # 5 icons in loop (1-2-3-4-5-1-2-3...)
+    return True                         # True required to continue triggering by timer
+
+  class Menu(Gtk.Menu):             # Indicator menu
+
+    def __init__(self, daemon, ID):
+      self.daemon = daemon                      # Store reference to daemon object for future usage
+      Gtk.Menu.__init__(self)                   # Create menu
+      self.ID = ID
+      if self.ID:
+        self.yddir = Gtk.MenuItem('');   self.yddir.set_sensitive(False);   self.append(self.yddir)
+      self.status = Gtk.MenuItem();   self.status.connect("activate", self.showOutput)
+      self.append(self.status)
+      self.used = Gtk.MenuItem();     self.used.set_sensitive(False)
+      self.append(self.used)
+      self.free = Gtk.MenuItem();     self.free.set_sensitive(False)
+      self.append(self.free)
+      self.last = Gtk.MenuItem(_('Last synchronized items'))
+      self.lastItems = Gtk.Menu()               # Sub-menu: list of last synchronized files/folders
+      self.last.set_submenu(self.lastItems)     # Add submenu (empty at the start)
+      self.append(self.last)
+      self.append(Gtk.SeparatorMenuItem.new())  # -----separator--------
+      self.daemon_start = Gtk.MenuItem(_('Start Yandex.Disk daemon'))
+      self.daemon_start.connect("activate", self.startDaemon)
+      self.append(self.daemon_start)
+      self.daemon_stop = Gtk.MenuItem(_('Stop Yandex.Disk daemon'))
+      self.daemon_stop.connect("activate", self.stopDaemon);
+      self.append(self.daemon_stop)
+      self.open_folder = Gtk.MenuItem(_('Open Yandex.Disk Folder'))
+      self.append(self.open_folder)
+      open_web = Gtk.MenuItem(_('Open Yandex.Disk on the web'))
+      open_web.connect("activate", self.openInBrowser, _('https://disk.yandex.com'))
+      self.append(open_web)
+      self.append(Gtk.SeparatorMenuItem.new())  # -----separator--------
+      self.preferences = Gtk.MenuItem(_('Preferences'))
+      self.preferences.connect("activate", Preferences)
+      self.append(self.preferences)
+      open_help = Gtk.MenuItem(_('Help'))
+      m_help = Gtk.Menu()
+      help1 = Gtk.MenuItem(_('Yandex.Disk daemon'))
+      help1.connect("activate", self.openInBrowser, _('https://yandex.com/support/disk/'))
+      m_help.append(help1)
+      help2 = Gtk.MenuItem(_('Yandex.Disk Indicator'))
+      help2.connect("activate", self.openInBrowser,
+                    _('https://github.com/slytomcat/yandex-disk-indicator/wiki'))
+      m_help.append(help2)
+      open_help.set_submenu(m_help)
+      self.append(open_help)
+      self.about = Gtk.MenuItem(_('About'));    self.about.connect("activate", self.openAbout)
+      self.append(self.about)
+      self.append(Gtk.SeparatorMenuItem.new())  # -----separator--------
+      close = Gtk.MenuItem(_('Quit'))
+      close.connect("activate", self.close)
+      self.append(close)
+      self.show_all()
+      self.YD_STATUS = {'idle': _('Synchronized'), 'busy': _('Sync.: '), 'none': _('Not started'),
+                        'paused': _('Paused'), 'no_net': _('Not connected'), 'error':_('Error') }
+
+    def openAbout(self, widget):            # Show About window
+      global logo, indicators
+      for i in indicators:
+        i.menu.about.set_sensitive(False)           # Disable menu item
+      aboutWindow = Gtk.AboutDialog()
+      pic = GdkPixbuf.Pixbuf.new_from_file(logo)
+      aboutWindow.set_logo(pic);   aboutWindow.set_icon(pic)
+      aboutWindow.set_program_name(_('Yandex.Disk indicator'))
+      aboutWindow.set_version(_('Version ') + appVer)
+      aboutWindow.set_copyright('Copyright ' + u'\u00a9' + ' 2013-' +
+                                datetime.datetime.now().strftime("%Y") + '\nSly_tom_cat')
+      aboutWindow.set_comments(_('Yandex.Disk indicator \n(Grive Tools was used as example)'))
+      aboutWindow.set_license(
+        'This program is free software: you can redistribute it and/or \n' +
+        'modify it under the terms of the GNU General Public License as \n' +
+        'published by the Free Software Foundation, either version 3 of \n' +
+        'the License, or (at your option) any later version.\n\n' +
+        'This program is distributed in the hope that it will be useful, \n' +
+        'but WITHOUT ANY WARRANTY; without even the implied warranty \n' +
+        'of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. \n' +
+        'See the GNU General Public License for more details.\n\n' +
+        'You should have received a copy of the GNU General Public License \n' +
+        'along with this program.  If not, see http://www.gnu.org/licenses')
+      aboutWindow.set_authors([_('Sly_tom_cat (slytomcat@mail.ru) '),
+        _('ya-setup utility author: Snow Dimon (snowdimon.ru)'),
+        _('\nSpecial thanks to:'),
+        _(' - Christiaan Diedericks (www.thefanclub.co.za) - Grive tools autor'),
+        _(' - ryukusu_luminarius (my-faios@ya.ru) - icons designer'),
+        _(' - metallcorn (metallcorn@jabber.ru) - icons designer'),
+        _(' - Chibiko (zenogears@jabber.ru) - deb package creation assistance'),
+        _(' - RingOV (ringov@mail.ru) - localization assistance'),
+        _(' - GreekLUG team (https://launchpad.net/~greeklug) - Greek translation'),
+        _(' - Eldar Fahreev (fahreeve@yandex.ru) - FM actions for Pantheon-files'),
+        _(' - And to all other people who contributed to this project through'),
+        _('   the Ubuntu.ru forum http://forum.ubuntu.ru/index.php?topic=241992)')])
+      aboutWindow.run()
+      aboutWindow.destroy()
+      for i in indicators:
+        i.menu.about.set_sensitive(True)            # Enable menu item
+
+    def showOutput(self, widget):           # Display daemon output in dialogue window
+      global lang
+      widget.set_sensitive(False)                         # Disable menu item
+      statusWindow = Gtk.Dialog(_('Yandex.Disk daemon output message'))
+      statusWindow.set_icon(GdkPixbuf.Pixbuf.new_from_file(logo))
+      statusWindow.set_border_width(6)
+      statusWindow.add_button(_('Close'), Gtk.ResponseType.CLOSE)
+      textBox = Gtk.TextView()                            # Create text-box to display daemon output
+      # Set output buffer with daemon output in user language
+      textBox.get_buffer().set_text(self.daemon.getOutput())
+      textBox.set_editable(False)
+      statusWindow.get_content_area().add(textBox)        # Put it inside the dialogue content area
+      statusWindow.show_all();  statusWindow.run();   statusWindow.destroy()
+      widget.set_sensitive(True)                          # Enable menu item
+
+    def openInBrowser(self, widget, url):   # Open URL
+      openNewBrowser(url)
+
+    def startDaemon(self, widget):          # Start daemon
+      self.daemon.start()
+
+    def stopDaemon(self, widget):           # Stop daemon
+      self.daemon.stop()
+
+    def openPath(self, widget, path):       # Open path
+      logger.info('Opening %s' % path)
+      if pathExists(path):
+        try:    os.startfile(path)
+        except: subprocess.call(['xdg-open', path])
+
+    def update(self, vals, update, yddir):  # Update information in menu
+      # Update status data
+      if 'stat' in update or 'init' in update:
+        self.status.set_label(_('Status: ') + self.YD_STATUS.get(vals['status']) +
+                              (vals['progress'] if vals['status'] == 'busy' else ''))
+        self.used.set_label(_('Used: ') + vals['used'] + '/' + vals['total'])
+        self.free.set_label(_('Free: ') + vals['free'] + _(', trash: ') + vals['trash'])
+      # --- Update last synchronized sub-menu ---
+      if ('last' in update or 'init' in update) and vals['status'] != 'none':
+        for widget in self.lastItems.get_children():  # Clear last synchronized sub-menu
+          self.lastItems.remove(widget)
+        for filePath in vals['lastitems']:        # Create new sub-menu items
+          # Make menu label as file path (shorten to 50 symbols if path length > 50 symbols),
+          # with replaced underscore (to disable menu acceleration feature of GTK menu).
+          widget = Gtk.MenuItem.new_with_label(
+                       (filePath[: 20] + '...' + filePath[-27: ] if len(filePath) > 50 else
+                        filePath).replace('_', u'\u02CD'))
+          # Make full path
+          filePath = pathJoin(yddir, filePath)
+          if pathExists(filePath):
+            widget.set_sensitive(True)                # If it exists then it can be opened
+            widget.connect("activate", self.openPath, filePath)
+          else:
+            widget.set_sensitive(False)               # Don't allow to open non-existing path
+          self.lastItems.append(widget)
+          widget.show()
+        if len(vals['lastitems']) == 0:           # No items in list?
+          self.last.set_sensitive(False)
+        else:                                         # There are some items in list
+          self.last.set_sensitive(True)
+        logger.info("Sub-menu 'Last synchronized' has been updated")
+      # Update 'static' elements of menu
+      if 'none' in [vals['status'], vals['laststatus']] or 'init' in update:
+        started = vals['status'] != 'none'
+        self.daemon_stop.set_sensitive(started)
+        self.status.set_sensitive(started)
+        self.daemon_start.set_sensitive(not started)
+        self.last.set_sensitive(started)
+        if self.ID:
+          folder = (yddir.replace('_', u'\u02CD') if yddir else '< NOT CONFIGURED >')
+          self.yddir.set_label(self.ID + _('  Folder: ') + folder)
+        if yddir:
+          self.open_folder.connect("activate", self.openPath, yddir)
+          self.open_folder.set_sensitive(True)
+        else:
+          self.open_folder.set_sensitive(False)
+
+    def close(self, widget):                # Quit from indicator
+      appExit()
 
 def copyFile(src, dst):
   try:    fileCopy (src, dst)

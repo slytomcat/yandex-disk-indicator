@@ -2,8 +2,7 @@ yd-tools (1.8.2) trusty; urgency=medium
 
   * Changes:
     -- Corrected daemon initialization procedure (additional checks for daemon config correctness and additional error handling on daemon start)
-    -- Last changes Greek Translation.
-    -- Startup procedure tuned for miti-daemon mode
+    -- Last changes Greek Translation
     -- YDDaemon class is deeply refactored to be fully isolated and autonomous
     -- Indicator class is now successor of YDDaemon class that realises UI reactions over YDDaemon update events.
     -- Daemon Initialization/Starting/Stopping/ procedures tuning
