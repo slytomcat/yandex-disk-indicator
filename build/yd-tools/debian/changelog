@@ -1,13 +1,7 @@
-yd-tools (1.8.2) trusty; urgency=medium
+yd-tools (1.8.3) trusty; urgency=medium
 
   * Changes:
-    -- Corrected daemon initialization procedure (additional checks for daemon config correctness and additional error handling on daemon start)
-    -- Last changes Greek Translation
-    -- YDDaemon class is deeply refactored to be fully isolated and autonomous
-    -- Indicator class is now successor of YDDaemon class that realises UI reactions over YDDaemon update events.
-    -- Daemon Initialization/Starting/Stopping/ procedures tuning
-    -- Configuration read procedure yelds warning if value double-specified in configuration file
-    -- Several small changes and fix for exclude-dirs value without quotes
-    -- Fix for error handler of stoponexitfromindicator
+    -- Modified fm-actions for dolphin and small code changes/corrections
+    -- Further code refactoring (Icon class joined with Indicator and Menu is now internal class of Indicator)
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Tue, 22 Jan 2016 23:59:12 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Wed, 27 Jan 2016 23:51:13 +0300

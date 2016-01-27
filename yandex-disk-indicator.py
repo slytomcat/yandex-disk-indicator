@@ -46,7 +46,8 @@ class CVal(object):             # Multivalue helper
     return self.val
 
   def set(self, value):           # Set internal value
-     self.val = value
+    self.val = value
+    return self.val 
 
   def add(self, value):           # Add value
     if isinstance(self.val, list):  # Is it third, fourth ... value?
@@ -226,6 +227,66 @@ class Config(dict):             # Configuration
     logger.info('Config written: %s' % self.fileName)
     self.changed = False
     return True
+
+class LockFile(object):         # LockFile
+
+  def __init__(self, fileName):
+    ### Check for already running instance of the indicator application in user space ###
+    self.fileName = fileName
+    logger.debug('Lock file is:%s' % self.fileName)
+    try:                                                          # Open lock file for write
+      self.lockFile = open(self.fileName, 'wt')
+      fcntl.flock(self.lockFile, fcntl.LOCK_EX | fcntl.LOCK_NB)   # Try to acquire exclusive lock
+      logger.debug('Lock file succesfully locked.')
+    except:                                                       # File is already locked
+      sys.exit(_('The indicator instance is already running.\n'+
+                 '(file %s is locked by another process)') % self.fileName)
+    self.lockFile.write('%d\n' % os.getpid())
+    self.lockFile.flush()
+
+  def release(self):
+    fcntl.flock(self.lockFile, fcntl.LOCK_UN)
+    self.lockFile.close()
+    logger.debug('Lock file %s successfully unlocked.' % self.fileName)
+    deleteFile(self.fileName)
+    logger.debug('Lock file %s successfully deleted.' % self.fileName)
+
+class Timer(object):            # Timer for triggering a function periodically
+
+  def __init__(self, interval, handler, par = None, start = True):
+    self.interval = interval          # Timer interval (ms)
+    self.handler = handler            # Handler function
+    self.par = par                    # Parameter of handler function
+    self.active = False               # Current activity status
+    if start:
+      self.start()                    # Start timer if required
+
+  def start(self, interval = None):   # Start inactive timer or update if it is active
+    if interval is None:
+      interval = self.interval
+    if not self.active:
+      self.interval = interval
+      if self.par is None:
+        self.timer = GLib.timeout_add(interval, self.handler)
+      else:
+        self.timer = GLib.timeout_add(interval, self.handler, self.par)
+      self.active = True
+      #logger.debug('timer started %s %s' %(self.timer, interval))
+    else:
+      self.update(interval)
+
+  def update(self, interval):         # Update interval (restart active, not start if inactive)
+    if interval != self.interval:
+      self.interval = interval
+      if self.active:
+        self.stop()
+        self.start()
+
+  def stop(self):                     # Stop active timer
+    if self.active:
+      #logger.debug('timer to stop %s' %(self.timer))
+      GLib.source_remove(self.timer)
+      self.active = False
 
 class Notification(object):     # On-screen notification
 
@@ -432,65 +493,6 @@ class Preferences(Gtk.Dialog):  # Preferences Window
     elif key == 'read-only':
       ow.set_sensitive(toggleState)
 
-class LockFile(object):         # LockFile
-
-  def __init__(self, fileName):
-    ### Check for already running instance of the indicator application in user space ###
-    self.fileName = fileName
-    logger.debug('Lock file is:%s' % self.fileName)
-    try:                                                          # Open lock file for write
-      self.lockFile = open(self.fileName, 'wt')
-      fcntl.flock(self.lockFile, fcntl.LOCK_EX | fcntl.LOCK_NB)   # Try to acquire exclusive lock
-      logger.debug('Lock file succesfully locked.')
-    except:                                                       # File is already locked
-      sys.exit(_('The indicator instance is already running.\n'+
-                 '(file %s is locked by another process)') % self.fileName)
-    self.lockFile.write('%d\n' % os.getpid())
-    self.lockFile.flush()
-
-  def release(self):
-    fcntl.flock(self.lockFile, fcntl.LOCK_UN)
-    self.lockFile.close()
-    logger.debug('Lock file %s successfully unlocked.' % self.fileName)
-    deleteFile(self.fileName)
-    logger.debug('Lock file %s successfully deleted.' % self.fileName)
-
-class Timer(object):            # Timer for triggering a function periodically
-
-  def __init__(self, interval, handler, par = None, start = True):
-    self.interval = interval          # Timer interval (ms)
-    self.handler = handler            # Handler function
-    self.par = par                    # Parameter of handler function
-    self.active = False               # Current activity status
-    if start:
-      self.start()                    # Start timer if required
-
-  def start(self, interval = None):   # Start inactive timer or update if it is active
-    if interval is None:
-      interval = self.interval
-    if not self.active:
-      if self.par is None:
-        self.timer = GLib.timeout_add(interval, self.handler)
-      else:
-        self.timer = GLib.timeout_add(interval, self.handler, self.par)
-      self.active = True
-      #logger.debug('timer started %s %s' %(self.timer, interval))
-    else:
-      self.update(interval)
-
-  def update(self, interval):         # Update interval (restart active, not start if inactive)
-    if interval != self.interval:
-      self.interval = interval
-      if self.active:
-        self.stop()
-        self.start()
-
-  def stop(self):                     # Stop active timer
-    if self.active:
-      #logger.debug('timer to stop %s' %(self.timer))
-      GLib.source_remove(self.timer)
-      self.active = False
-
 class YDDaemon(object):         # Yandex.Disk daemon interface
   '''
   This is the fully automated class that serves as daemon interface.
@@ -515,11 +517,11 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
   '''
 
   # Search values for daemon status values
-  _skeys = {'Synchronization core status':'status', 'Sync progress': 'progress',
-           'Total':'total', 'Used':'used', 'Available':'free', 'Trash size':'trash'}
+  _skeys = (('Synchronization core status','status'), ('Sync progress', 'progress'),
+           ('Total', 'total'), ('Used', 'used'), ('Available', 'free'), ('Trash size', 'trash'))
 
   # Default daemon status values
-  _dvals = {'status':'none', 'progress':'', 'laststatus':'idle', 'total':'...',
+  _dvals = {'status':'', 'progress':'', 'laststatus':'', 'total':'...',
            'used':'...', 'free':'...', 'trash':'...', 'lastitems':[]}
 
   class _Watcher(object):               # Daemon watcher
@@ -563,9 +565,8 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     def save(self):  # Update daemon config file
       # Make a copy of Self as super class
       fileConfig = Config(self.fileName, load=False)
-      for key, val in self.items():
-        fileConfig[key] = val
-      # Convert values representations
+      fileConfig.update(self)
+      # Convert values representation
       ro = fileConfig.get('read-only', False)
       fileConfig['read-only'] = '' if ro else None
       fileConfig['overwrite'] = '' if fileConfig.get('overwrite', False) and ro else None
@@ -592,8 +593,8 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
         return False
 
   def __init__(self, cfgFile, ID):      # Check that daemon installed and configured
-    '''cfgFile  - path to config file (can contain ~)
-       ID       - identity string '#<n>' in multi-instance environment or
+    '''cfgFile  - full path to config file
+       ID       - identity string '#<n> ' in multi-instance environment or
                   '' in single instance environment'''
     self._cfgFile = cfgFile                           # Remember path to config file
     self.ID = ID                                      # Remember identity
@@ -711,20 +712,22 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     res = dict([re.findall(r'\t*(.+): (.*)' , l)[0] for l in output if ':' in l])
     # Parse named status values
     sUpd = False
-    for srch, key in YDDaemon._skeys.items():
+    for srch, key in YDDaemon._skeys:
       val = res.get(srch, '')
       if key == 'status':                   # Convert status to internal representation
         #logger.debug('Raw status : \'%s\', previous status: %s'%(val, self.vals['status']))
         # Store previous status
         self.vals['laststatus'] = self.vals['status']
         # Convert daemon raw status to internal representation
-        val = ('none' if not val else
+        val = (# Convert '' into 'none' status
+               'none' if not val else       
                # Ignore index status
                self.vals['laststatus'] if val == 'index' else
                # Rename long status
                'no_net' if val == 'no internet access' else
+               # pass 'busy', 'idle' and 'paused' statuses 'as is' 
+               val if val in ['busy', 'idle', 'paused'] else
                # Status 'error' covers 'error', 'failed to connect to daemon process' and other.
-               val if val in ['busy', 'idle', 'paused', 'none', 'no_net'] else
                'error')
       elif key != 'progress' and not val:   # 'progress' can be '' the rest - can't
         val = '...'                         # Make default filling for empty values
@@ -810,7 +813,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       self.vals = YDDaemon._dvals.copy()            # Initialise default values
       self._parseOutput(self.getOutput(True))       # Parse fresh daemon output
       self.update.add('init')                       # Add special flag for initial change event
-      self.vals['status'] = 'paused'                # Set current status
+      self.vals['status'] = 'paused'                # Set current status 
       self.vals['laststatus'] = 'none'              # Set previous status
       self.change(self.vals, self.update)           # Manually raise initial change event
       self._iNtfyWatcher.start(self.config['dir'])  # Activate watcher with self.handler
@@ -835,7 +838,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       self.stop()
       logger.info('Demon %sstopped'%self.ID)
 
-class Indicator(YDDaemon):      # Yandex.Disk indicator
+class Indicator(YDDaemon):      # Yandex.Disk appIndicator
 
   def __init__(self, path, ID):
     indicatorName = "yandex-disk-%s"%ID[1:-1]
@@ -1209,6 +1212,7 @@ def activateActions():          # Install/deinstall file extensions
   if ret == 0:
     if activate:        # Install actions for Dolphin
       try:
+        os.makedirs(pathJoin(userHome, '.local/share/kservices5/ServiceMenus'))
         copyFile(pathJoin(installDir, "fm-actions/Dolphin/ydpublish.desktop"),
                  pathJoin(userHome, ".local/share/kservices5/ServiceMenus/ydpublish.desktop"))
         result = True
@@ -1328,13 +1332,10 @@ if __name__ == '__main__':
   config = Config(pathJoin(configPath, appName + '.conf'))
   # Read some settings to variables, set default values and update some values
   config['autostart'] = pathExists(autoStartIndDst)
-  config['startonstart'] = None         # Obsolete value <- REMOVE IT IN NEXT REALIZE
-  config['stoponexit'] = None           # Obsolete value <- REMOVE IT IN NEXT REALIZE
   # Setup on-screen notification settings from config value
   config.setdefault('notifications', True)
   config.setdefault('theme', False)
   config.setdefault('fmextensions', True)
-  config['autostartdaemon'] = None      # Obsolete value <- REMOVE IT IN NEXT REALIZE
   config.setdefault('daemons', '~/.config/yandex-disk/config.cfg')
   if not config.readSuccess:            # Is it a first run?
     logging.info('No config, probably it is a first run.')
@@ -1359,7 +1360,7 @@ if __name__ == '__main__':
     ### Activate FM actions according to config (as it is first run)
     activateActions()
     # Save config with default settings
-    config.save()                         # to remove obsolete values <- INDENT IT IN NEXT REALIZE
+    config.save()                       
 
   ### Check for already running instance of the indicator application with the same config ###
   flock = LockFile(pathJoin(configPath, 'pid'))
@@ -1375,14 +1376,15 @@ if __name__ == '__main__':
   if args.rcfg and args.rcfg in daemons:
     daemons.remove(args.rcfg)
     config.changed = True
-  # Update config if daemons list has been changed
-  if not daemons:                       # No daemons
+  # Check that at least one daemon is in the daemons list
+  if not daemons:
     appExit(_('No daemons specified. Check correctness of -r and -c options'))
+  # Update config if daemons list has been changed
   if config.changed:
     config['daemons'] = daemons if isinstance(daemons, list) else daemons[0]
     config.save()                       # Update configuration file
 
-  ### Make indicator objects
+  ### Make indicator objects for each daemon in daemons list
   indicators = []
   for d in daemons:
     indicators.append(Indicator(d.replace('~', userHome),
