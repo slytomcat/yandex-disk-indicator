@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.8.3'
+appVer = '1.8.4'
 #
 #  Copyright 2014+ Sly_tom_cat <slytomcat@mail.ru>
 #  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
@@ -47,7 +47,7 @@ class CVal(object):             # Multivalue helper
 
   def set(self, value):           # Set internal value
     self.val = value
-    return self.val 
+    return self.val
 
   def add(self, value):           # Add value
     if isinstance(self.val, list):  # Is it third, fourth ... value?
@@ -101,11 +101,11 @@ class CVal(object):             # Multivalue helper
 
 class Config(dict):             # Configuration
 
-  def __init__(self, filename, load=True,
+  def __init__(self, fileName, load=True,
                bools=[['true', 'yes', 'y'], ['false', 'no', 'n']],
                boolval=['yes', 'no'], usequotes=True, delimiter='='):
     super(Config, self).__init__(self)
-    self.fileName = filename
+    self.fileName = fileName
     self.bools = bools             # Values to detect boolean in self.load
     self.boolval = boolval         # Values to write boolean in self.save
     self.usequotes = usequotes     # Use quotes for keys and values in self.save
@@ -596,18 +596,16 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     '''cfgFile  - full path to config file
        ID       - identity string '#<n> ' in multi-instance environment or
                   '' in single instance environment'''
-    self._cfgFile = cfgFile                           # Remember path to config file
     self.ID = ID                                      # Remember identity
-    self._origLang = os.getenv('LANG')
     if not pathExists('/usr/bin/yandex-disk'):
       self._ErrorDialog('NOTINSTALLED')
       appExit('Daemon is not installed')
     # Try to read Yandex.Disk configuration file and make sure that it is correctly configured
-    self.config = self._DConfig(self._cfgFile, load=False)
+    self.config = self._DConfig(cfgFile, load=False)
     while not (self.config.load() and
                pathExists(self.config.get('dir', '')) and
                pathExists(self.config.get('auth', ''))):
-      if self._errorDialog('NOCONFIG', self._cfgFile) != 0:
+      if self._errorDialog('NOCONFIG') != 0:
         if ID:
           self.config['dir'] = ''
           # Exit from loop in multi-instance configuration
@@ -669,13 +667,13 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     if workLang:          # Change LANG settings when it required
       os.putenv('LANG', 'en_US.UTF-8')
     try:
-      output = subprocess.check_output(['yandex-disk','-c', self._cfgFile, 'status'],
+      output = subprocess.check_output(['yandex-disk','-c', self.config.fileName, 'status'],
                                             universal_newlines=True)
     except:
       output = ''         # daemon is not running or bad
     #logger.debug('output = %s' % daemonOutput)
     if workLang:          # Restore LANG settings
-      os.putenv('LANG', self._origLang)
+      os.putenv('LANG', userLANG)
 
     return output
 
@@ -720,12 +718,12 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
         self.vals['laststatus'] = self.vals['status']
         # Convert daemon raw status to internal representation
         val = (# Convert '' into 'none' status
-               'none' if not val else       
+               'none' if not val else
                # Ignore index status
                self.vals['laststatus'] if val == 'index' else
                # Rename long status
                'no_net' if val == 'no internet access' else
-               # pass 'busy', 'idle' and 'paused' statuses 'as is' 
+               # pass 'busy', 'idle' and 'paused' statuses 'as is'
                val if val in ['busy', 'idle', 'paused'] else
                # Status 'error' covers 'error', 'failed to connect to daemon process' and other.
                'error')
@@ -775,7 +773,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     dialog.destroy()
     if err == 'NOCONFIG' and response == Gtk.ResponseType.OK:  # Launch Set-up utility
       logger.debug('starting configuration utility: %s' % pathJoin(installDir, 'ya-setup'))
-      retCode = subprocess.call([pathJoin(installDir,'ya-setup'), self._cfgFile])
+      retCode = subprocess.call([pathJoin(installDir,'ya-setup'), self.config.fileName])
     elif err == 'CANTSTART' and response == Gtk.ResponseType.OK:
       retCode = 0
     else:
@@ -790,9 +788,9 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     Additionally it starts iNotify monitoring in case of success start
     '''
     err = ''
-    while not self.getOutput():
+    while True:
       try:                                          # Try to start
-        msg = subprocess.check_output(['yandex-disk', '-c', self._cfgFile, 'start'],
+        msg = subprocess.check_output(['yandex-disk', '-c', self.config.fileName, 'start'],
                                       universal_newlines=True)
         logger.info('Start success, message: %s' % msg)
         err =  ''
@@ -805,26 +803,26 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
                'NOCONFIG' if "'dir'" in e.output or 'OAuth' in e.output else
                err)
       # Handle the starting error
-      if err != '' and self._errorDialog(err, self.config.fileName) == 0:
-          self.config.load()                        # Reload created configuration file & try again
+      if err != '' and self._errorDialog(err) == 0:
+        self.config.load()                          # Reload created configuration file & try again
       else:
         break
     if err == '':
       self.vals = YDDaemon._dvals.copy()            # Initialise default values
       self._parseOutput(self.getOutput(True))       # Parse fresh daemon output
       self.update.add('init')                       # Add special flag for initial change event
-      self.vals['status'] = 'paused'                # Set current status 
+      self.vals['status'] = 'paused'                # Set current status
       self.vals['laststatus'] = 'none'              # Set previous status
-      self.change(self.vals, self.update)           # Manually raise initial change event
+      self.change(self.
+      vals, self.update)           # Manually raise initial change event
       self._iNtfyWatcher.start(self.config['dir'])  # Activate watcher with self.handler
     return err
 
   def stop(self):                       # Execute 'yandex-disk stop'
     try:
-      msg = subprocess.check_output(['yandex-disk', '-c', self._cfgFile, 'stop'],
+      msg = subprocess.check_output(['yandex-disk', '-c', self.config.fileName, 'stop'],
                                     universal_newlines=True)
     except:
-      print('err')
       msg = ''
     if msg:
       self._iNtfyWatcher.stop()
@@ -912,7 +910,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
       self._seqNum = 2                  # Next busy icon number for animation
       self.timer.start()                # Start animation timer
     else:
-        self.timer.stop()               # Stop animation timer when status is not busy 
+      self.timer.stop()                 # Stop animation timer when status is not busy
 
   def _iconAnimation(self):         # Changes busy icon by loop (triggered by self.timer)
     # Set next animation icon
@@ -928,12 +926,12 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
       Gtk.Menu.__init__(self)                   # Create menu
       self.ID = ID
       if self.ID:
-        self.yddir = Gtk.MenuItem('');   self.yddir.set_sensitive(False);   self.append(self.yddir)
-      self.status = Gtk.MenuItem();   self.status.connect("activate", self.showOutput)
+        self.yddir = Gtk.MenuItem('');  self.yddir.set_sensitive(False);   self.append(self.yddir)
+      self.status = Gtk.MenuItem();     self.status.connect("activate", self.showOutput)
       self.append(self.status)
-      self.used = Gtk.MenuItem();     self.used.set_sensitive(False)
+      self.used = Gtk.MenuItem();       self.used.set_sensitive(False)
       self.append(self.used)
-      self.free = Gtk.MenuItem();     self.free.set_sensitive(False)
+      self.free = Gtk.MenuItem();       self.free.set_sensitive(False)
       self.append(self.free)
       self.last = Gtk.MenuItem(_('Last synchronized items'))
       self.lastItems = Gtk.Menu()               # Sub-menu: list of last synchronized files/folders
@@ -987,7 +985,6 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
       aboutWindow.set_version(_('Version ') + appVer)
       aboutWindow.set_copyright('Copyright ' + u'\u00a9' + ' 2013-' +
                                 datetime.datetime.now().strftime("%Y") + '\nSly_tom_cat')
-      aboutWindow.set_comments(_('Yandex.Disk indicator \n(Grive Tools was used as example)'))
       aboutWindow.set_license(
         'This program is free software: you can redistribute it and/or \n' +
         'modify it under the terms of the GNU General Public License as \n' +
@@ -1002,13 +999,14 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
       aboutWindow.set_authors([_('Sly_tom_cat (slytomcat@mail.ru) '),
         _('ya-setup utility author: Snow Dimon (snowdimon.ru)'),
         _('\nSpecial thanks to:'),
-        _(' - Christiaan Diedericks (www.thefanclub.co.za) - Grive tools autor'),
+        _(' - Christiaan Diedericks (www.thefanclub.co.za) - autor of Grive tools(used as example)'),
         _(' - ryukusu_luminarius (my-faios@ya.ru) - icons designer'),
         _(' - metallcorn (metallcorn@jabber.ru) - icons designer'),
         _(' - Chibiko (zenogears@jabber.ru) - deb package creation assistance'),
         _(' - RingOV (ringov@mail.ru) - localization assistance'),
         _(' - GreekLUG team (https://launchpad.net/~greeklug) - Greek translation'),
         _(' - Eldar Fahreev (fahreeve@yandex.ru) - FM actions for Pantheon-files'),
+        _(' - Ace Of Snakes (aceofsnakesmain@gmail.com) - optimization of FM actions for Dolphin'),
         _(' - And to all other people who contributed to this project through'),
         _('   the Ubuntu.ru forum http://forum.ubuntu.ru/index.php?topic=241992)')])
       aboutWindow.run()
@@ -1105,9 +1103,9 @@ def deleteFile(source):
   except: logger.error('File Deletion Error: %s' % source)
 
 def appExit(msg = None):
-  flock.release()
   for i in indicators:
     i.exit()
+  flock.release()
   sys.exit(msg)
 
 def activateActions():          # Install/deinstall file extensions
@@ -1273,18 +1271,30 @@ def argParse():                 # Parse command line arguments
             help=_('Print version and exit'))
   return parser.parse_args()
 
+def checkAutoStart(path):
+  if pathExists(path):
+    with open(path, 'rt') as f:
+      attr = re.findall(r'\nHidden=(.+)|\nX-GNOME-Autostart-enabled=(.+)', f.read())
+      if attr:
+        i = {'Unity':1, 'KDE':0, 'XFCE':0, 'Pantheon':1}.get(os.getenv('XDG_CURRENT_DESKTOP'), 0)
+        if attr[0][i] and attr[0][i] == ('true' if i else 'false'):
+          return True
+      else:
+        return True
+  return False
+
 ###################### MAIN #########################
 if __name__ == '__main__':
   ### Application constants ###
   appName = 'yandex-disk-indicator'
   appHomeName = 'yd-tools'
-  installDir = pathJoin(os.sep, 'usr', 'share', appHomeName)
+  installDir = pathJoin('/usr/share', appHomeName)
   userHome = os.getenv("HOME")
-  logo = pathJoin(installDir, 'icons', 'yd-128.png')
+  logo = pathJoin(installDir, 'icons/yd-128.png')
   configPath = pathJoin(userHome, '.config', appHomeName)
   # Define .desktop files locations for auto-start facility
-  autoStartIndSrc = pathJoin(os.sep, 'usr', 'share', 'applications','Yandex.Disk-indicator.desktop')
-  autoStartIndDst = pathJoin(userHome, '.config', 'autostart', 'Yandex.Disk-indicator.desktop')
+  autoStartIndSrc = '/usr/share/applications/Yandex.Disk-indicator.desktop'
+  autoStartIndDst = pathJoin(userHome, '.config/autostart/Yandex.Disk-indicator.desktop')
 
   ### Logging ###
   logging.basicConfig(format='%(asctime)-15s %(levelname)-8s %(message)s')
@@ -1294,7 +1304,8 @@ if __name__ == '__main__':
   # Load translation object (or NullTranslations object when
   # translation file not found) and define _() function.
   gettext.translation(appName, '/usr/share/locale', fallback=True).install()
-  logger.info('User LANG is '+os.getenv('LANG'))
+  userLANG = os.getenv('LANG')
+  logger.info('User LANG is '+userLANG)
 
   ### Get command line arguments ###
   args = argParse()
@@ -1313,8 +1324,6 @@ if __name__ == '__main__':
   form: key=value[,value[,value ...]] where keys and values can be quoted ("...") or not.
   The following key words are reserved for configuration:
     autostart, notifications, theme, fmextensions and daemons.
-  Foolwing values are obsolete:
-    startonstart, stoponexit and autostartdaemon.
 
   The dictionary 'config' stores the config settings for usage in code. Its values are saved to
   config file on exit from the Menu.Preferences dialogue or when there is no configuration file
@@ -1331,7 +1340,7 @@ if __name__ == '__main__':
   '''
   config = Config(pathJoin(configPath, appName + '.conf'))
   # Read some settings to variables, set default values and update some values
-  config['autostart'] = pathExists(autoStartIndDst)
+  config['autostart'] = checkAutoStart(autoStartIndDst)
   # Setup on-screen notification settings from config value
   config.setdefault('notifications', True)
   config.setdefault('theme', False)
@@ -1342,16 +1351,16 @@ if __name__ == '__main__':
     # Create app config folders in ~/.config
     try:
       os.makedirs(configPath)
-      os.makedirs(pathJoin(configPath, 'icons', 'light'))
-      os.makedirs(pathJoin(configPath, 'icons', 'dark'))
+      os.makedirs(pathJoin(configPath, 'icons/light'))
+      os.makedirs(pathJoin(configPath, 'icons/dark'))
       # Copy icon themes description readme to user config catalogue
-      copyFile(pathJoin(installDir, 'icons', 'readme'), pathJoin(configPath, 'icons', 'readme'))
+      copyFile(pathJoin(installDir, 'icons/readme'), pathJoin(configPath, 'icons/readme'))
     except:
-      appExit('Can\'t create configuration file in %s' % configPath)
+      sys.exit('Can\'t create configuration file in %s' % configPath)
     # Activate indicator automatic start on system start-up
     if not pathExists(autoStartIndDst):
       try:
-        os.makedirs(pathJoin(userHome, '.config', 'autostart'))
+        os.makedirs(pathJoin(userHome, '.config/autostart'))
         copyFile(autoStartIndSrc, autoStartIndDst)
         config['autostart'] = True
       except:
@@ -1360,14 +1369,11 @@ if __name__ == '__main__':
     ### Activate FM actions according to config (as it is first run)
     activateActions()
     # Save config with default settings
-    config.save()                       
-
-  ### Check for already running instance of the indicator application with the same config ###
-  flock = LockFile(pathJoin(configPath, 'pid'))
-
+    config.save()
+  
   ### Get list of daemons ###
   daemons = config['daemons']
-  daemons = (daemons if isinstance(daemons, list) else [] if daemons is None else [daemons])
+  daemons = (daemons if isinstance(daemons, list) else [daemons])
   # Add new daemon if it is not in current list
   if args.cfg and args.cfg not in daemons:
     daemons.append(args.cfg)
@@ -1378,11 +1384,14 @@ if __name__ == '__main__':
     config.changed = True
   # Check that at least one daemon is in the daemons list
   if not daemons:
-    appExit(_('No daemons specified. Check correctness of -r and -c options'))
+    sys.exit(_('No daemons specified. Check correctness of -r and -c options'))
   # Update config if daemons list has been changed
   if config.changed:
     config['daemons'] = daemons if isinstance(daemons, list) else daemons[0]
     config.save()                       # Update configuration file
+
+  ### Check for already running instance of the indicator application with the same config ###
+  flock = LockFile(pathJoin(configPath, 'pid'))
 
   ### Make indicator objects for each daemon in daemons list
   indicators = []
