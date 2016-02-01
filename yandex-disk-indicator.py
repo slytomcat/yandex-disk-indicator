@@ -831,7 +831,8 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     else:
       return False
 
-  def exit(self):                       # Handle daemon closing on exit according to the daemon configuration
+  def exit(self):                       # Handle daemon/indicator closing
+    # Stop yandex-disk daemon if it is required by its configuration
     if self.vals['status'] != 'none' and self.config.get('stoponexitfromindicator', False):
       self.stop()
       logger.info('Demon %sstopped'%self.ID)
@@ -885,7 +886,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
       else:                               # status is 'error' or 'no-net'
         self.notify.send(_('Yandex.Disk ')+self.ID, _('Synchronization ERROR'))
 
-  def setIconTheme(self, theme):     # Determine paths to icons according to current theme
+  def setIconTheme(self, theme):    # Determine paths to icons according to current theme
     global installDir, configPath
     theme = 'light' if theme else 'dark'
     # Determine theme from application configuration settings
@@ -903,7 +904,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
     # Set theme paths according to existence of first busy icon
     self.themePath = userPath if pathExists(userIcon) else defaultPath
 
-  def updateIcon(self):              # Change indicator icon according to just changed daemon status
+  def updateIcon(self):             # Change indicator icon according to just changed daemon status
     # Set icon according to status
     self.ind.set_icon(self.icon[self.vals['status']])
     if self.vals['status'] == 'busy':   # Just entered into 'busy' status
@@ -1094,15 +1095,27 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
     def close(self, widget):                # Quit from indicator
       appExit()
 
+#### Utility functions
 def copyFile(src, dst):
-  try:    fileCopy (src, dst)
-  except: logger.error("File Copy Error: from %s to %s" % (src, dst))
+  try:
+    fileCopy (src, dst)
+  except:
+    logger.error("File Copy Error: from %s to %s" % (src, dst))
 
-def deleteFile(source):
-  try:    os.remove(source)
-  except: logger.error('File Deletion Error: %s' % source)
+def deleteFile(dst):
+  try:
+    os.remove(dst)
+  except:
+    logger.error('File Deletion Error: %s' % dst)
 
-def appExit(msg = None):
+def makedirs(dst):
+  try:
+    os.makedirs(configPath, exist_ok=True)
+  except:
+    logger.error('Dirs creation Error: %s' % dst)
+
+### Application functions
+def appExit(msg = None):        # Exit from application (it closes all indicators)
   for i in indicators:
     i.exit()
   flock.release()
@@ -1210,7 +1223,7 @@ def activateActions():          # Install/deinstall file extensions
   if ret == 0:
     if activate:        # Install actions for Dolphin
       try:
-        os.makedirs(pathJoin(userHome, '.local/share/kservices5/ServiceMenus'))
+        makedirs(pathJoin(userHome, '.local/share/kservices5/ServiceMenus'))
         copyFile(pathJoin(installDir, "fm-actions/Dolphin/ydpublish.desktop"),
                  pathJoin(userHome, ".local/share/kservices5/ServiceMenus/ydpublish.desktop"))
         result = True
@@ -1271,7 +1284,7 @@ def argParse():                 # Parse command line arguments
             help=_('Print version and exit'))
   return parser.parse_args()
 
-def checkAutoStart(path):
+def checkAutoStart(path):       # Check that auto-start is enabled
   if pathExists(path):
     with open(path, 'rt') as f:
       attr = re.findall(r'\nHidden=(.+)|\nX-GNOME-Autostart-enabled=(.+)', f.read())
@@ -1350,17 +1363,17 @@ if __name__ == '__main__':
     logging.info('No config, probably it is a first run.')
     # Create app config folders in ~/.config
     try:
-      os.makedirs(configPath)
-      os.makedirs(pathJoin(configPath, 'icons/light'))
-      os.makedirs(pathJoin(configPath, 'icons/dark'))
+      makedirs(configPath)
+      makedirs(pathJoin(configPath, 'icons/light'))
+      makedirs(pathJoin(configPath, 'icons/dark'))
       # Copy icon themes description readme to user config catalogue
       copyFile(pathJoin(installDir, 'icons/readme'), pathJoin(configPath, 'icons/readme'))
     except:
-      sys.exit('Can\'t create configuration file in %s' % configPath)
+      sys.exit('Can\'t create configuration files in %s' % configPath)
     # Activate indicator automatic start on system start-up
     if not pathExists(autoStartIndDst):
       try:
-        os.makedirs(pathJoin(userHome, '.config/autostart'))
+        makedirs(pathJoin(userHome, '.config/autostart'))
         copyFile(autoStartIndSrc, autoStartIndDst)
         config['autostart'] = True
       except:
@@ -1370,7 +1383,7 @@ if __name__ == '__main__':
     activateActions()
     # Save config with default settings
     config.save()
-  
+
   ### Get list of daemons ###
   daemons = config['daemons']
   daemons = (daemons if isinstance(daemons, list) else [daemons])
