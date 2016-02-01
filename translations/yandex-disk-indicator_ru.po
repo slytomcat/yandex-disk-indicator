@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: yd-tools\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-01-29 23:25+0300\n"
-"PO-Revision-Date: 2016-01-29 23:35+0300\n"
+"PO-Revision-Date: 2016-02-01 21:30+0300\n"
 "Last-Translator: Sly_tom_cat <slytomcat@mail.ru>\n"
 "Language-Team: ubuntu.ru local team <slytomcat@mail.ru>\n"
 "Language: ru_RU\n"
@@ -439,7 +439,7 @@ msgstr "Опубликовать через Яндекс.Диск"
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1192
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1205
 msgid "Unpublish from Yandex.disk"
-msgstr "Убрать из публикации через Yandex.disk"
+msgstr "Убрать из публикации через Яндекс.Диск"
 
 # Mesage of file manager publish action
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1180
@@ -500,10 +500,3 @@ msgstr "Не указано ни одного демона. Проверьте �
 #, python-format
 msgid "#%d "
 msgstr "№%d "
-
-#~ msgid ""
-#~ "Yandex.Disk indicator \n"
-#~ "(Grive Tools was used as example)"
-#~ msgstr ""
-#~ "Индикатор Яндекс.Диск \n"
-#~ "(утилита Grive-tools использовалась как пример)"
