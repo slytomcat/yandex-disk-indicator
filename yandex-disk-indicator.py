@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.8.4'
+appVer = '1.8.5'
 #
 #  Copyright 2014+ Sly_tom_cat <slytomcat@mail.ru>
 #  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
@@ -459,7 +459,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
 
     # Parse fresh daemon output. Parsing returns true when something changed
     updated = self._parseOutput(self.getOutput(workLang=True))
-    logger.debug(self.ID + ('iNtfy ' if iNtf else 'Timer ') +
+    logger.debug('Primary event ' + self.ID + ('iNtfy ' if iNtf else 'Timer ') +
                  self.vals['laststatus'] + ' -> ' + self.vals['status'])
     if updated:
       self.change(self.vals, self.update)     # Raise outside update event
@@ -677,7 +677,6 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
     It is called when daemon detects any change of its status.
     '''
     logger.info(self.ID + 'Change event: %s'%str(update))
-    logger.info(vals['laststatus'] + ' -> ' + vals['status'])
     # Update information in menu
     self.menu.update(vals, update, self.config['dir'])
     # Handle daemon status change by icon change
