@@ -49,7 +49,7 @@ def deleteFile(dst):
 
 def makedirs(dst):
   try:
-    os.makedirs(configPath, exist_ok=True)
+    os.makedirs(dst, exist_ok=True)
   except:
     logger.error('Dirs creation Error: %s' % dst)
 
@@ -1408,14 +1408,14 @@ if __name__ == '__main__':
   if not config.readSuccess:
     logging.info('No config, probably it is a first run.')
     # Create application config folders in ~/.config
-    try:
-      makedirs(configPath)
-      makedirs(pathJoin(configPath, 'icons/light'))
-      makedirs(pathJoin(configPath, 'icons/dark'))
-      # Copy icon themes readme to user config catalogue
-      copyFile(pathJoin(installDir, 'icons/readme'), pathJoin(configPath, 'icons/readme'))
-    except:
-      sys.exit('Can\'t create configuration files in %s' % configPath)
+    #try:
+    makedirs(configPath)
+    makedirs(pathJoin(configPath, 'icons/light'))
+    makedirs(pathJoin(configPath, 'icons/dark'))
+    # Copy icon themes readme to user config catalogue
+    copyFile(pathJoin(installDir, 'icons/readme'), pathJoin(configPath, 'icons/readme'))
+    #except:
+    #  sys.exit('Can\'t create configuration files in %s' % configPath)
     # Activate indicator automatic start on system start-up
     if not pathExists(autoStartDst):
       try:
