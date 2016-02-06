@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.8.5'
+appVer = '1.8.6'
 #
 #  Copyright 2014+ Sly_tom_cat <slytomcat@mail.ru>
 #  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
@@ -1408,14 +1408,14 @@ if __name__ == '__main__':
   if not config.readSuccess:
     logging.info('No config, probably it is a first run.')
     # Create application config folders in ~/.config
-    #try:
-    makedirs(configPath)
-    makedirs(pathJoin(configPath, 'icons/light'))
-    makedirs(pathJoin(configPath, 'icons/dark'))
-    # Copy icon themes readme to user config catalogue
-    copyFile(pathJoin(installDir, 'icons/readme'), pathJoin(configPath, 'icons/readme'))
-    #except:
-    #  sys.exit('Can\'t create configuration files in %s' % configPath)
+    try:
+      makedirs(configPath)
+      makedirs(pathJoin(configPath, 'icons/light'))
+      makedirs(pathJoin(configPath, 'icons/dark'))
+      # Copy icon themes readme to user config catalogue
+      copyFile(pathJoin(installDir, 'icons/readme'), pathJoin(configPath, 'icons/readme'))
+    except:
+      sys.exit('Can\'t create configuration files in %s' % configPath)
     # Activate indicator automatic start on system start-up
     if not pathExists(autoStartDst):
       try:

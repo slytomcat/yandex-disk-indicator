@@ -1,6 +1,6 @@
-yd-tools (1.8.5) trusty; urgency=medium
+yd-tools (1.8.6) trusty; urgency=medium
 
   * Changes:
-    -- Optimizations and small changes and corrections
+    -- 2 fixes for first run procedure
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Tue, 02 Feb 2016 14:20:17 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Fri, 05 Feb 2016 20:02:34 +0300
