@@ -1,0 +1,74 @@
+.TH yd-tools 1 "03 Feb 2016" "ver 1.8.5" "PROGRAM"
+NAME
+  yandex-disk-indicator - application indicator for yandex-disk CLI utility.
+
+SYNOPSIS
+  yandex-disk-indicator [-l {10,20,30,40,50}] [-c path] [-r path]
+                        [-h] [-v]
+
+DESCRIPTION
+  yandex-disk-indicator is an aplication indicator that shows Yandex.Disk synchronization status and allows start and stop synchronization daemon, change it configuration, and see the list of last synchronized items.
+  Changes of synchronization status are shown via different icons and via desktop notification messages.
+
+  yandex-disk-indicator allow to use several Yandex.Disk accounts. It shows such number of icons as many daemons are configured.
+
+  Additionally it has ya-setup utility that allows to configure a new daemon. 
+  Just run indicator with -c key and specify the path to new configuration file (~/.config/yandex-disk/config_1.cfg for example).
+  After receiving the message that daemon is not configured just press 'Ok' button and follow through the configuration wizard to create the specified configuration file.
+  Note that for alternative configurations you have to change the path to token (for example ~/.config/yandex-disk/passwd_1) on the last step of configuration.
+
+  If you want to remove one of daemons, use -r option and specify the path to daemon configuration file that You want to delete.
+  Alternatively you can change list of daemon configurations in the configuration file of indicator.
+
+OPTIONS
+  -l {10,20,30,40,50}, --log {10,20,30,40,50}
+
+    Sets the logging level: 
+
+      10 - to show all messages (DEBUG), 
+
+      20 - to show all messages except debugging messages (INFO),
+
+      30 - to show all messages except debugging and info messages (WARNING),
+
+      40 - to show only error and critical messages (ERROR),
+
+      50 - to show critical messages only (CRITICAL). 
+
+    Default: 30
+
+  -c path, --config path
+
+    Path to configuration file of YandexDisk daemon.Daemon.
+    This daemon will be added to daemons list if it is not in 
+    the current configuration. Default: ''
+
+  -r path, --remove path
+
+    Path to configuration file of daemon that should be removed
+    from daemos list. Default: ''
+
+  -h, --help
+
+    Show this help message and exit
+
+  -v, --version
+
+    Print version and exit
+
+CONFGIGURATION
+  Flie ~/.config/yd-tools/yandex-disk-indicator cotains the indicator settings. Configurable values are:
+
+    autostart     Enables or disables indicator auto-start on the 
+                  system start-up.
+    notifications Enables or disables desktop notification messages.
+    theme         True for ligtn icon theme, false - dark theme.
+    fmextensions  Enables or disables file manager extension activation.
+    daemons       List of daemon configuration files.
+
+HINTS
+  To obtain an the complete output from 'yandex-disk status' command,
+  click on the daemon status in the indicator menu.
+
+AUTHOR
+  Sly_tom_cat <SlyTomCat@mail.ru>
