@@ -54,11 +54,11 @@ def makedirs(dst):
     logger.error('Dirs creation Error: %s' % dst)
 
 class CVal(object):             # Multivalue helper
-  ''' Class to work with value that can be None, scalar value or list of values depending
-      of number of elementary values added within it. '''
+  ''' Class to work with value that can be None, scalar item or list of items depending
+      of number of elementary items added to it. '''
 
   def __init__(self, initialValue=None):
-    self.val = initialValue   # store initial value
+    self.set(initialValue)   # store initial value
     self.index = None
 
   def get(self):                  # It just returns the current value of cVal
@@ -66,15 +66,31 @@ class CVal(object):             # Multivalue helper
 
   def set(self, value):           # Set internal value
     self.val = value
+    if isinstance(self.val, list) and len(self.val) == 1:
+      self.val = self.val[0]
     return self.val
 
-  def add(self, value):           # Add value
+  def add(self, item):            # Add item
     if isinstance(self.val, list):  # Is it third, fourth ... value?
-      self.val.append(value)        # Just append new value to list
-    elif self.val is None:          # Is it first value?
-      self.val = value              # Just store value
-    else:                           # It is the second value.
-      self.val = [self.val, value]  # Convert scalar value to list of values.
+      self.val.append(item)         # Just append new item to list
+    elif self.val is None:          # Is it first item?
+      self.val = item               # Just store item
+    else:                           # It is the second item.
+      self.val = [self.val, item]   # Convert scalar value to list of items.
+    return self.val
+
+  def remove(self, item):
+    if isinstance(self.val, list):
+      self.val.remove(item)
+      if len(self.val) == 1:
+        self.val = self.val[0]
+    elif self.val is None:  
+      raise ValueError      
+    else:                   
+      if self.val == item:
+        self.val = None
+      else:
+        raise ValueError      
     return self.val
 
   def __iter__(self):             # cVal iterator object initialization
@@ -117,6 +133,17 @@ class CVal(object):             # Multivalue helper
     if isinstance(self.val, list):
       return len(self.val)
     return 0 if self.val is None else 1
+
+  def __contains__(self, item):   # 'in' opertor function
+    if isinstance(self.val, list):
+      return item in self.val
+    elif self.val is None:
+      return item is None
+    else:
+      return self.val == item
+
+  def __bool__(self):
+    return self.val is not None    
 
 class Config(dict):             # Configuration
 
@@ -1430,12 +1457,10 @@ if __name__ == '__main__':
     # Save config with default settings
     config.save()
 
-  # Get list of daemons
-  daemons = config['daemons']
-  daemons = (daemons if isinstance(daemons, list) else [daemons])
   # Add new daemon if it is not in current list
+  daemons = CVal(config['daemons'])
   if args.cfg and args.cfg not in daemons:
-    daemons.append(args.cfg)
+    daemons.add(args.cfg)
     config.changed = True
   # Remove daemon if it is in the current list
   if args.rcfg and args.rcfg in daemons:
@@ -1446,7 +1471,7 @@ if __name__ == '__main__':
     sys.exit(_('No daemons specified.\nCheck correctness of -r and -c options.'))
   # Update config if daemons list has been changed
   if config.changed:
-    config['daemons'] = daemons if isinstance(daemons, list) else daemons[0]
+    config['daemons'] = daemons.get()
     # Update configuration file
     config.save()
 
