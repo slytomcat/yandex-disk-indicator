@@ -1,0 +1,316 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: yd-tools\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2016-01-04 23:10+0300\n"
+"PO-Revision-Date: 2016-02-21 23:13+0200\n"
+"Last-Translator: spacy01 <spacy00001@gmail.com>\n"
+"Language-Team: spacy01 <spacy00001@gmail.com>\n"
+"Language: bg_BG\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-KeywordsList: _;gettext;gettext_noop\n"
+"X-Poedit-Basepath: /home/stc/Yandex.Disk/YD-tools\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Generator: Poedit 1.5.4\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Poedit-SearchPath-0: /home/stc/Yandex.Disk/YD-tools\n"
+
+msgid ""
+"\n"
+"Special thanks to:"
+msgstr ""
+"\n"
+"Специални благодарности на:"
+
+msgid " - And to all other people who contributed to this project through"
+msgstr "- И на всички останали, подпомогнали проекта "
+
+msgid " - Chibiko (zenogears@jabber.ru) - deb package creation assistance"
+msgstr ""
+" - Chibiko (zenogears@jabber.ru) - за помоща му в създаването на deb-пакета"
+
+msgid " - Christiaan Diedericks (www.thefanclub.co.za) - Grive tools autor"
+msgstr " - Christiaan Diedericks (www.thefanclub.co.za) - автор на Grive tools"
+
+msgid " - Eldar Fahreev (fahreeve@yandex.ru) - FM actions for Pantheon-files"
+msgstr ""
+" - Eldar Fahreev (fahreeve@yandex.ru) - файлово разширениее за Pantheon-files"
+
+msgid " - GreekLUG team (https://launchpad.net/~greeklug) - Greek translation"
+msgstr " - GreekLUG team (https://launchpad.net/~greeklug) - Превод на Гръцки"
+
+msgid " - RingOV (ringov@mail.ru) - localization assistance"
+msgstr " - RingOV (ringov@mail.ru) - помощ в локализациите"
+
+msgid " - metallcorn (metallcorn@jabber.ru) - icons designer"
+msgstr " - metallcorn (metallcorn@jabber.ru) - дизайнер на иконките"
+
+msgid " - ryukusu_luminarius (my-faios@ya.ru) - icons designer"
+msgstr " - ryukusu_luminarius (my-faios@ya.ru) - дизайнер на иконките"
+
+msgid " the Ubuntu.ru forum http://forum.ubuntu.ru/index.php?topic=241992)"
+msgstr " форума Ubuntu.ru http://forum.ubuntu.ru/index.php?topic=241992"
+
+msgid ", trash: "
+msgstr ", кошче: "
+
+msgid "About"
+msgstr "Относно"
+
+msgid "Activate file manager extensions"
+msgstr "Стартирай разширението за файл мениджъра"
+
+msgid "Add catalogue"
+msgstr "Добави папка"
+
+msgid "Auto-start OFF"
+msgstr "Авто-старт изключен"
+
+msgid "Auto-start ON"
+msgstr "Авто-старт включен"
+
+msgid "Close"
+msgstr "Затвори"
+
+msgid "Daemon options"
+msgstr "Настройки на услугата Яндекс.Диск"
+
+msgid "ERROR in setting up of file manager extensions"
+msgstr "ГРЕШКА в настройките на расширението за файл менеджъра"
+
+msgid "Error"
+msgstr "Грешка"
+
+msgid "Excluded folders List"
+msgstr "Списък на изключени папки"
+
+msgid "Folders in the list will not be synchronized."
+msgstr "Папките от този списък няма да бъдат променени."
+
+msgid "Folders that are excluded from synchronization"
+msgstr "Папкии изключени от синхронизация"
+
+msgid "Free: "
+msgstr "Свободно: "
+
+msgid "Help"
+msgstr "Помощ"
+
+msgid "Indicator settings"
+msgstr "Настройки на индикатора"
+
+msgid "Last synchronized items"
+msgstr "Последно синхронизиране"
+
+msgid ""
+"Locally changed files will be overwritten if a newer version of this file "
+"appear in Yandex.Disk."
+msgstr ""
+"Локално променените файлове ще бъдат променени ако има по-нова тяхна версия "
+"на Яндекс.Диск."
+
+msgid ""
+"Locally changed files will be renamed if a newer version of this file appear "
+"in Yandex.Disk."
+msgstr ""
+"Измененните файлове ще бъдат променени, само ако има по-нова тяхна версия на "
+"Яндекс.Диск."
+
+msgid "NOTE! You have to reload daemon to activate following settings"
+msgstr ""
+"ВНИМАНИЕ! Трябва да рестартирате услугата, за да активирате новите настройки"
+
+msgid "Not connected"
+msgstr "Няма връзка"
+
+msgid "Not started"
+msgstr "Не е стартиран"
+
+msgid "Open Yandex.Disk Folder"
+msgstr "Отвори папката на Яндекс.Диск"
+
+msgid "Open Yandex.Disk on the web"
+msgstr "Отвори Яндекс.Диск в интернет"
+
+msgid ""
+"Overwrite locally changed files by files from Yandex.Disk (in read-only mode)"
+msgstr ""
+"Перезапиши локално променените файлове с тези от Яндекс.Диска (в режим само "
+"за четене)"
+
+msgid "Path"
+msgstr "Път"
+
+msgid "Paused"
+msgstr "Пауза"
+
+msgid "Prefer light icon theme"
+msgstr "Предпочитам светла тема с иконки"
+
+msgid "Preferences"
+msgstr "Настройки"
+
+msgid "Publish via Yandex.Disk"
+msgstr "Публикувай през Яндекс.Диск"
+
+msgid "Quit"
+msgstr "Изход"
+
+msgid "Read-Only: Do not upload locally changed files to Yandex.Disk"
+msgstr "Само за четене: Не качвай локално променените файлове в Яндекс.Диск "
+
+msgid "Remove selected"
+msgstr "Изтрий избраното"
+
+msgid "Select"
+msgstr "Избери"
+
+msgid "Select catalogue to add to list"
+msgstr "Избери папки за добавяне към списъка"
+
+msgid "Show on-screen notifications"
+msgstr "Показвай екранни съобщения"
+
+msgid "Sly_tom_cat (slytomcat@mail.ru) "
+msgstr "Sly_tom_cat (slytomcat@mail.ru) "
+
+msgid "Start Yandex.Disk daemon"
+msgstr "Стартиране на услугата Яндекс.Диск"
+
+msgid "Start Yandex.Disk daemon when indicator is starting"
+msgstr "Стартиране на услугата Яндекс.Диск при старт на индикатора"
+
+msgid "Start Yandex.Disk daemon when you start your computer"
+msgstr "Стартирай услугата Яндекс.Диск заедно с компютъра"
+
+msgid "Start Yandex.Disk indicator when you start your computer"
+msgstr "Стартиране на индикатора Яндекс.Диск заедно с компьютъра"
+
+msgid "Status: "
+msgstr "Състояние: "
+
+msgid "Stop Yandex.Disk daemon"
+msgstr "Спиране на услугата Яндекс.Диск"
+
+msgid "Stop Yandex.Disk daemon on closing of indicator"
+msgstr "Спри услугата Яндекс.Диск при стоп на индикатора"
+
+msgid "Sync.: "
+msgstr "Синхр.: "
+
+msgid "Synchronization ERROR"
+msgstr "ГРЕШКА в синхронизацията"
+
+msgid "Synchronization has been completed"
+msgstr "Синхронизацията завърши"
+
+msgid "Synchronization has been paused"
+msgstr "Синхронизацията е паузирана"
+
+msgid "Synchronization started"
+msgstr "Стартирана е синхронизация"
+
+msgid "Synchronized"
+msgstr "Синхронизирано"
+
+msgid ""
+"The indicator instance is already running.\n"
+"(file %s is locked by another process)"
+msgstr ""
+"Индикатора вече работи.\n"
+"(файла %s е блокиран от други процеси)"
+
+msgid "URL to file: %f has copied into clipboard."
+msgstr "Адрес на файла: %f е копиран в клипборда."
+
+msgid "Unpublish from Yandex.disk"
+msgstr "Премахни публикуваното през Yandex.disk"
+
+msgid "Used: "
+msgstr "Използвано: "
+
+msgid "Version "
+msgstr "Версия "
+
+msgid "When daemon was not started before."
+msgstr "Когато услугата не е била стартирана досега."
+
+msgid "Yandex.Disk"
+msgstr "Яндекс.Диск"
+
+msgid "Yandex.Disk Indicator"
+msgstr "Индикатор Яндекс.Диск"
+
+msgid "Yandex.Disk Indicator: daemon start failed"
+msgstr "Яндекс.Диск Индикатор: Пускането на услугата се провали"
+
+msgid "Yandex.Disk daemon"
+msgstr "Услуга Яндекс.Диск"
+
+msgid ""
+"Yandex.Disk daemon failed to start because it is not configured properly\n"
+" To configure it up: press OK button.\n"
+" Press Cancel to exit."
+msgstr ""
+"Пускането на услугата се провали. Вероятно не е настроена правилно.\n"
+" За да отворите настройките, натиснете Ok. За изход натиснете Cancel."
+
+msgid ""
+"Yandex.Disk daemon failed to start due to network connection issue. \n"
+" Check the Internet connection and try to start daemon again."
+msgstr ""
+"Услугата Яндекс.Диск не може да стартира заради проблем с мрежата. \n"
+" Проверете интернет връзката и опитайте отново."
+
+msgid "Yandex.Disk daemon failed to start due to some unrecognised error."
+msgstr "Стартирането на Яндекс.Диск се провали поради неизвестна причина"
+
+msgid "Yandex.Disk daemon has been started"
+msgstr "Услугата Yandex.Disk е стартирана"
+
+msgid "Yandex.Disk daemon has been stopped"
+msgstr "Услугата Yandex.Disk е спряна"
+
+msgid "Yandex.Disk daemon output message"
+msgstr "Изходно съобщение на сервиса Яндекс.Диск"
+
+msgid "Yandex.Disk indicator"
+msgstr "Индикатор Яндекс.Диск "
+
+msgid ""
+"Yandex.Disk indicator \n"
+"(Grive Tools was used as example)"
+msgstr ""
+"Индикатор Яндекс.Диск \n"
+"(Приставката Grive-tools е използвана за пример)"
+
+msgid ""
+"Yandex.Disk utility is not installed.\n"
+" Visit www.yandex.ru, download and install Yandex.Disk daemon."
+msgstr ""
+"Добавката Яндекс.Диск не е инсталирана.\n"
+"Посетете www.yandex.ru, свалете и инсталирайте Yandex.Disk"
+
+msgid "Yandex.Disk-indicator and Yandex.Disk preferences"
+msgstr "Настройки на индикатора и услугата Яндекс.Диск "
+
+msgid "https://disk.yandex.com"
+msgstr "https://disk.yandex.ru"
+
+msgid "https://github.com/slytomcat/yandex-disk-indicator/wiki"
+msgstr "http://forum.ubuntu.ru/index.php?topic=241992"
+
+msgid "https://yandex.com/support/disk/"
+msgstr "https://yandex.ru/support/disk/"
+
+msgid "ya-setup utility author: Snow Dimon (snowdimon.ru)"
+msgstr "Автор на приставката ya-setup: Snow Dimon (snowdimon.ru)"
+
+msgid "Daemon optopns"
+msgstr "Опции на услугата"
+
+msgid "Yandex.Disk-indicator and Yandex.Disks preferences"
+msgstr "Настройки на услугата и индикатора"
