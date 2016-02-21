@@ -31,6 +31,7 @@ rm usr/share/yd-tools/fm-actions/pantheon-files/yandex-disk-indicator-publish.co
 rm usr/share/yd-tools/fm-actions/pantheon-files/yandex-disk-indicator-unpublish.contract
 rm usr/share/locale/ru/LC_MESSAGES/yandex-disk-indicator.mo
 rm usr/share/locale/el/LC_MESSAGES/yandex-disk-indicator.mo
+rm usr/share/locale/bg/LC_MESSAGES/yandex-disk-indicator.mo
 rm usr/share/applications/Yandex.Disk.desktop
 rm usr/share/applications/Yandex.Disk-indicator.desktop
 rm -r debian/yd-tools*
