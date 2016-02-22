@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: yd-tools\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-02-22 18:10+0300\n"
-"PO-Revision-Date: 2016-02-22 18:17+0300\n"
+"POT-Creation-Date: 2016-02-22 18:59+0300\n"
+"PO-Revision-Date: 2016-02-22 18:59+0300\n"
 "Last-Translator: Sly_tom_cat <slytomcat@mail.ru>\n"
 "Language-Team: ubuntu.ru local team <slytomcat@mail.ru>\n"
 "Language: ru_RU\n"
@@ -250,8 +250,8 @@ msgstr ""
 " - GreekLUG team (https://launchpad.net/~greeklug) - Перевод на Греческий"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:939
-msgid " - spacy01 (spacy00001@gmail.com) - Bulgarian translation"
-msgstr " - spacy01 (spacy00001@gmail.com) - перевод на Болгарский"
+msgid " - Peyu Yovev (spacy00001@gmail.com) - Bulgarian translation"
+msgstr " - Peyu Yovev (spacy00001@gmail.com) - перевод на Болгарский"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:940
 msgid " - Eldar Fahreev (fahreeve@yandex.ru) - FM actions for Pantheon-files"

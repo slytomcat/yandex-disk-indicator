@@ -936,7 +936,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
         _(' - Chibiko (zenogears@jabber.ru) - deb package creation assistance'),
         _(' - RingOV (ringov@mail.ru) - localization assistance'),
         _(' - GreekLUG team (https://launchpad.net/~greeklug) - Greek translation'),
-        _(' - spacy01 (spacy00001@gmail.com) - Bulgarian translation'),
+        _(' - Peyu Yovev (spacy00001@gmail.com) - Bulgarian translation'),
         _(' - Eldar Fahreev (fahreeve@yandex.ru) - FM actions for Pantheon-files'),
         _(' - Ace Of Snakes (aceofsnakesmain@gmail.com) - optimization of FM actions for Dolphin'),
         _(' - And to all other people who contributed to this project through'),
