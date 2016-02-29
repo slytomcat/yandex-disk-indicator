@@ -84,13 +84,13 @@ class CVal(object):             # Multivalue helper
       self.val.remove(item)
       if len(self.val) == 1:
         self.val = self.val[0]
-    elif self.val is None:  
-      raise ValueError      
-    else:                   
+    elif self.val is None:
+      raise ValueError
+    else:
       if self.val == item:
         self.val = None
       else:
-        raise ValueError      
+        raise ValueError
     return self.val
 
   def __iter__(self):             # cVal iterator object initialization
@@ -143,7 +143,7 @@ class CVal(object):             # Multivalue helper
       return self.val == item
 
   def __bool__(self):
-    return self.val is not None    
+    return self.val is not None
 
 class Config(dict):             # Configuration
 
@@ -340,8 +340,11 @@ class Notification(object):     # On-screen notification
   def _message(self, t, m):        # Show on-screen notification message
     global logo
     logger.debug('Message: %s | %s' % (t, m))
-    self.notifier.update(t, m, logo)  # Update notification
-    self.notifier.show()              # Display new notification
+    try:
+      self.notifier.update(t, m, logo)  # Update notification
+      self.notifier.show()              # Display new notification
+    except:
+      logger.error('Message engine failure')
 
 #### Main daemon/indicator classes
 class YDDaemon(object):         # Yandex.Disk daemon interface
