@@ -1,8 +1,6 @@
-yd-tools (1.8.8) trusty; urgency=medium
+yd-tools (1.8.9) trusty; urgency=medium
 
   * Changes:
-    -- Fix for not started notification engine
-    -- ya-setup multilanguage support
     -- updated Bulgarian translation
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Fry, 25 Mar 2016 23:15:12 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Fry, 26 Mar 2016 00:22:17 +0300
