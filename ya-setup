@@ -21,7 +21,7 @@ lang_home="/usr/share/yd-tools/translations"
 
 lang_file="$lang_home/ya-setup-$(echo $LANG | cut -c 1-2).lang"
 
-if [ ! -f $lang_file ]: then
+if [ ! -f $lang_file ]; then
     lang_file="$lang_home/ya-setup-en.lang"
 fi
 
