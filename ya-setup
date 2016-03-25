@@ -16,20 +16,31 @@ else
 fi 
 
 ###Language
-ans=$(zenity --list --cancel-label="Cancel" --ok-label="Next" --title "Yandex.Disk setup" --text "Please select your language" --radiolist --hide-header --column "" --column "" FALSE "Russian" TRUE "English")
 
-if [ $? -eq "0" ]; then
-	if [ "$ans" = "Russian" ]; then
-	source ./translations/ya-setup-ru.lang
-	
- 	else
- 		if [ "$ans" = "English" ]; then
- 		source ./translations/ya-setup-en.lang
- 		fi
-	fi
-else
-exit 1
+lang_home="/usr/share/yd-tools/translations"
+
+lang_file="$lang_home/ya-setup-$(echo $LANG | cut -c 1-2).lang"
+
+if [ ! -f $lang_file ]: then
+    lang_file="$lang_home/ya-setup-en.lang"
 fi
+
+source $lang_file
+
+#ans=$(zenity --list --cancel-label="Cancel" --ok-label="Next" --title "Yandex.Disk setup" --text "Please select your language" --radiolist --hide-header --column "" --column "" FALSE "Russian" TRUE "English")
+#
+#if [ $? -eq "0" ]; then
+#	if [ "$ans" = "Russian" ]; then
+#	source ./translations/ya-setup-ru.lang
+	
+# 	else
+# 		if [ "$ans" = "English" ]; then
+# 		source ./translations/ya-setup-en.lang
+# 		fi
+#	fi
+#else
+#exit 1
+#fi
 
 ###Proxy
 ans=$(zenity  --list --cancel-label="$_Exit" --ok-label="$_Next" --title "$_YD_setup_title" --text "$_Welcome1 $conf.$_Welcome2" --radiolist --hide-header --column "" --column "$_Options" TRUE "$_No"  FALSE "$_Yes" FALSE "$_System_set")
