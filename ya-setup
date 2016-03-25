@@ -16,17 +16,16 @@ else
 fi 
 
 ###Language
-ans=$(zenity --list --cancel-label="Cancel" --ok-label="Next" --title "Yandex.Disk setup" --text "Please select your language" --radiolist --hide-header --column "" --column "" TRUE "Russian")
-# ans=$(zenity --list --cancel-label="Cancel" --ok-label="Next" --title "Yandex.Disk setup" --text "Please select your language" --radiolist --hide-header --column "" --column "" TRUE "Russian" FALSE "English")
+ans=$(zenity --list --cancel-label="Cancel" --ok-label="Next" --title "Yandex.Disk setup" --text "Please select your language" --radiolist --hide-header --column "" --column "" FALSE "Russian" TRUE "English")
 
 if [ $? -eq "0" ]; then
 	if [ "$ans" = "Russian" ]; then
 	source ./translations/ya-setup-ru.lang
 	
-# 	else
-# 		if [ "$ans" = "English" ]; then
-# 		source ./translations/ya-setup-en.lang
-# 		fi
+ 	else
+ 		if [ "$ans" = "English" ]; then
+ 		source ./translations/ya-setup-en.lang
+ 		fi
 	fi
 else
 exit 1
