@@ -942,8 +942,10 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
         _(' - Peyu Yovev (spacy00001@gmail.com) - Bulgarian translation'),
         _(' - Eldar Fahreev (fahreeve@yandex.ru) - FM actions for Pantheon-files'),
         _(' - Ace Of Snakes (aceofsnakesmain@gmail.com) - optimization of FM actions for Dolphin'),
+        _(' - Ivan Burmin (https://github.com/Zirrald) - ya-setup multilingual support'),
         _(' - And to all other people who contributed to this project through'),
-        _('   the Ubuntu.ru forum http://forum.ubuntu.ru/index.php?topic=241992)')])
+        _('   the Ubuntu.ru forum http://forum.ubuntu.ru/index.php?topic=241992) and'),
+        _('   via github.com (https://github.com/slytomcat/yandex-disk-indicator)') ])
       aboutWindow.run()
       aboutWindow.destroy()
       for i in indicators:

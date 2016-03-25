@@ -4,6 +4,8 @@ usr/share/locale/el/LC_MESSAGES/yandex-disk-indicator.mo usr/share/locale/el/LC_
 usr/share/locale/bg/LC_MESSAGES/yandex-disk-indicator.mo usr/share/locale/bg/LC_MESSAGES/
 usr/share/applications/Yandex.Disk-indicator.desktop usr/share/applications/
 usr/share/yd-tools/ya-setup usr/share/yd-tools/
+usr/share/yd-tools/translations/ya-setup-ru.lang usr/share/yd-tools/translations/
+usr/share/yd-tools/translations/ya-setup-en.lang usr/share/yd-tools/translations/
 usr/share/yd-tools/icons/readme usr/share/yd-tools/icons/
 usr/share/yd-tools/icons/yd-128.png usr/share/yd-tools/icons/
 usr/share/yd-tools/icons/yd-128_g.png usr/share/yd-tools/icons/
