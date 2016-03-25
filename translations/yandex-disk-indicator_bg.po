@@ -3,8 +3,8 @@ msgstr ""
 "Project-Id-Version: yd-tools\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-03-25 20:31+0300\n"
-"PO-Revision-Date: 2016-03-25 20:32+0300\n"
-"Last-Translator: Sly_tom_cat <slytomcat@mail.ru>\n"
+"PO-Revision-Date: 2016-03-25 21:47+0200\n"
+"Last-Translator: spacy00001 <spacy00001@gmail.com>\n"
 "Language-Team: spacy01 <spacy00001@gmail.com>\n"
 "Language: bg_BG\n"
 "MIME-Version: 1.0\n"
@@ -24,33 +24,31 @@ msgid "Yandex.Disk Indicator: daemon start failed"
 msgstr "Индикатор Яндекс.Диск: Неуспешен старт на услугата"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:637
-#, fuzzy
 msgid ""
 "Yandex.Disk daemon failed to start because it is not configured properly\n"
-"  To configure it up: press OK button.\n"
-"  Press Cancel to exit."
+" To configure it up: press OK button.\n"
+" Press Cancel to exit."
 msgstr ""
 "Услугата Яндекс.Диск не може да стартира. Вероятно, Яндекс.Диск не е "
 "настроен.\n"
-" За да влезете в настройките натиснете Ok. За изход натиснете Cancel."
+" За да влезете в настройките натиснете Ok.\n"
+"За изход натиснете Cancel."
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:640
-#, fuzzy
 msgid ""
 "Yandex.Disk daemon failed to start.\n"
-"  Press OK to continue without started daemon or Cancel to exit."
+" Press OK to continue without started daemon or Cancel to exit."
 msgstr ""
 "Услугата Яндекс.Диск не може да стартира. \n"
-" Натиснетете Ok за да продължите без пусната услуга или Cancel за изход."
+" Натиснете Ok за да продължите без пусната услуга или Cancel за изход."
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:646
-#, fuzzy
 msgid ""
 "Yandex.Disk daemon failed to start due to network connection issue. \n"
-"  Check the Internet connection and try to start daemon again."
+" Check the Internet connection and try to start daemon again."
 msgstr ""
-"Услугата Яндекс.Диск не може да стартира заради мрежов пробем. \n"
-" Проверете връзката с интеренет и опитайте отново."
+"Услугата Яндекс.Диск не може да стартира заради мрежов проблем. \n"
+" Проверете връзката с интерет и опитайте отново."
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:649
 msgid ""
@@ -159,7 +157,7 @@ msgstr "Изход"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:859
 msgid "Synchronized"
-msgstr "Синхронизир55ано"
+msgstr "Синхронизирано"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:859
 msgid "Sync.: "
@@ -198,9 +196,8 @@ msgid ", trash: "
 msgstr ", кошче: "
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:904
-#, fuzzy
-msgid "  Folder: "
-msgstr " Папка: "
+msgid " Folder: "
+msgstr "Папка: "
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:918
 msgid "Yandex.Disk indicator"
@@ -274,26 +271,22 @@ msgstr ""
 "разсширения за Dolphin"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:945
-#, fuzzy
 msgid ""
 " - Ivan Burmin (https://github.com/Zirrald) - ya-setup multilingual support"
 msgstr ""
-" - Ivan Burmin (https://github.com/Zirrald) - ya-setup multilingual support"
+" - Ivan Burmin (https://github.com/Zirrald) - ya-setup езикова поддръжка"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:946
 msgid " - And to all other people who contributed to this project through"
 msgstr "- И на всички останали, които подпомагат проекта във "
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:947
-#, fuzzy
-msgid ""
-"   the Ubuntu.ru forum http://forum.ubuntu.ru/index.php?topic=241992) and"
-msgstr " форума Ubuntu.ru http://forum.ubuntu.ru/index.php?topic=241992"
+msgid " the Ubuntu.ru forum http://forum.ubuntu.ru/index.php?topic=241992) and"
+msgstr " форума Ubuntu.ru http://forum.ubuntu.ru/index.php?topic=241992 и"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:948
-#, fuzzy
-msgid "   via github.com (https://github.com/slytomcat/yandex-disk-indicator)"
-msgstr "   via github.com (https://github.com/slytomcat/yandex-disk-indicator)"
+msgid " via github.com (https://github.com/slytomcat/yandex-disk-indicator)"
+msgstr "чрез github.com (https://github.com/slytomcat/yandex-disk-indicator)"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:957
 msgid "Yandex.Disk daemon output message"
