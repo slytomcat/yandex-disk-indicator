@@ -15,22 +15,35 @@ else
   conf="/home/$USER/.config/yandex-disk/config.cfg"
 fi 
 
+###Language
+ans=$(zenity --list --cancel-label="Cancel" --ok-label="Next" --title "Yandex.Disk setup" --text "Please select your language" --radiolist --hide-header --column "" --column "" FALSE "Russian" TRUE "English")
+
+if [ $? -eq "0" ]; then
+	if [ "$ans" = "Russian" ]; then
+	source ./translations/ya-setup-ru.lang
+	
+ 	else
+ 		if [ "$ans" = "English" ]; then
+ 		source ./translations/ya-setup-en.lang
+ 		fi
+	fi
+else
+exit 1
+fi
+
 ###Proxy
-ans=$(zenity  --list --cancel-label="Выход" --ok-label="Далее" --title "Yandex.Disk setup" --text "Добро пожаловать в мастер установки Яндекс.Диск!
-Выбранные настройки будут сохранены в файле: $conf.
-Для начала использования клиента необходимо ответить на несколько вопросов:
-Использовать проки-сервер?" --radiolist --hide-header --column "" --column "Варианты" TRUE "Нет"  FALSE "Да" FALSE "Системные настройки")
+ans=$(zenity  --list --cancel-label="$_Exit" --ok-label="$_Next" --title "$_YD_setup_title" --text "$_Welcome1 $conf.$_Welcome2" --radiolist --hide-header --column "" --column "$_Options" TRUE "$_No"  FALSE "$_Yes" FALSE "$_System_set")
 if [ $? -eq "0" ];then
-	if [ "$ans" = "Нет" ]; then
+	if [ "$ans" = "$_No" ]; then
 	echo "proxy=\"no\"" > $conf
 
 	else
-		if [ "$ans" = "Системные настройки" ]; then
+		if [ "$ans" = "$_System_set" ]; then
 		echo "proxy=\"auto\"" > $conf
 
 		else
-			if [ "$ans" = "Да" ]; then
-			echo "proxy=\"`zenity --entry --title="Настройки прокси-сервера" --text="Введите тип соединения, адрес, порт, логин, пароль. Например:" \
+			if [ "$ans" = "$_Yes" ]; then
+			echo "proxy=\"`zenity --entry --title="$_Proxy_title" --text="$_Proxy_body" \
           --entry-text="https,127.0.0.1,443,login,password"`\"" > $conf
 			fi
 		fi
@@ -39,15 +52,15 @@ else
 exit 1
 fi
 ###Folder
-ans=$(zenity  --list --cancel-label="Выход" --ok-label="Далее" --title "Yandex.Disk setup" --text "Выберите папку для синхронизации ваших файлов." --radiolist --hide-header --column "" --column "Варианты" TRUE "По умолчанию (~/Yandex.Disk)" FALSE "Выбрать существующую папку")
+ans=$(zenity  --list --cancel-label="$_Exit" --ok-label="$_Next" --title "$_YD_setup_title" --text "$_Folder_body" --radiolist --hide-header --column "" --column "$_Options" TRUE "$_Default" FALSE "$_Existing")
 if [ $? -eq "0" ];then
-	if [ "$ans" = "По умолчанию (~/Yandex.Disk)" ]; then
+	if [ "$ans" = "$_Default" ]; then
 	mkdir /home/$USER/Yandex.Disk
 	echo "dir=\"/home/$USER/Yandex.Disk\"" >> $conf
 
 	else
-		if [ "$ans" = "Выбрать существующую папку" ]; then
-		folder=`zenity --file-selection --directory --title="Выбор папки для синхронизации"`
+		if [ "$ans" = "$_Existing" ]; then
+		folder=`zenity --file-selection --directory --title="$_Select_folder"`
 		echo "dir=\"$folder\"" >> $conf
 		fi
 	fi
@@ -56,12 +69,12 @@ exit 1
 fi
 ###Token
 
-auth=$(zenity --entry --title="Выбор пути до файла токена" --text="Введите путь к файлу токена (или отсавьте значение по умолчанию)" --entry-text="/home/$USER/.config/yandex-disk/passwd")
+auth=$(zenity --entry --title="$_Token_title" --text="$_Token_body" --entry-text="/home/$USER/.config/yandex-disk/passwd")
 echo auth=\"$auth\" >> $conf 
 
-ENTRY=`zenity --password --username --title="Yandex.Disk setup"`
+ENTRY=`zenity --password --username --title="$_YD_setup_title"`
 if [ $? -eq "0" ];then
-echo $ENTRY | cut -d'|' -f2 | yandex-disk -a $auth token `echo $ENTRY | cut -d'|' -f1`  | cut -d':' -f2 | zenity --text-info --width=350 --height=200 --title="Yandex.Disk авторизация..."
+echo $ENTRY | cut -d'|' -f2 | yandex-disk -a $auth token `echo $ENTRY | cut -d'|' -f1`  | cut -d':' -f2 | zenity --text-info --width=350 --height=200 --title="$_YD_auth_title"
 exit 0
 else
 exit 1
