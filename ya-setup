@@ -2,12 +2,13 @@
 
 #### Author: Snow Dimon ####
 #### Website: snowdimon.ru ####
-#### Mon 18 2016 modified by SlyTomCat: 
+#### modified by SlyTomCat: 
 ####   - adoption to alternative configuration of Yandex Disk daemon
 ####   - addes quotes around config values
+#### modified by Ivan Burmin:
+####   - multi-language support
 
-# Command line positional argument:
-# $1 - configfile path
+### Command line positional argument: $1 - configfile path
 
 if [ $# -eq 1 ];then
   conf=$1
@@ -15,7 +16,7 @@ else
   conf="/home/$USER/.config/yandex-disk/config.cfg"
 fi 
 
-###Language
+### Language
 
 lang_home="/usr/share/yd-tools/translations"
 
@@ -26,21 +27,6 @@ if [ ! -f $lang_file ]; then
 fi
 
 source $lang_file
-
-#ans=$(zenity --list --cancel-label="Cancel" --ok-label="Next" --title "Yandex.Disk setup" --text "Please select your language" --radiolist --hide-header --column "" --column "" FALSE "Russian" TRUE "English")
-#
-#if [ $? -eq "0" ]; then
-#	if [ "$ans" = "Russian" ]; then
-#	source ./translations/ya-setup-ru.lang
-	
-# 	else
-# 		if [ "$ans" = "English" ]; then
-# 		source ./translations/ya-setup-en.lang
-# 		fi
-#	fi
-#else
-#exit 1
-#fi
 
 ###Proxy
 ans=$(zenity  --list --cancel-label="$_Exit" --ok-label="$_Next" --title "$_YD_setup_title" --text "$_Welcome1 $conf.$_Welcome2" --radiolist --hide-header --column "" --column "$_Options" TRUE "$_No"  FALSE "$_Yes" FALSE "$_System_set")
@@ -62,6 +48,7 @@ if [ $? -eq "0" ];then
 else
 exit 1
 fi
+
 ###Folder
 ans=$(zenity  --list --cancel-label="$_Exit" --ok-label="$_Next" --title "$_YD_setup_title" --text "$_Folder_body" --radiolist --hide-header --column "" --column "$_Options" TRUE "$_Default" FALSE "$_Existing")
 if [ $? -eq "0" ];then
@@ -78,8 +65,8 @@ if [ $? -eq "0" ];then
 else
 exit 1
 fi
-###Token
 
+###Token
 auth=$(zenity --entry --title="$_Token_title" --text="$_Token_body" --entry-text="/home/$USER/.config/yandex-disk/passwd")
 echo auth=\"$auth\" >> $conf 
 
@@ -90,4 +77,5 @@ exit 0
 else
 exit 1
 fi
+
 ##############################
