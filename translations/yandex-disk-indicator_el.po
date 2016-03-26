@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: yd-tools\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-03-25 20:32+0300\n"
-"PO-Revision-Date: 2016-03-25 20:33+0300\n"
+"POT-Creation-Date: 2016-03-26 01:16+0300\n"
+"PO-Revision-Date: 2016-03-26 01:17+0300\n"
 "Last-Translator: Sly_tom_cat <slytomcat@mail.ru>\n"
 "Language-Team: ubuntu.ru local team <slytomcat@mail.ru>\n"
 "Language: el_GR\n"
@@ -13,7 +13,7 @@ msgstr ""
 "X-Poedit-KeywordsList: _;gettext;gettext_noop\n"
 "X-Poedit-Basepath: /home/stc/Yandex.Disk/YD-tools\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 1.5.4\n"
+"X-Generator: Poedit 1.7.5\n"
 "X-Poedit-SearchPath-0: /home/stc/Yandex.Disk/YD-tools\n"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:635
@@ -287,15 +287,15 @@ msgstr "-Και σε όλους τους υπόλοιπους που συνει�
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:947
 #, fuzzy
 msgid ""
-"   the Ubuntu.ru forum http://forum.ubuntu.ru/index.php?topic=241992) and"
+"   the Ubuntu.ru forum http://forum.ubuntu.ru/index.php?topic=241992 and"
 msgstr ""
 "το φόρουμ της κοινότητας  Ubuntu.ru http://forum.ubuntu.ru/index.php?"
 "topic=241992"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:948
 #, fuzzy
-msgid "   via github.com (https://github.com/slytomcat/yandex-disk-indicator)"
-msgstr "   via github.com (https://github.com/slytomcat/yandex-disk-indicator)"
+msgid "   via github.com https://github.com/slytomcat/yandex-disk-indicator"
+msgstr "   via github.com https://github.com/slytomcat/yandex-disk-indicator"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:957
 msgid "Yandex.Disk daemon output message"

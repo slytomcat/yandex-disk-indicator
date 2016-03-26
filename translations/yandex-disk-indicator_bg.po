@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: yd-tools\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-03-25 20:31+0300\n"
-"PO-Revision-Date: 2016-03-25 21:47+0200\n"
+"POT-Creation-Date: 2016-03-26 01:15+0300\n"
+"PO-Revision-Date: 2016-03-26 01:16+0300\n"
 "Last-Translator: spacy00001 <spacy00001@gmail.com>\n"
 "Language-Team: spacy01 <spacy00001@gmail.com>\n"
 "Language: bg_BG\n"
@@ -13,7 +13,7 @@ msgstr ""
 "X-Poedit-KeywordsList: _;gettext;gettext_noop\n"
 "X-Poedit-Basepath: /home/stc/Yandex.Disk/YD-tools\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 1.5.4\n"
+"X-Generator: Poedit 1.7.5\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Poedit-SearchPath-0: /home/stc/Yandex.Disk/YD-tools\n"
@@ -26,18 +26,18 @@ msgstr "Индикатор Яндекс.Диск: Неуспешен старт 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:637
 msgid ""
 "Yandex.Disk daemon failed to start because it is not configured properly\n"
-" To configure it up: press OK button.\n"
-" Press Cancel to exit."
+"  To configure it up: press OK button.\n"
+"  Press Cancel to exit."
 msgstr ""
 "Услугата Яндекс.Диск не може да стартира. Вероятно, Яндекс.Диск не е "
 "настроен.\n"
 " За да влезете в настройките натиснете Ok.\n"
-"За изход натиснете Cancel."
+" За изход натиснете Cancel."
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:640
 msgid ""
 "Yandex.Disk daemon failed to start.\n"
-" Press OK to continue without started daemon or Cancel to exit."
+"  Press OK to continue without started daemon or Cancel to exit."
 msgstr ""
 "Услугата Яндекс.Диск не може да стартира. \n"
 " Натиснете Ok за да продължите без пусната услуга или Cancel за изход."
@@ -45,7 +45,7 @@ msgstr ""
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:646
 msgid ""
 "Yandex.Disk daemon failed to start due to network connection issue. \n"
-" Check the Internet connection and try to start daemon again."
+"  Check the Internet connection and try to start daemon again."
 msgstr ""
 "Услугата Яндекс.Диск не може да стартира заради мрежов проблем. \n"
 " Проверете връзката с интерет и опитайте отново."
@@ -196,7 +196,7 @@ msgid ", trash: "
 msgstr ", кошче: "
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:904
-msgid " Folder: "
+msgid "  Folder: "
 msgstr "Папка: "
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:918
@@ -281,12 +281,13 @@ msgid " - And to all other people who contributed to this project through"
 msgstr "- И на всички останали, които подпомагат проекта във "
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:947
-msgid " the Ubuntu.ru forum http://forum.ubuntu.ru/index.php?topic=241992) and"
+msgid ""
+"   the Ubuntu.ru forum http://forum.ubuntu.ru/index.php?topic=241992 and"
 msgstr " форума Ubuntu.ru http://forum.ubuntu.ru/index.php?topic=241992 и"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:948
-msgid " via github.com (https://github.com/slytomcat/yandex-disk-indicator)"
-msgstr "чрез github.com (https://github.com/slytomcat/yandex-disk-indicator)"
+msgid "   via github.com https://github.com/slytomcat/yandex-disk-indicator"
+msgstr "чрез github.com https://github.com/slytomcat/yandex-disk-indicator"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:957
 msgid "Yandex.Disk daemon output message"
