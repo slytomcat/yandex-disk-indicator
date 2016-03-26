@@ -1,0 +1,23 @@
+[Desktop Entry]
+Type=Service
+ServiceTypes=all/allfiles
+MimeType=all/all;
+Actions=PublishToYandex;UnpublishFromYandex;
+X-KDE-Priority=TopLevel
+X-KDE-Icon=/usr/share/yd-tools/icons/yd-128.png
+X-KDE-ServiceTypes=KonqPopupMenu/Plugin
+Name=ydpublish.desktop
+
+[Desktop Action PublishToYandex]
+Name=Add public link on Yandex.Disk
+Name[ru]=Опубликовать через Яндекс.Диск
+Icon=/usr/share/yd-tools/icons/yd-128.png
+Exec=yandex-disk publish %F | xclip -filter -selection clipboard; zenity --info --window-icon=/usr/share/yd-tools/icons/yd-128.png --title="Yandex.Disk"  --ok-label="Close" --text="Public link to the %F is copied to the clipboard." 
+Exec[ru]=yandex-disk publish %F | xclip -filter -selection clipboard; zenity --info --window-icon=/usr/share/yd-tools/icons/yd-128.png --title="Yandex.Disk"  --ok-label="Закрыть" --text="Ссылка на файл: %F скопирована в буфер обмена." 
+
+[Desktop Action UnpublishFromYandex]
+Name=Remove public link from Yandex.Disk
+Name[ru]=Убрать из публикации через Яндекс.Диск
+Icon=/usr/share/yd-tools/icons/yd-128_g.png
+Exec=zenity --info --window-icon=/usr/share/yd-tools/icons/yd-128_g.png  --title="Yandex.Disk" --ok-label="Close" --text="%c. `yandex-disk unpublish %F`"
+Exec[ru]=zenity --info --window-icon=/usr/share/yd-tools/icons/yd-128_g.png  --title="Yandex.Disk" --ok-label="Закрыть" --text="%c. `yandex-disk unpublish %F`"

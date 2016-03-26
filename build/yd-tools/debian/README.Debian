@@ -5,6 +5,8 @@ yd-tools is a package that contains the following components:
 - Yandex.Disk setup GUI utility witch can be used to set-up your connectonn to Yandex.Disk. It is called when Indicator starts if the connection is not configured yet.
 - Set of plugins for file managers. Plugins allow to publish and unpublish files via Yandex.Disk. Plugins will be installed only for the file managers witch are currently installed in the system. Supported file managers: Nautilus, Thunar, Nemo, Dolphin, and Pantheon-files.
 
+Languges supported: English, Russian, Greek, Bulgarian
+
 Support
 -------
 Project discussion availabble at http://forum.ubuntu.ru/index.php?topic=241992.0 (in Russian Language)
