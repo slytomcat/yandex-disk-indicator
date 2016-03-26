@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: yd-tools\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-03-25 20:28+0300\n"
-"PO-Revision-Date: 2016-03-25 20:30+0300\n"
+"POT-Creation-Date: 2016-03-26 01:14+0300\n"
+"PO-Revision-Date: 2016-03-26 01:15+0300\n"
 "Last-Translator: Sly_tom_cat <slytomcat@mail.ru>\n"
 "Language-Team: ubuntu.ru local team <slytomcat@mail.ru>\n"
 "Language: ru_RU\n"
@@ -13,7 +13,7 @@ msgstr ""
 "X-Poedit-KeywordsList: _;gettext;gettext_noop\n"
 "X-Poedit-Basepath: /home/stc/Yandex.Disk/YD-tools\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 1.5.4\n"
+"X-Generator: Poedit 1.7.5\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Poedit-SearchPath-0: /home/stc/Yandex.Disk/YD-tools\n"
@@ -280,15 +280,14 @@ msgstr "- И всем остальным людям, кто помогал пр�
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:947
 msgid ""
-"   the Ubuntu.ru forum http://forum.ubuntu.ru/index.php?topic=241992) and"
+"   the Ubuntu.ru forum http://forum.ubuntu.ru/index.php?topic=241992 and"
 msgstr ""
 "   форуме сообщества Ubuntu.ru http://forum.ubuntu.ru/index.php?topic=241992 "
 "и"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:948
-msgid "   via github.com (https://github.com/slytomcat/yandex-disk-indicator)"
-msgstr ""
-"   через github.com (https://github.com/slytomcat/yandex-disk-indicator)"
+msgid "   via github.com https://github.com/slytomcat/yandex-disk-indicator"
+msgstr "   через github.com https://github.com/slytomcat/yandex-disk-indicator"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:957
 msgid "Yandex.Disk daemon output message"
