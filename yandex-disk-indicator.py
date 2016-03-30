@@ -1202,9 +1202,28 @@ def appExit(msg = None):        # Exit from application (it closes all indicator
 def activateActions():          # Install/deinstall file extensions
   activate = config["fmextensions"]
   result = False
+  
+  # Package manager check
+  if subprocess.call("hash dpkg>/dev/null 2>&1", shell=True)==0:
+    logger.info("dpkg detected")
+    pm = 'dpkg -s'
+  elif subprocess.call("hash rpm>/dev/null 2>&1", shell=True)==0:
+    logger.info("rpm detected")
+    pm = 'rpm -qi'
+  elif subprocess.call("hash pacman>/dev/null 2>&1", shell=True)==0:
+    logger.info("Pacman detected")
+    pm = 'pacman -Qi'
+  elif subprocess.call("hash zypper>/dev/null 2>&1", shell=True)==0:
+    logger.info("Zypper detected")
+    pm = 'zypper info'
+  elif subprocess.call("hash emerge>/dev/null 2>&1", shell=True)==0:
+    logger.info("Emerge detected")
+    pm = 'emerge -pv'
+  else:
+    logger.info("Your file manager is not supported. Installing extensions for the file managers is not possible.")
 
   # --- Actions for Nautilus ---
-  ret = subprocess.call(["dpkg -s nautilus>/dev/null 2>&1"], shell=True)
+  ret = subprocess.call([pm + "nautilus>/dev/null 2>&1"], shell=True)
   logger.info("Nautilus installed: %s" % str(ret == 0))
   if ret == 0:
     ver = subprocess.check_output(["lsb_release -r | sed -n '1{s/[^0-9]//g;p;q}'"], shell=True)
@@ -1230,7 +1249,7 @@ def activateActions():          # Install/deinstall file extensions
       except:
         pass
   # --- Actions for Nemo ---
-  ret = subprocess.call(["dpkg -s nemo>/dev/null 2>&1"], shell=True)
+  ret = subprocess.call([pm + "nemo>/dev/null 2>&1"], shell=True)
   logger.info("Nemo installed: %s" % str(ret == 0))
   if ret == 0:
     if activate:        # Install actions for Nemo
@@ -1250,7 +1269,7 @@ def activateActions():          # Install/deinstall file extensions
       except:
         pass
   # --- Actions for Thunar ---
-  ret = subprocess.call(["dpkg -s thunar>/dev/null 2>&1"], shell=True)
+  ret = subprocess.call([pm + "thunar>/dev/null 2>&1"], shell=True)
   logger.info("Thunar installed: %s" % str(ret == 0))
   if ret == 0:
     ucaPath = pathJoin(userHome, ".config/Thunar/uca.xml")
@@ -1296,7 +1315,7 @@ def activateActions():          # Install/deinstall file extensions
         pass
 
   # --- Actions for Dolphin ---
-  ret = subprocess.call(["dpkg -s dolphin>/dev/null 2>&1"], shell=True)
+  ret = subprocess.call([pm + "dolphin>/dev/null 2>&1"], shell=True)
   logger.info("Dolphin installed: %s" % str(ret == 0))
   if ret == 0:
     if activate:        # Install actions for Dolphin
@@ -1314,7 +1333,7 @@ def activateActions():          # Install/deinstall file extensions
       except:
         pass
   # --- Actions for Pantheon-files ---
-  ret = subprocess.call(["dpkg -s pantheon-files>/dev/null 2>&1"], shell=True)
+  ret = subprocess.call([pm + "pantheon-files>/dev/null 2>&1"], shell=True)
   logger.info("Pantheon-files installed: %s" % str(ret == 0))
   if ret == 0:
     ctrs_path = "/usr/share/contractor/"
