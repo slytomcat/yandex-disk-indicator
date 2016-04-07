@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: yd-tools\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-04-07 16:12+0300\n"
-"PO-Revision-Date: 2016-04-07 16:16+0300\n"
+"PO-Revision-Date: 2016-04-07 16:50+0300\n"
 "Last-Translator: Sly_tom_cat <slytomcat@mail.ru>\n"
 "Language-Team: Ace Of Snakes <aceofsnakesmain@gmail.com>\n"
 "Language: be_RU\n"
@@ -11,8 +11,8 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 1.5.4\n"
-"X-Poedit-Basepath: /home/stc/Yandex.Disk/YD-tools/\n"
+"X-Generator: Poedit 1.8.4\n"
+"X-Poedit-Basepath: /home/stc/Yandex.Disk/YD-tools\n"
 "X-Poedit-SearchPath-0: /home/stc/Yandex.Disk/YD-tools\n"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:634
@@ -423,6 +423,8 @@ msgid ""
 "The indicator instance is already running.\n"
 "(file %s is locked by another process)"
 msgstr ""
+"Індыкатар ўжо запушчаны.\n"
+"(файл %s заблакаваны іншым працэсам)"
 
 # Name of file manager action
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1237
@@ -472,7 +474,7 @@ msgstr ""
 "(Адладка),20 - для паказу ўсіх паведамленняў акрамя адладкавыя (Інфармацыя), "
 "30 - дляпаказу ўсіх паведамленняў акрамя інфармацыйных і адладкавыя "
 "(Папярэджанні), 40- Для паказу толькі паведамленняў пра памылкі, 50 - для "
-"паказу толькі паведамленняў абкрытычных памылках. Па змаўчанні: 30"
+"паказу толькі паведамленняў абкрытычных памылках. па змаўчанні: 30"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1371
 msgid ""
@@ -503,11 +505,10 @@ msgid ""
 "No daemons specified.\n"
 "Check correctness of -r and -c options."
 msgstr ""
+"Не ўказана ніводнага дэмана.\n"
+"Праверце карэктнасць  -r і -c опцый."
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1509
 #, python-format
 msgid "#%d "
 msgstr "№%d "
-
-#~ msgid "#% d"
-#~ msgstr "№% d"
