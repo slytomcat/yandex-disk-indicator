@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: yd-tools\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-04-07 16:12+0300\n"
-"PO-Revision-Date: 2016-04-07 16:50+0300\n"
+"PO-Revision-Date: 2016-04-07 17:35+0300\n"
 "Last-Translator: Sly_tom_cat <slytomcat@mail.ru>\n"
 "Language-Team: Ace Of Snakes <aceofsnakesmain@gmail.com>\n"
 "Language: be_RU\n"
@@ -50,12 +50,12 @@ msgid ""
 "Yandex.Disk utility is not installed.\n"
 " Visit www.yandex.ru, download and install Yandex.Disk daemon."
 msgstr ""
-"Утыліта Яндекс.Диск не ўсталяваная.Наведайце www.yandex.ru, загрузіце і "
-"ўсталюйце сэрвіс Yandex.Disk"
+"Утыліта Яндекс.Дыск не ўсталяваная.Наведайце www.yandex.ru, загрузіце і "
+"ўсталюйце сэрвіс Яндекс.Дыск"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:651
 msgid "Yandex.Disk daemon failed to start due to some unrecognised error."
-msgstr "Запуск сэрвісу Яндекс.Диск не атрымаўся з-за непапраўнай памылкі"
+msgstr "Запуск сэрвісу Яндекс.Дыск не атрымаўся з-за непапраўнай памылкі"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:756
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:758
@@ -64,11 +64,11 @@ msgstr "Запуск сэрвісу Яндекс.Диск не атрымаўс�
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:766
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:768
 msgid "Yandex.Disk "
-msgstr "Яндекс.Диск"
+msgstr "Яндекс.Дыск"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:756
 msgid "Yandex.Disk daemon has been started"
-msgstr "Сэрвіс Yandex.Disk запушчаны"
+msgstr "Сэрвіс Яндекс.Дыск запушчаны"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:758
 msgid "Synchronization started"
@@ -84,7 +84,7 @@ msgstr "Сінхранізацыя прыпыненая"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:766
 msgid "Yandex.Disk daemon has been stopped"
-msgstr "Сэрвіс Yandex.Disk спынены"
+msgstr "Сэрвіс Яндекс.Дыск спынены"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:768
 msgid "Synchronization ERROR"
@@ -96,19 +96,19 @@ msgstr "Апошнія сінхранізаваныя"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:824
 msgid "Start Yandex.Disk daemon"
-msgstr "Запусціць сэрвіс Яндекс.Диск"
+msgstr "Запусціць сэрвіс Яндекс.Дыск"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:827
 msgid "Stop Yandex.Disk daemon"
-msgstr "Спыніць сэрвіс Яндекс.Диск"
+msgstr "Спыніць сэрвіс Яндекс.Дыск"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:830
 msgid "Open Yandex.Disk Folder"
-msgstr "Адкрыць каталог Яндекс.Диск"
+msgstr "Адкрыць каталог Яндекс.Дыск"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:832
 msgid "Open Yandex.Disk on the web"
-msgstr "Адкрыць Яндекс.Диск ў інтэрнэце"
+msgstr "Адкрыць Яндекс.Дыск ў інтэрнэце"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:833
 msgid "https://disk.yandex.com"
@@ -124,7 +124,7 @@ msgstr "Дапамога"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:841
 msgid "Yandex.Disk daemon"
-msgstr "Сэрвіс Яндекс.Диск"
+msgstr "Сэрвіс Яндекс.Дыск"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:842
 msgid "https://yandex.com/support/disk/"
@@ -135,7 +135,7 @@ msgstr "https://yandex.ru/support/disk/"
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1157
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1161
 msgid "Yandex.Disk Indicator"
-msgstr "Індыкатар Яндекс.Диск"
+msgstr "Індыкатар Яндекс.Дыск"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:846
 msgid "https://github.com/slytomcat/yandex-disk-indicator/wiki"
@@ -195,7 +195,7 @@ msgstr "Каталог:"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:917
 msgid "Yandex.Disk indicator"
-msgstr "Індыкатар Яндекс.Диск"
+msgstr "Індыкатар Яндекс.Дыск"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:918
 msgid "Version "
@@ -286,7 +286,7 @@ msgstr "праз github.com https://github.com/slytomcat/yandex-disk-indicator"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:956
 msgid "Yandex.Disk daemon output message"
-msgstr "статутныя паведамленні ад сэрвісу Яндекс.Диск"
+msgstr "статутныя паведамленні ад сэрвісу Яндекс.Дыск"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:959
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1004
@@ -367,21 +367,21 @@ msgstr ""
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1100
 msgid "Read-Only: Do not upload locally changed files to Yandex.Disk"
-msgstr "Толькі чытанне: Ці не загружаць лакальна змененыя файлы на Яндекс.Диск"
+msgstr "Толькі чытанне: Ці не загружаць лакальна змененыя файлы на Яндекс.Дыск"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1101
 msgid ""
 "Locally changed files will be renamed if a newer version of this file appear "
 "in Yandex.Disk."
 msgstr ""
-"Змененыя файлы будуць пераназваныя, калі больш новая версія з'явіцца "
-"наЯндекс.Диске."
+"Змененыя файлы будуць пераназваныя, калі больш новая версія з'явіцца на "
+"Яндекс.Дыске."
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1105
 msgid ""
 "Overwrite locally changed files by files from Yandex.Disk (in read-only mode)"
 msgstr ""
-"Сапраўды перапісаць лакальна змененыя файлы файламі з Яндекс.Диска (у "
+"Сапраўды перапісаць лакальна змененыя файлы файламі з Яндекс.Дыска (у "
 "рэжыметолькі-чытанне)"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1108
@@ -389,8 +389,8 @@ msgid ""
 "Locally changed files will be overwritten if a newer version of this file "
 "appear in Yandex.Disk."
 msgstr ""
-"Змененыя файлы будуць перазапісаны, калі больш новая версія з'явіцца "
-"наЯндекс.Дыске."
+"Змененыя файлы будуць перазапісаны, калі больш новая версія з'явіцца на "
+"Яндекс.Дыске."
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1117
 msgid "Excluded folders List"
@@ -489,8 +489,8 @@ msgid ""
 "Path to configuration file of daemon that should be removed from daemos "
 "list. Default: ''"
 msgstr ""
-"Шлях да файла канфігурацыі сэрвіс Yandex.Disk які павінен быць выдалены "
-"зСпісу актыўных сервсиов. Па змаўчанні: ''"
+"Шлях да файла канфігурацыі сэрвіс Яндекс.Дыск які павінен быць выдалены з "
+"спісу актыўных сервсиов. Па змаўчанні: ''"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1378
 msgid "Show this help message and exit"
@@ -512,5 +512,3 @@ msgstr ""
 #, python-format
 msgid "#%d "
 msgstr "№%d "
-
-
