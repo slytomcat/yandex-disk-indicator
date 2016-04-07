@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.8.11'
+appVer = '1.8.12'
 #
 #  Copyright 2014+ Sly_tom_cat <slytomcat@mail.ru>
 #  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
@@ -577,17 +577,16 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
      - 'no internet access' converted to 'no_net'
      - 'error' covers all other errors, except 'no internet access'
     '''
-    self.update.reset()                     # Reset updates
+    self.update.reset()                     # Reset updates object
     # Split output on two parts: list of named values and file list
-    pos = out.find('Last synchronized items:')
-    if pos > 0:
-      output = out[:pos].splitlines()
-      files = out[pos+25:]
+    output = out.split('Last synchronized items:')
+    if len(output) == 2:
+      files = output[1]
     else:
-      output = out.splitlines()
       files = ''
+    output = output[0].splitlines()
     # Make a dictionary from named values (use only lines containing ':')
-    res = dict([re.findall(r'\t*(.+): (.*)' , l)[0] for l in output if ':' in l])
+    res = dict([re.findall(r'\s*(.+):\s*(.*)', l)[0] for l in output if ':' in l])
     # Parse named status values
     for srch, key in (('Synchronization core status', 'status'), ('Sync progress', 'progress'),
                       ('Total', 'total'), ('Used', 'used'), ('Available', 'free'),
@@ -1202,7 +1201,7 @@ def appExit(msg = None):        # Exit from application (it closes all indicator
 def activateActions():          # Install/deinstall file extensions
   activate = config["fmextensions"]
   result = False
-  
+
   # Package manager check
   if subprocess.call("hash dpkg>/dev/null 2>&1", shell=True)==0:
     logger.info("dpkg detected")
