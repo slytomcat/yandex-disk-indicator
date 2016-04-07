@@ -17,7 +17,7 @@ cp ../../ya-setup usr/share/yd-tools/
 cp ../../translations/yandex-disk-indicator_ru.mo usr/share/locale/ru/LC_MESSAGES/yandex-disk-indicator.mo
 cp ../../translations/yandex-disk-indicator_el.mo usr/share/locale/el/LC_MESSAGES/yandex-disk-indicator.mo
 cp ../../translations/yandex-disk-indicator_bg.mo usr/share/locale/bg/LC_MESSAGES/yandex-disk-indicator.mo
-cp ../../translations/yandex-disk-indicator_be.mo usr/share/locale/bg/LC_MESSAGES/yandex-disk-indicator.mo
+cp ../../translations/yandex-disk-indicator_be.mo usr/share/locale/be/LC_MESSAGES/yandex-disk-indicator.mo
 cp ../../translations/*.lang usr/share/yd-tools/translations/
 cp ../../Yandex.Disk-indicator.desktop usr/share/applications/
 cp ../../icons/readme usr/share/yd-tools/icons/
