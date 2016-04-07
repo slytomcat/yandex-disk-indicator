@@ -5,6 +5,7 @@ mkdir -p usr/share/applications
 mkdir -p usr/share/locale/ru/LC_MESSAGES
 mkdir -p usr/share/locale/el/LC_MESSAGES
 mkdir -p usr/share/locale/bg/LC_MESSAGES
+mkdir -p usr/share/locale/be/LC_MESSAGES
 mkdir -p usr/share/yd-tools/fm-actions/Dolphin
 mkdir -p usr/share/yd-tools/fm-actions/Nautilus_Nemo
 mkdir -p usr/share/yd-tools/fm-actions/pantheon-files
@@ -16,6 +17,7 @@ cp ../../ya-setup usr/share/yd-tools/
 cp ../../translations/yandex-disk-indicator_ru.mo usr/share/locale/ru/LC_MESSAGES/yandex-disk-indicator.mo
 cp ../../translations/yandex-disk-indicator_el.mo usr/share/locale/el/LC_MESSAGES/yandex-disk-indicator.mo
 cp ../../translations/yandex-disk-indicator_bg.mo usr/share/locale/bg/LC_MESSAGES/yandex-disk-indicator.mo
+cp ../../translations/yandex-disk-indicator_be.mo usr/share/locale/bg/LC_MESSAGES/yandex-disk-indicator.mo
 cp ../../translations/*.lang usr/share/yd-tools/translations/
 cp ../../Yandex.Disk-indicator.desktop usr/share/applications/
 cp ../../icons/readme usr/share/yd-tools/icons/
