@@ -2,6 +2,6 @@ yd-tools (1.8.12) trusty; urgency=medium
 
   * Changes:
     -- fix for exception when daemon output the russian text
-    -- Belarussian language support
+    -- Belarusian language support
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Thu, 31 Mar 2016 00:27:04 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Thu, 07 Apr 2016 17:29:25 +0300
