@@ -15,7 +15,6 @@ msgstr ""
 "X-Poedit-Basepath: /home/stc/Yandex.Disk/YD-tools\n"
 "X-Poedit-SearchPath-0: /home/stc/Yandex.Disk/YD-tools\n"
 
-
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:634
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:643
 msgid "Yandex.Disk Indicator: daemon start failed"
@@ -513,3 +512,5 @@ msgstr ""
 #, python-format
 msgid "#%d "
 msgstr "№%d "
+
+
