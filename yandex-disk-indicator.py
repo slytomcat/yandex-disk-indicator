@@ -577,15 +577,14 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
      - 'no internet access' converted to 'no_net'
      - 'error' covers all other errors, except 'no internet access'
     '''
-    self.update.reset()                     # Reset updates
+    self.update.reset()                     # Reset updates object
     # Split output on two parts: list of named values and file list
-    pos = out.find('Last synchronized items:')
-    if pos > 0:
-      output = out[:pos].splitlines()
-      files = out[pos+25:]
+    output = out.split('Last synchronized items:')
+    if len(output) == 2:
+      files = output[1]
     else:
-      output = out.splitlines()
       files = ''
+    output = output[0].splitlines()
     # Make a dictionary from named values (use only lines containing ':')
     res = dict([re.findall(r'\s*(.+):\s*(.*)', l)[0] for l in output if ':' in l])
     # Parse named status values
