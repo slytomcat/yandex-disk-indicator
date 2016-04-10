@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.8.12'
+appVer = '1.8.13'
 #
 #  Copyright 2014+ Sly_tom_cat <slytomcat@mail.ru>
 #  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
@@ -20,7 +20,7 @@ appVer = '1.8.12'
 #  You should have received a copy of the GNU General Public License
 #  along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import gi, os, sys, subprocess, pyinotify, fcntl, gettext, datetime, logging, re, argparse
+import gi, os, sys, subprocess, pyinotify, fcntl, gettext, datetime, logging, re, argparse, locale
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 gi.require_version('AppIndicator3', '0.1')
@@ -504,7 +504,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     self.update = YDDaemon.UpdateEvent()              # Initialize changes control object
     self.vals = YDDaemon._dvals.copy()                # Load default daemon status values
     # Check that daemon is running
-    out = self.getOutput(workLang=True)
+    out = self.getOutput()
     if out:                                           # Is daemon running?
       self._parseOutput(out)                          # Update status values
       self.vals['laststatus'] = self.vals['status']   # Set unknown last status as current status
@@ -530,7 +530,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     (when byNotifier=True)'''
 
     # Parse fresh daemon output. Parsing returns true when something changed
-    if self._parseOutput(self.getOutput(workLang=True)):
+    if self._parseOutput(self.getOutput()):
       self.change(self.vals, self.update)     # Raise outside update event
     logger.debug('Raw event ' + self.ID + ('iNtfy ' if iNtf else 'Timer ') +
                  self.vals['laststatus'] + ' -> ' + self.vals['status'])
@@ -548,17 +548,15 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
   def change(self, vals, update):       # Redefined update handler
     logger.debug('Update event: %s \nValues : %s' % (str(update), str(vals)))
 
-  def getOutput(self, workLang=False):  # Get result of 'yandex-disk status'
-    if workLang:          # Change LANG settings when it required
-      os.putenv('LANG', 'en_US.UTF-8')
+  def getOutput(self, userLang=False):  # Get result of 'yandex-disk status'
+    cmd = ['yandex-disk','-c', self.config.fileName, 'status']
+    if not userLang:      # Change locale settings when it required
+      cmd = ['env', '-i', "LANG='en_US.UTF8'"] + cmd
     try:
-      output = subprocess.check_output(['yandex-disk','-c', self.config.fileName, 'status'],
-                                            universal_newlines=True)
+      output = subprocess.check_output(cmd, universal_newlines=True)
     except:
       output = ''         # daemon is not running or bad
-    #logger.debug('output = %s' % daemonOutput)
-    if workLang:          # Restore LANG settings
-      os.putenv('LANG', userLANG)
+    #logger.debug('output = %s' % output)
 
     return output
 
@@ -692,7 +690,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
         break
     if err == '':
       self.vals = YDDaemon._dvals.copy()            # Initialise default values
-      self._parseOutput(self.getOutput(True))       # Parse fresh daemon output
+      self._parseOutput(self.getOutput())           # Parse fresh daemon output
       self.update.init = True                       # Remember that it is initial change event
       self.vals['status'] = 'paused'                # Set current status to avoid index status
       self.vals['laststatus'] = 'none'              # Set well known previous status
@@ -959,7 +957,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
       statusWindow.add_button(_('Close'), Gtk.ResponseType.CLOSE)
       textBox = Gtk.TextView()                            # Create text-box to display daemon output
       # Set output buffer with daemon output in user language
-      textBox.get_buffer().set_text(self.daemon.getOutput())
+      textBox.get_buffer().set_text(self.daemon.getOutput(True))
       textBox.set_editable(False)
       statusWindow.get_content_area().add(textBox)        # Put it inside the dialogue content area
       statusWindow.show_all();  statusWindow.run();   statusWindow.destroy()
@@ -1413,8 +1411,6 @@ if __name__ == '__main__':
   # Setup localization
   # Load translation object (or NullTranslations) and define _() function.
   gettext.translation(appName, '/usr/share/locale', fallback=True).install()
-  userLANG = os.getenv('LANG')
-  logger.info('User LANG is ' + userLANG)
 
   # Get command line arguments or their default values
   args = argParse()

@@ -15,6 +15,12 @@ Installation from Github:
 Installation from Launchpad PPA: 
  - Visit PPA: https://launchpad.net/~slytomcat/+archive/ubuntu/ppa and follow the instructions.
 
+INTERFACE LANGUAGES
+
+English, Russian, Greek, Bulgarian, Belorussian.
+
+Everybody welcome to translate it to other languages!  
+
 
 NOTES:
 
