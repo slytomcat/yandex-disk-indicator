@@ -22,6 +22,6 @@ Name=Remove public link from Yandex.Disk
 Name[ru]=Убрать из публикации через Яндекс.Диск
 Name[be]=Прыбраць з публікацыі праз Яндекс.Дыск
 Icon=/usr/share/yd-tools/icons/yd-128_g.png
-Exec=zenity --info --window-icon=/usr/share/yd-tools/icons/yd-128_g.p ng  --title="Yandex.Disk" --ok-label="Close" --text="%c. `yandex-disk unpublish %F`"
+Exec=zenity --info --window-icon=/usr/share/yd-tools/icons/yd-128_g.png  --title="Yandex.Disk" --ok-label="Close" --text="%c. `yandex-disk unpublish %F`"
 Exec[ru]=zenity --info --window-icon=/usr/share/yd-tools/icons/yd-128_g.png  --title="Yandex.Disk" --ok-label="Закрыть" --text="%c. `yandex-disk unpublish %F`"
 Exec[be]=zenity --info --window-icon = /usr/share/yd-tools/icons/yd-128_g.png --title = "Yandex.Disk" --ok-label = "Зачыніць" - -text = "%c.` yandex-disk unpublish %F`"
