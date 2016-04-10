@@ -1,6 +1,6 @@
 yd-tools (1.8.13) trusty; urgency=medium
 
   * Changes:
-    -- fix for non-corrects behavior of yandex-disk with customized user locale environment
+    -- fix for non-corrects behavior of yandex-disk while running in the customized user language settings
 
  -- Sly_tom_cat <slytomcat@mail.ru>  Fri, 08 Apr 2016 15:02:30 +0300
