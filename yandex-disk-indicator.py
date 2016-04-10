@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.8.13'
+appVer = '1.8.14'
 #
 #  Copyright 2014+ Sly_tom_cat <slytomcat@mail.ru>
 #  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
@@ -557,7 +557,6 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     except:
       output = ''         # daemon is not running or bad
     #logger.debug('output = %s' % output)
-
     return output
 
   def _parseOutput(self, out):          # Parse the daemon output
