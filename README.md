@@ -1,6 +1,7 @@
 ### **![yandex-disk-indicator](https://github.com/slytomcat/yandex-disk-indicator/blob/master/icons/yd-128.png)**
 # yandex-disk-indicator
-[![Github All Releases](https://img.shields.io/github/downloads/atom/atom/total.svg?maxAge=2592000)]()
+[![Github All Releases](https://img.shields.io/github/downloads/atom/atom/total.svg)]()
+[![npm](https://img.shields.io/npm/dm/localeval.svg?maxAge=2592000)]()
 
 Desktop panel indicator for YandexDisk CLI client for Linux
 
