@@ -1,7 +1,7 @@
 ### **![yandex-disk-indicator](https://github.com/slytomcat/yandex-disk-indicator/blob/master/icons/yd-128.png)**
 # yandex-disk-indicator
 [![license](https://img.shields.io/badge/license-GPL%20v.3-green.svg)](https://github.com/slytomcat/yandex-disk-indicator/blob/master/LICENSE)
-[![wiki](https://img.shields.io/badge/wiki-available-green.svg](https://github.com/slytomcat/yandex-disk-indicator/wiki)
+[![wiki](https://img.shields.io/badge/wiki-available-green.svg)](https://github.com/slytomcat/yandex-disk-indicator/wiki)
 
 Desktop panel indicator for YandexDisk CLI client for Linux
 
