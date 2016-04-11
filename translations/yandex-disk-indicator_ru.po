@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: yd-tools\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-03-26 01:14+0300\n"
-"PO-Revision-Date: 2016-04-07 16:03+0300\n"
+"PO-Revision-Date: 2016-04-12 00:06+0300\n"
 "Last-Translator: Sly_tom_cat <slytomcat@mail.ru>\n"
 "Language-Team: ubuntu.ru local team <slytomcat@mail.ru>\n"
 "Language: ru_RU\n"
@@ -13,7 +13,7 @@ msgstr ""
 "X-Poedit-KeywordsList: _;gettext;gettext_noop\n"
 "X-Poedit-Basepath: /home/stc/Yandex.Disk/YD-tools\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 1.5.4\n"
+"X-Generator: Poedit 1.7.5\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Poedit-SearchPath-0: /home/stc/Yandex.Disk/YD-tools\n"
@@ -54,7 +54,7 @@ msgid ""
 " Visit www.yandex.ru, download and install Yandex.Disk daemon."
 msgstr ""
 "Утилита Яндекс.Диск не установлена.\n"
-"Посетите www.yandex.ru, загрузите и установите сервис Yandex.Disk"
+"Посетите www.yandex.ru, загрузите и установите сервис Яндекс.Диск."
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:652
 msgid "Yandex.Disk daemon failed to start due to some unrecognised error."
@@ -71,7 +71,7 @@ msgstr "Яндекс.Диск "
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:757
 msgid "Yandex.Disk daemon has been started"
-msgstr "Сервис Yandex.Disk запущен"
+msgstr "Сервис Яндекс.Диск запущен"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:759
 msgid "Synchronization started"
@@ -87,7 +87,7 @@ msgstr "Синхронизация приостановлена"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:767
 msgid "Yandex.Disk daemon has been stopped"
-msgstr "Сервис Yandex.Disk остановлен"
+msgstr "Сервис Яндекс.Диск остановлен"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:769
 msgid "Synchronization ERROR"
@@ -486,7 +486,7 @@ msgid ""
 "Path to configuration file of YandexDisk daemon. This daemon will be added "
 "to daemons list if it is not in the current configuration.Default: ''"
 msgstr ""
-"Путь к файлу конфигурации сервиса yandex-disk. Этот сервис будет добавлен к "
+"Путь к файлу конфигурации сервиса Яндекс.Диск. Этот сервис будет добавлен к "
 "списку сервисов если он еще не в нем. По умолчанию: \"\""
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1358
@@ -494,8 +494,8 @@ msgid ""
 "Path to configuration file of daemon that should be removed from daemos "
 "list. Default: ''"
 msgstr ""
-"Путь к файлу конфигурации сервис Yandex.Disk который должен быть удален из "
-"списка активных сервсиов. По умолчанию: \"\""
+"Путь к файлу конфигурации сервиса Яндекс.Диск, который должен быть удален из "
+"списка активных сервисов. По умолчанию: \"\""
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1360
 msgid "Show this help message and exit"
