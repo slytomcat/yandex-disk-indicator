@@ -2,7 +2,7 @@
 # yandex-disk-indicator
 [![Github All Releases](https://img.shields.io/github/downloads/atom/atom/total.svg)]()
 [![npm](https://img.shields.io/npm/dm/localeval.svg?maxAge=2592000)]()
-[![license](https://img.shields.io/github/license/mashape/apistatus.svg?maxAge=2592000)]()
+[![npm](https://img.shields.io/npm/l/express.svg?maxAge=2592000)]()
 
 Desktop panel indicator for YandexDisk CLI client for Linux
 
