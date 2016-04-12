@@ -1,5 +1,6 @@
 ﻿________TO DO__________
 - man страницы
+- сделать, чтобы процесс индикатора назывался не python3 ... , а yandex-disk-indicator
 
 ________TO DO (ON HOLD)__________
 - DAEMON-INSTALL_STORY — solution 5??? - on hold
