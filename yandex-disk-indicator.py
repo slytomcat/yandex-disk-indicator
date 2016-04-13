@@ -55,7 +55,7 @@ def makedirs(dst):
 
 class CVal(object):             # Multivalue helper
   ''' Class to work with value that can be None, scalar item or list of items depending
-      of number of elementary items added to it. '''
+      of number of elementary items added to it or it contain. '''
 
   def __init__(self, initialValue=None):
     self.set(initialValue)   # store initial value
@@ -178,11 +178,10 @@ class Config(dict):             # Configuration
     # Correctly masked value have to be just one '*' and possible surrounded by spaces
     # Number of '*' must be equal to number of words
     if sum([len(p.strip()) for p in mask]) == len(words):
-      # Values are OK, store them
-      res = CVal()
-      for p in words:                                 # decode vales with removed quotes
-        res.add(self.decode(p[1:-1] if p[0] == '"' else p))
-      return res.get()
+      # Values are OK. Remove quotes.
+      words = [(p[1:-1] if p[0] == '"' else p) for p in words]
+      # Decode vales with and return them
+      return CVal([self.decode(p) for p in words]).get()
     else:
       return None                                     # Something wrong in values string
 
@@ -209,7 +208,7 @@ class Config(dict):             # Configuration
       return False
     for kv, vv in res:        # Parse each line
       # Check key
-      key = re.findall(r'"([\w-]+)"$|^([\w-]+)$', kv)
+      key = re.findall(r'^"([\w-]+)"$|^([\w-]+)$', kv)
       if not key:
         logger.warning('Wrong key in line \'%s %s %s\'' % (kv, self.delimiter, vv))
       else:                           # Key is OK
@@ -271,7 +270,7 @@ class Config(dict):             # Configuration
       logger.error('Config file write error: %s' % self.fileName)
       return False
     logger.info('Config written: %s' % self.fileName)
-    self.changed = False
+    self.changed = False                  # Reset flag of change in not stored config  
     return True
 
 class Timer(object):            # Timer for triggering a function periodically
@@ -353,16 +352,16 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
   Public methods:
   __init__ - Handles initialization of the object and as a part - auto-start daemon if it
              is required by configuration settings.
-  getOuput - Provides daemon output (in user language if optional parameter workLang is
-             False or missed)
+  getOuput - Provides daemon output (in user language when optional parameter userLang is
+             True)
   start    - Starts daemon if it is not started yet
   stop     - Stops running daemon
   exit     - Handles 'Stop on exit' facility according to daemon configuration settings.
   change   - Call back function for handling daemon status changes outside the class.
              It have to be redefined by UI update routine.
              The parameters of the call - status values dictionary (see vars description below)
-             and the UpdateEvent object with with 4 boolean values:
-              stat is True when status or progress has been changed,
+             and the UpdateEvent object with with 5 boolean values:
+              stat is True when status has been changed,
               prog is True when synchronization progress has been changed,
               size is True when some of sizes has been changed,
               last is True when list of last synchronized has been changed,
@@ -391,7 +390,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       self.reset()
 
     def reset(self):      # Set initial values for object variables
-      self.stat = False         # It become True when status or synchronisation progress changed
+      self.stat = False         # It become True when status changed
       self.prog = False         # It become True when synchronization progress changed
       self.size = False         # It become True when some sizes values changed
       self.last = False         # It become True when when list of last synchronized changed
@@ -1357,8 +1356,8 @@ def argParse():                 # Parse command line arguments
   parser = argparse.ArgumentParser(description=_('Desktop indicator for yandex-disk daemon'),
                                    add_help=False)
   group = parser.add_argument_group(_('Options'))
-  group.add_argument('-l', '--log', type=int, choices=range(10, 60, 10),
-            dest='level', default=30, help=_('Sets the logging level: ' +
+  group.add_argument('-l', '--log', type=int, choices=range(10, 60, 10), dest='level', default=30,
+            help=_('Sets the logging level: ' +
                    '10 - to show all messages (DEBUG), ' +
                    '20 - to show all messages except debugging messages (INFO), ' +
                    '30 - to show all messages except debugging and info messages (WARNING), ' +
@@ -1379,15 +1378,22 @@ def argParse():                 # Parse command line arguments
 
 def checkAutoStart(path):       # Check that auto-start is enabled
   if pathExists(path):
+    i = 1 if os.getenv('XDG_CURRENT_DESKTOP') in ('Unity', 'Pantheon') else 0
     with open(path, 'rt') as f:
       attr = re.findall(r'\nHidden=(.+)|\nX-GNOME-Autostart-enabled=(.+)', f.read())
       if attr:
-        i = {'Unity':1, 'KDE':0, 'XFCE':0, 'Pantheon':1}.get(os.getenv('XDG_CURRENT_DESKTOP'), 0)
         if attr[0][i] and attr[0][i] == ('true' if i else 'false'):
           return True
       else:
         return True
   return False
+
+def setProcName(newname):
+    from ctypes import cdll, byref, create_string_buffer
+    libc = cdll.LoadLibrary('libc.so.6')
+    buff = create_string_buffer(len(newname)+1)
+    buff.value = bytes(newname, 'UTF8')
+    libc.prctl(15, byref(buff), 0, 0, 0)
 
 ###################### MAIN #########################
 if __name__ == '__main__':
@@ -1402,6 +1408,9 @@ if __name__ == '__main__':
   # Define .desktop files locations for indicator auto-start facility
   autoStartSrc = '/usr/share/applications/Yandex.Disk-indicator.desktop'
   autoStartDst = pathJoin(userHome, '.config/autostart/Yandex.Disk-indicator.desktop')
+
+  # Change the process name
+  setProcName(appHomeName)
 
   # Initialize logging
   logging.basicConfig(format='%(asctime)-15s %(levelname)-8s %(message)s')
