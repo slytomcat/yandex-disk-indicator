@@ -506,8 +506,8 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     out = self.getOutput()
     if out:                                           # Is daemon running?
       self._parseOutput(out)                          # Update status values
-      logger.debug('Init status: ' + self.vals['status'])
-      logger.debug('Init vals: ' + str(self.vals))
+      #logger.debug('Init status: ' + self.vals['status'])
+      #logger.debug('Init vals: ' + str(self.vals))
       self.vals['laststatus'] = self.vals['status']   # Set unknown last status as current status
       self.update.init = True                         # Remember that it is initial change event
       self.change(self.vals, self.update)             # Manually raise initial change event
