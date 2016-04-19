@@ -381,7 +381,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
   '''
 
   # Default daemon status values
-  _dvals = {'status':'', 'progress':'', 'laststatus':'', 'total':'...',
+  _dvals = {'status':'none', 'progress':'', 'laststatus':'none', 'total':'...',
            'used':'...', 'free':'...', 'trash':'...', 'lastitems':[]}
 
   class UpdateEvent(object):            # Changes control class
@@ -506,6 +506,8 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     out = self.getOutput()
     if out:                                           # Is daemon running?
       self._parseOutput(out)                          # Update status values
+      logger.debug('Init status: ' + self.vals['status'])
+      logger.debug('Init vals: ' + str(self.vals))
       self.vals['laststatus'] = self.vals['status']   # Set unknown last status as current status
       self.update.init = True                         # Remember that it is initial change event
       self.change(self.vals, self.update)             # Manually raise initial change event
@@ -594,7 +596,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
         self.vals['laststatus'] = self.vals['status']
         # Convert daemon raw status to internal representation
         val = (# Convert '' into 'none' status
-               'none' if not val else
+               'none' if val == '' else
                # Ignore index status
                self.vals['laststatus'] if val == 'index' else
                # Rename long error status
@@ -857,7 +859,6 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
     def update(self, vals, update, yddir):  # Update information in menu
       # Update status data
       if update.stat or update.prog or update.init:
-        logger.debug(vals['status']+self.YD_STATUS[vals['status']])
         self.status.set_label(_('Status: ') + self.YD_STATUS[vals['status']] +
                               (vals['progress'] if vals['status'] == 'busy' else ''))
       # Update sizes data
