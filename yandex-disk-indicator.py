@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.8.14'
+appVer = '1.8.15'
 #
 #  Copyright 2014+ Sly_tom_cat <slytomcat@mail.ru>
 #  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
@@ -270,7 +270,7 @@ class Config(dict):             # Configuration
       logger.error('Config file write error: %s' % self.fileName)
       return False
     logger.info('Config written: %s' % self.fileName)
-    self.changed = False                  # Reset flag of change in not stored config  
+    self.changed = False                  # Reset flag of change in not stored config
     return True
 
 class Timer(object):            # Timer for triggering a function periodically
@@ -1218,9 +1218,8 @@ def activateActions():          # Install/deinstall file extensions
     logger.info("Your package manager is not supported. Installing FM extensions is not possible.")
     return result
   # --- Actions for Nautilus ---
-  ret = subprocess.call([pm + "nautilus>/dev/null 2>&1"], shell=True)
-  logger.info("Nautilus installed: %s" % str(ret == 0))
-  if ret == 0:
+  if subprocess.call([pm + "nautilus>/dev/null 2>&1"], shell=True) == 0:
+    logger.info("Nautilus installed")
     ver = subprocess.check_output(["lsb_release -r | sed -n '1{s/[^0-9]//g;p;q}'"], shell=True)
     if ver != '' and int(ver) < 1210:
       nautilusPath = ".gnome2/nautilus-scripts/"
@@ -1244,9 +1243,9 @@ def activateActions():          # Install/deinstall file extensions
       except:
         pass
   # --- Actions for Nemo ---
-  ret = subprocess.call([pm + "nemo>/dev/null 2>&1"], shell=True)
-  logger.info("Nemo installed: %s" % str(ret == 0))
-  if ret == 0:
+
+  if subprocess.call([pm + "nemo>/dev/null 2>&1"], shell=True) == 0:
+    logger.info("Nemo installed")
     if activate:        # Install actions for Nemo
       try:
         copyFile(pathJoin(installDir, "fm-actions/Nautilus_Nemo/publish"),
@@ -1264,55 +1263,56 @@ def activateActions():          # Install/deinstall file extensions
       except:
         pass
   # --- Actions for Thunar ---
-  ret = subprocess.call([pm + "thunar>/dev/null 2>&1"], shell=True)
-  logger.info("Thunar installed: %s" % str(ret == 0))
-  if ret == 0:
+  if subprocess.call([pm + "thunar>/dev/null 2>&1"], shell=True) == 0:
+    logger.info("Thunar installed")
     ucaPath = pathJoin(userHome, ".config/Thunar/uca.xml")
-    if activate:        # Install actions for Thunar
-      try:
-        if subprocess.call(["grep '" + _("Publish via Yandex.Disk") + "' " +
-                            ucaPath + " >/dev/null 2>&1"],
-                           shell=True) != 0:
-          subprocess.call(["sed", "-i", "s/<\/actions>/<action><icon>folder-publicshare<\/icon>" +
-                         '<name>"' + _("Publish via Yandex.Disk") +
-                         '"<\/name><command>yandex-disk publish %f | xclip -filter -selection' +
-                         ' clipboard; zenity --info ' +
-                         '--window-icon=\/usr\/share\/yd-tools\/icons\/yd-128.png ' +
-                         '--title="Yandex.Disk" --ok-label="' + _('Close') + '" --text="' +
-                         _('URL to file: %f was copied into clipboard.') +
-                         '"<\/command><description><\/description><patterns>*<\/patterns>' +
-                         '<directories\/><audio-files\/><image-files\/><other-files\/>' +
-                         "<text-files\/><video-files\/><\/action><\/actions>/g", ucaPath])
-        if subprocess.call(["grep '" + _("Unpublish from Yandex.disk") + "' " +
-                            ucaPath + " >/dev/null 2>&1"],
-                            shell=True) != 0:
-          subprocess.call(["sed", "-i", "s/<\/actions>/<action><icon>folder<\/icon><name>\"" +
-                         _("Unpublish from Yandex.disk") +
-                         '"<\/name><command>zenity --info ' +
-                         '--window-icon=\/usr\/share\/yd-tools\/icons\/yd-128_g.png --ok-label="' +
-                         _('Close') + '" --title="Yandex.Disk" --text="' +
-                         _("Unpublish from Yandex.disk") +
-                         ': \`yandex-disk unpublish %f\`"<\/command>' +
-                         '<description><\/description><patterns>*<\/patterns>' +
-                         '<directories\/><audio-files\/><image-files\/><other-files\/>' +
-                         "<text-files\/><video-files\/><\/action><\/actions>/g", ucaPath])
-        result = True
-      except:
-        pass
-    else:               # Remove actions for Thunar
-      try:
-        subprocess.call(["sed", "-i", "s/<action><icon>.*<\/icon><name>\"" +
-                         _("Publish via Yandex.Disk") + "\".*<\/action>//", ucaPath])
-        subprocess.call(["sed", "-i", "s/<action><icon>.*<\/icon><name>\"" +
-                         _("Unpublish from Yandex.disk") + "\".*<\/action>//", ucaPath])
-        result = True
-      except:
-        pass
+    try:
+      # Read uca.xml
+      with open(ucaPath) as ucaf:
+        [(ust, actions, uen)] = re.findall(r'(^.*<actions>)(.*)(<\/actions>)', ucaf.read(), re.S)
+      acts = re.findall(r'(<action>.*?<\/action>)', actions, re.S)
+      nActs = dict((re.findall(r'<name>(.+?)<\/name>', u, re.S)[0], u) for u in acts)
+
+      if activate:        # Install actions for Thunar
+        if _("Publish via Yandex.Disk") not in nActs.keys():
+          nActs[_("Publish via Yandex.Disk")] = ("<action><icon>folder-publicshare</icon>" +
+                           '<name>' + _("Publish via Yandex.Disk") +
+                           '</name><command>yandex-disk publish %f | xclip -filter -selection' +
+                           ' clipboard; zenity --info ' +
+                           '--window-icon=/usr/share/yd-tools/icons/yd-128.png ' +
+                           '--title="Yandex.Disk" --ok-label="' + _('Close') + '" --text="' +
+                           _('URL to file: %f was copied into clipboard.') +
+                           '"</command><description/><patterns>*</patterns>' +
+                           '<directories/><audio-files/><image-files/><other-files/>' +
+                           "<text-files/><video-files/></action>")
+        if _("Unpublish from Yandex.disk") not in nActs.keys():
+          nActs[_("Unpublish from Yandex.disk")] = ("<action><icon>folder</icon><name>" +
+                           _("Unpublish from Yandex.disk") +
+                           '</name><command>zenity --info ' +
+                           '--window-icon=/usr/share/yd-tools/icons/yd-128_g.png --ok-label="' +
+                           _('Close') + '" --title="Yandex.Disk" --text="' +
+                           _("Unpublish from Yandex.disk") +
+                           ': `yandex-disk unpublish %f`"</command>' +
+                           '<description/><patterns>*</patterns>' +
+                           '<directories/><audio-files/><image-files/><other-files/>' +
+                           "<text-files/><video-files/></action>")
+
+      else:               # Remove actions for Thunar
+        if _("Publish via Yandex.Disk") in nActs.keys():
+          del nActs[_("Publish via Yandex.Disk")]
+        if _("Unpublish from Yandex.disk") in nActs.keys():
+          del nActs[_("Unpublish from Yandex.disk")]
+
+      # Save uca.xml
+      with open(ucaPath, 'wt') as ucaf:
+        ucaf.write(ust + ''.join(u for u in nActs.values()) + uen)
+      result = True
+    except:
+      pass
 
   # --- Actions for Dolphin ---
-  ret = subprocess.call([pm + "dolphin>/dev/null 2>&1"], shell=True)
-  logger.info("Dolphin installed: %s" % str(ret == 0))
-  if ret == 0:
+  if subprocess.call([pm + "dolphin>/dev/null 2>&1"], shell=True) == 0:
+    logger.info("Dolphin installed")
     if activate:        # Install actions for Dolphin
       try:
         makedirs(pathJoin(userHome, '.local/share/kservices5/ServiceMenus'))
@@ -1328,9 +1328,8 @@ def activateActions():          # Install/deinstall file extensions
       except:
         pass
   # --- Actions for Pantheon-files ---
-  ret = subprocess.call([pm + "pantheon-files>/dev/null 2>&1"], shell=True)
-  logger.info("Pantheon-files installed: %s" % str(ret == 0))
-  if ret == 0:
+  if subprocess.call([pm + "pantheon-files>/dev/null 2>&1"], shell=True) == 0:
+    logger.info("Pantheon-files installed")
     ctrs_path = "/usr/share/contractor/"
     if activate:        # Install actions for Pantheon-files
       src_path = pathJoin(installDir, "fm-actions", "pantheon-files")
@@ -1389,11 +1388,11 @@ def checkAutoStart(path):       # Check that auto-start is enabled
   return False
 
 def setProcName(newname):
-    from ctypes import cdll, byref, create_string_buffer
-    libc = cdll.LoadLibrary('libc.so.6')
-    buff = create_string_buffer(len(newname)+1)
-    buff.value = bytes(newname, 'UTF8')
-    libc.prctl(15, byref(buff), 0, 0, 0)
+  from ctypes import cdll, byref, create_string_buffer
+  libc = cdll.LoadLibrary('libc.so.6')
+  buff = create_string_buffer(len(newname)+1)
+  buff.value = bytes(newname, 'UTF8')
+  libc.prctl(15, byref(buff), 0, 0, 0)
 
 ###################### MAIN #########################
 if __name__ == '__main__':
