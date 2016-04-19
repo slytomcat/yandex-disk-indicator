@@ -482,7 +482,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
                '' in single instance environment'''
     self.ID = ID                                      # Remember daemon identity
     if not pathExists('/usr/bin/yandex-disk'):
-      self._ErrorDialog('NOTINSTALLED')
+      self._errorDialog('NOTINSTALLED')
       appExit('Daemon is not installed')
     # Try to read Yandex.Disk configuration file and make sure that it is correctly configured
     self.config = self._DConfig(cfgFile, load=False)
