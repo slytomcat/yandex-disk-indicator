@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.8.15'
+appVer = '1.8.16'
 #
 #  Copyright 2014+ Sly_tom_cat <slytomcat@mail.ru>
 #  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
@@ -400,12 +400,12 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       return self.stat or self.prog or self.size or self.last or self.init
 
     def __str__(self):    # String representation of object
-      str = (('stat, ' if self.stat else '') +
-             ('prog, ' if self.prog else '') +
-             ('size, ' if self.size else '') +
-             ('last, ' if self.last else '') +
-             ('init, ' if self.init else ''))
-      return '{' + str[: (-2 if str else None)]+'}'
+      string = (('stat, ' if self.stat else '') +
+                ('prog, ' if self.prog else '') +
+                ('size, ' if self.size else '') +
+                ('last, ' if self.last else '') +
+                ('init, ' if self.init else ''))
+      return '{' + (string[: -2] if string else '')+'}'
 
   class _Watcher(object):               # Daemon iNotify watcher
     '''
@@ -532,9 +532,8 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
 
     # Parse fresh daemon output. Parsing returns true when something changed
     if self._parseOutput(self.getOutput()):
+      logger.debug(self.ID + 'Event raised by' + ('iNtfy ' if iNtf else 'Timer '))
       self.change(self.vals, self.update)     # Raise outside update event
-    logger.debug('Raw event ' + self.ID + ('iNtfy ' if iNtf else 'Timer ') +
-                 self.vals['laststatus'] + ' -> ' + self.vals['status'])
     # --- Handle timer delays ---
     if iNtf:                                  # True means that it is called by iNonifier
       self._wTimer.update(2000)               # Set timer interval to 2 sec.
@@ -550,7 +549,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     logger.debug('Update event: %s \nValues : %s' % (str(update), str(vals)))
 
   def getOutput(self, userLang=False):  # Get result of 'yandex-disk status'
-    cmd = ['yandex-disk','-c', self.config.fileName, 'status']
+    cmd = ['yandex-disk', '-c', self.config.fileName, 'status']
     if not userLang:      # Change locale settings when it required
       cmd = ['env', '-i', "LANG='en_US.UTF8'"] + cmd
     try:
@@ -747,6 +746,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
     self.menu.update(vals, update, self.config['dir'])
     # Handle daemon status change by icon change
     if update.stat or update.init:
+      logger.info('Status: ' + self.vals['laststatus'] + ' -> ' + self.vals['status'])
       self.updateIcon()                   # Update icon
     # Create notifications for status change events
     if update.stat:
