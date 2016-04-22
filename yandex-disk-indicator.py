@@ -5,7 +5,6 @@
 appVer = '1.8.16'
 #
 #  Copyright 2014+ Sly_tom_cat <slytomcat@mail.ru>
-#  based on grive-tools (C) Christiaan Diedericks (www.thefanclub.co.za)
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -20,7 +19,7 @@ appVer = '1.8.16'
 #  You should have received a copy of the GNU General Public License
 #  along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import gi, os, sys, subprocess, pyinotify, fcntl, gettext, datetime, logging, re, argparse, locale
+import gi, os, sys, subprocess, pyinotify, re
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 gi.require_version('AppIndicator3', '0.1')
@@ -30,8 +29,13 @@ from gi.repository import Notify
 from gi.repository import Gio
 from gi.repository import GLib
 from gi.repository import GdkPixbuf
+from argparse import ArgumentParser
+from gettext import translation
+from logging import basicConfig, getLogger
+from fcntl import flock as filelock, LOCK_UN, LOCK_EX, LOCK_NB
 from os.path import exists as pathExists, join as pathJoin
 from shutil import copy as fileCopy
+from datetime import datetime
 from webbrowser import open_new as openNewBrowser
 
 #### Common utility functions and classes
@@ -574,7 +578,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
      - 'no internet access' converted to 'no_net'
      - 'error' covers all other errors, except 'no internet access'
     '''
-    self.update.reset()                     # Reset updates object
+    self.update.reset()                       # Reset updates object
     # Split output on two parts: list of named values and file list
     output = out.split('Last synchronized items:')
     if len(output) == 2:
@@ -589,7 +593,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
                       ('Total', 'total'), ('Used', 'used'), ('Available', 'free'),
                       ('Trash size', 'trash')):
       val = res.get(srch, '')
-      if key == 'status':                   # Convert status to internal representation
+      if key == 'status':                     # Convert status to internal representation
         #logger.debug('Raw status : \'%s\', previous status: %s'%(val, self.vals['status']))
         # Store previous status
         self.vals['laststatus'] = self.vals['status']
@@ -604,23 +608,23 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
                val if val in ['busy', 'idle', 'paused'] else
                # Status 'error' covers 'error', 'failed to connect to daemon process' and other.
                'error')
-      elif key != 'progress' and not val:   # 'progress' can be '' the rest - can't
-        val = '...'                         # Make default filling for empty values
+      elif key != 'progress' and val == '':   # 'progress' can be '' the rest - can't
+        val = '...'                           # Make default filling for empty values
       # Check value change and store changed
-      if self.vals[key] != val:             # Check change of value
-        self.vals[key] = val                # Store new value
+      if self.vals[key] != val:               # Check change of value
+        self.vals[key] = val                  # Store new value
         if key == 'status':
-          self.update.stat = True           # Remember that status changed
+          self.update.stat = True             # Remember that status changed
         elif key == 'progress':
-          self.update.prog = True           # Remember that progress cahnged
+          self.update.prog = True             # Remember that progress cahnged
         else:
-          self.update.size = True           # Remember that something changed in sizes values
+          self.update.size = True             # Remember that something changed in sizes values
     # Parse last synchronized items
     buf = re.findall(r".*: '(.*)'\n", files)
     # Check if file list has been changed
     if self.vals['lastitems'] != buf:
-      self.vals['lastitems'] = buf          # Store the new file list
-      self.update.last = True               # Remember that it is changed
+      self.vals['lastitems'] = buf            # Store the new file list
+      self.update.last = True                 # Remember that it is changed
     return bool(self.update)
 
   def _errorDialog(self, err):          # Show error messages according to the error
@@ -914,7 +918,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
       aboutWindow.set_program_name(_('Yandex.Disk indicator'))
       aboutWindow.set_version(_('Version ') + appVer)
       aboutWindow.set_copyright('Copyright ' + u'\u00a9' + ' 2013-' +
-                                datetime.datetime.now().strftime("%Y") + '\nSly_tom_cat')
+                                datetime.now().strftime("%Y") + '\nSly_tom_cat')
       aboutWindow.set_license(
         'This program is free software: you can redistribute it and/or \n' +
         'modify it under the terms of the GNU General Public License as \n' +
@@ -1172,18 +1176,18 @@ class LockFile(object):         # LockFile
     ### Check for already running instance of the indicator application in user space ###
     self.fileName = fileName
     logger.debug('Lock file is:%s' % self.fileName)
-    try:                                                          # Open lock file for write
+    try:                                                    # Open lock file for write
       self.lockFile = open(self.fileName, 'wt')
-      fcntl.flock(self.lockFile, fcntl.LOCK_EX | fcntl.LOCK_NB)   # Try to acquire exclusive lock
+      filelock(self.lockFile, LOCK_EX | LOCK_NB)            # Try to acquire exclusive lock
       logger.debug('Lock file succesfully locked.')
-    except:                                                       # File is already locked
+    except:                                                 # File is already locked
       sys.exit(_('The indicator instance is already running.\n'+
                  '(file %s is locked by another process)') % self.fileName)
     self.lockFile.write('%d\n' % os.getpid())
     self.lockFile.flush()
 
   def release(self):
-    fcntl.flock(self.lockFile, fcntl.LOCK_UN)
+    filelock(self.lockFile, LOCK_UN)
     self.lockFile.close()
     logger.debug('Lock file %s successfully unlocked.' % self.fileName)
     deleteFile(self.fileName)
@@ -1192,7 +1196,7 @@ class LockFile(object):         # LockFile
 def appExit(msg = None):        # Exit from application (it closes all indicators)
   for i in indicators:
     i.exit()
-  flock.release()
+  lockFile.release()
   sys.exit(msg)
 
 def activateActions():          # Install/deinstall file extensions
@@ -1353,7 +1357,7 @@ def activateActions():          # Install/deinstall file extensions
   return result
 
 def argParse():                 # Parse command line arguments
-  parser = argparse.ArgumentParser(description=_('Desktop indicator for yandex-disk daemon'),
+  parser = ArgumentParser(description=_('Desktop indicator for yandex-disk daemon'),
                                    add_help=False)
   group = parser.add_argument_group(_('Options'))
   group.add_argument('-l', '--log', type=int, choices=range(10, 60, 10), dest='level', default=30,
@@ -1413,12 +1417,12 @@ if __name__ == '__main__':
   setProcName(appHomeName)
 
   # Initialize logging
-  logging.basicConfig(format='%(asctime)-15s %(levelname)-8s %(message)s')
-  logger = logging.getLogger('')
+  basicConfig(format='%(asctime)-15s %(levelname)-8s %(message)s')
+  logger = getLogger('')
 
   # Setup localization
   # Load translation object (or NullTranslations) and define _() function.
-  gettext.translation(appName, '/usr/share/locale', fallback=True).install()
+  translation(appName, '/usr/share/locale', fallback=True).install()
 
   # Get command line arguments or their default values
   args = argParse()
@@ -1461,7 +1465,7 @@ if __name__ == '__main__':
   config.setdefault('daemons', '~/.config/yandex-disk/config.cfg')
   # Is it a first run?
   if not config.readSuccess:
-    logging.info('No config, probably it is a first run.')
+    logger.info('No config, probably it is a first run.')
     # Create application config folders in ~/.config
     try:
       makedirs(configPath)
@@ -1482,8 +1486,8 @@ if __name__ == '__main__':
 
     # Activate FM actions according to config (as it is first run)
     activateActions()
-    # Save config with default settings
-    config.save()
+    # Default settings should be saved (later)
+    config.changed = True
 
   # Add new daemon if it is not in current list
   daemons = CVal(config['daemons'])
@@ -1504,7 +1508,7 @@ if __name__ == '__main__':
     config.save()
 
   # Check for already running instance of the indicator application with the same config
-  flock = LockFile(pathJoin(configPath, 'pid'))
+  lockFile = LockFile(pathJoin(configPath, 'pid'))
 
   # Make indicator objects for each daemon in daemons list
   indicators = []
