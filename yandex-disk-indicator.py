@@ -4,7 +4,7 @@
 #  Yandex.Disk indicator
 appVer = '1.8.16'
 #
-#  Copyright 2014+ Sly_tom_cat <slytomcat@mail.ru>
+#  Copyright 2014 Sly_tom_cat <slytomcat@mail.ru>
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@ appVer = '1.8.16'
 #  You should have received a copy of the GNU General Public License
 #  along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import gi, os, sys, subprocess, pyinotify, re
+import gi, os, sys, subprocess, pyinotify
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 gi.require_version('AppIndicator3', '0.1')
@@ -29,6 +29,7 @@ from gi.repository import Notify
 from gi.repository import Gio
 from gi.repository import GLib
 from gi.repository import GdkPixbuf
+from re import findall as reFindall, sub as reSub, search as reSearch, M as reM, S as reS
 from argparse import ArgumentParser
 from gettext import translation
 from logging import basicConfig, getLogger
@@ -128,8 +129,18 @@ class CVal(object):             # Multivalue helper
       return self.val[index]          # It raises IndexError when index is out of range(len(cVal))
     elif self.val is None:
       raise IndexError                # None value cannot be received by any index
-    elif not index:                   # cVal is scalar and index is 0?
+    elif index in [0, -1]:            # cVal is scalar and index is 0 (first) or -1 (last)?
       return self.val
+    else:
+      raise IndexError
+
+  def __setitem__(self, index, value):
+    if isinstance(self.val, list):
+      self.val[index] = value
+    elif self.val is None:
+      raise IndexError                # None value cannot be set by any index
+    elif index in [0, -1]:            # cVal is scalar and index is 0 (first) or -1 (last)?
+      self.val = value
     else:
       raise IndexError
 
@@ -173,19 +184,17 @@ class Config(dict):             # Configuration
     return value
 
   def getValue(self, st):               # Parse value(s) from string after '='
-    words = re.findall(r'("[^"]*")|([~/.\w-]+)', st)  # Get list of values
-    words = [p[0]+p[1] for p in words]                # Join words variants
+    # Get list of values (both variants: quoted and not quoted)
+    words = [p[0]+p[1] for p in reFindall(r'("[^"]*")|([~/.\w-]+)', st)]
     # Check commas and not correct symbols that are not part of words
     # Substitute found words by '*' and split line by commas
-    mask = re.sub((''.join(r'(?<=[\W])%s(?=[\W])|'%p for p in words))[:-1],
+    mask = reSub((''.join(r'(?<=[\W])%s(?=[\W])|'%p for p in words))[:-1],
                    '*', ' %s ' % st).split(',')
     # Correctly masked value have to be just one '*' and possible surrounded by spaces
     # Number of '*' must be equal to number of words
     if sum([len(p.strip()) for p in mask]) == len(words):
-      # Values are OK. Remove quotes.
-      words = [(p[1:-1] if p[0] == '"' else p) for p in words]
-      # Decode vales with and return them
-      return CVal([self.decode(p) for p in words]).get()
+      # Values are OK. Remove quotes, decode and return values.
+      return CVal([self.decode(p[1:-1] if p[0] == '"' else p) for p in words]).get()
     else:
       return None                                     # Something wrong in values string
 
@@ -203,7 +212,7 @@ class Config(dict):             # Configuration
     try:                              # Read configuration file into list of tuples ignoring blank
                                       # lines, lines without delimiter, and lines with comments.
       with open(self.fileName) as cf:
-        res = [re.findall(r'^\s*(.+?)\s*%s\s*(.*)$' % self.delimiter, l)[0]
+        res = [reFindall(r'^\s*(.+?)\s*%s\s*(.*)$' % self.delimiter, l)[0]
                for l in cf if l and self.delimiter in l and l.lstrip()[0] != '#']
       self.readSuccess = True
     except:
@@ -212,7 +221,7 @@ class Config(dict):             # Configuration
       return False
     for kv, vv in res:        # Parse each line
       # Check key
-      key = re.findall(r'^"([\w-]+)"$|^([\w-]+)$', kv)
+      key = reFindall(r'^"([\w-]+)"$|^([\w-]+)$', kv)
       if not key:
         logger.warning('Wrong key in line \'%s %s %s\'' % (kv, self.delimiter, vv))
       else:                           # Key is OK
@@ -249,9 +258,7 @@ class Config(dict):             # Configuration
     except:
       logger.warning('Config file access error, a new file (%s) will be created' % self.fileName)
       buf = ''
-    while buf and buf[-1] == '\n':        # Remove ending blank lines
-      buf = buf[:-1]
-    buf += '\n'                           # Left only one
+    buf = reSub(r'[\n]*$', '\n', buf)    # Remove all ending blank lines except the one.
     for key, value in self.items():
       if value is None:
         res = ''                          # Remove 'key=value' from file if value is None
@@ -261,8 +268,7 @@ class Config(dict):             # Configuration
                        ''.join([self.encode(val) + ', ' for val in CVal(value)])[:-2] + '\n'])
         logger.debug('Config value to save: %s'%res[:-1])
       # Find line with key in file the buffer
-      sRe = re.search(r'^[ \t]*["]?%s["]?[ \t]*%s.+\n' % (key, self.delimiter),
-                      buf, flags=re.M)
+      sRe = reSearch(r'^[ \t]*["]?%s["]?[ \t]*%s.+\n' % (key, self.delimiter), buf, flags=reM)
       if sRe:                             # Value has been found
         buf = sRe.re.sub(res, buf)        # Replace it with new value
       elif res:                           # Value was not found and value is not empty
@@ -587,7 +593,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       files = ''
     output = output[0].splitlines()
     # Make a dictionary from named values (use only lines containing ':')
-    res = dict([re.findall(r'\s*(.+):\s*(.*)', l)[0] for l in output if ':' in l])
+    res = dict([reFindall(r'\s*(.+):\s*(.*)', l)[0] for l in output if ':' in l])
     # Parse named status values
     for srch, key in (('Synchronization core status', 'status'), ('Sync progress', 'progress'),
                       ('Total', 'total'), ('Used', 'used'), ('Available', 'free'),
@@ -620,7 +626,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
         else:
           self.update.size = True             # Remember that something changed in sizes values
     # Parse last synchronized items
-    buf = re.findall(r".*: '(.*)'\n", files)
+    buf = reFindall(r".*: '(.*)'\n", files)
     # Check if file list has been changed
     if self.vals['lastitems'] != buf:
       self.vals['lastitems'] = buf            # Store the new file list
@@ -1274,9 +1280,9 @@ def activateActions():          # Install/deinstall file extensions
     try:
       # Read uca.xml
       with open(ucaPath) as ucaf:
-        [(ust, actions, uen)] = re.findall(r'(^.*<actions>)(.*)(<\/actions>)', ucaf.read(), re.S)
-      acts = re.findall(r'(<action>.*?<\/action>)', actions, re.S)
-      nActs = dict((re.findall(r'<name>(.+?)<\/name>', u, re.S)[0], u) for u in acts)
+        [(ust, actions, uen)] = reFindall(r'(^.*<actions>)(.*)(<\/actions>)', ucaf.read(), reS)
+      acts = reFindall(r'(<action>.*?<\/action>)', actions, reS)
+      nActs = dict((reFindall(r'<name>(.+?)<\/name>', u, reS)[0], u) for u in acts)
 
       if activate:        # Install actions for Thunar
         if _("Publish via Yandex.Disk") not in nActs.keys():
@@ -1384,7 +1390,7 @@ def checkAutoStart(path):       # Check that auto-start is enabled
   if pathExists(path):
     i = 1 if os.getenv('XDG_CURRENT_DESKTOP') in ('Unity', 'Pantheon') else 0
     with open(path, 'rt') as f:
-      attr = re.findall(r'\nHidden=(.+)|\nX-GNOME-Autostart-enabled=(.+)', f.read())
+      attr = reFindall(r'\nHidden=(.+)|\nX-GNOME-Autostart-enabled=(.+)', f.read())
       if attr:
         if attr[0][i] and attr[0][i] == ('true' if i else 'false'):
           return True
