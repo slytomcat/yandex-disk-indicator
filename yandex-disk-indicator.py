@@ -1208,83 +1208,74 @@ def appExit(msg = None):        # Exit from application (it closes all indicator
 def activateActions():          # Install/deinstall file extensions
   activate = config["fmextensions"]
   result = False
+  try:                  # Catch all exceptions during FM action activation/deactivation
 
-  # Package manager check
-  if subprocess.call("hash dpkg>/dev/null 2>&1", shell=True)==0:
-    logger.info("dpkg detected")
-    pm = 'dpkg -s '
-  elif subprocess.call("hash rpm>/dev/null 2>&1", shell=True)==0:
-    logger.info("rpm detected")
-    pm = 'rpm -qi '
-  elif subprocess.call("hash pacman>/dev/null 2>&1", shell=True)==0:
-    logger.info("Pacman detected")
-    pm = 'pacman -Qi '
-  elif subprocess.call("hash zypper>/dev/null 2>&1", shell=True)==0:
-    logger.info("Zypper detected")
-    pm = 'zypper info '
-  elif subprocess.call("hash emerge>/dev/null 2>&1", shell=True)==0:
-    logger.info("Emerge detected")
-    pm = 'emerge -pv '
-  else:
-    logger.info("Your package manager is not supported. Installing FM extensions is not possible.")
-    return result
-  # --- Actions for Nautilus ---
-  if subprocess.call([pm + "nautilus>/dev/null 2>&1"], shell=True) == 0:
-    logger.info("Nautilus installed")
-    ver = subprocess.check_output(["lsb_release -r | sed -n '1{s/[^0-9]//g;p;q}'"], shell=True)
-    if ver != '' and int(ver) < 1210:
-      nautilusPath = ".gnome2/nautilus-scripts/"
+    # Package manager check
+    if subprocess.call("hash dpkg>/dev/null 2>&1", shell=True)==0:
+      logger.info("dpkg detected")
+      pm = 'dpkg -s '
+    elif subprocess.call("hash rpm>/dev/null 2>&1", shell=True)==0:
+      logger.info("rpm detected")
+      pm = 'rpm -qi '
+    elif subprocess.call("hash pacman>/dev/null 2>&1", shell=True)==0:
+      logger.info("Pacman detected")
+      pm = 'pacman -Qi '
+    elif subprocess.call("hash zypper>/dev/null 2>&1", shell=True)==0:
+      logger.info("Zypper detected")
+      pm = 'zypper info '
+    elif subprocess.call("hash emerge>/dev/null 2>&1", shell=True)==0:
+      logger.info("Emerge detected")
+      pm = 'emerge -pv '
     else:
-      nautilusPath = ".local/share/nautilus/scripts"
-    logger.debug(nautilusPath)
-    if activate:        # Install actions for Nautilus
-      try:
+      logger.info("Your package manager is not supported. Installing FM extensions is not possible.")
+      return result
+
+    # --- Actions for Nautilus ---
+    if subprocess.call([pm + "nautilus>/dev/null 2>&1"], shell=True) == 0:
+      logger.info("Nautilus installed")
+      ver = subprocess.check_output(["lsb_release -r | sed -n '1{s/[^0-9]//g;p;q}'"], shell=True)
+      if ver != '' and int(ver) < 1210:
+        nautilusPath = ".gnome2/nautilus-scripts/"
+      else:
+        nautilusPath = ".local/share/nautilus/scripts"
+      logger.debug(nautilusPath)
+      if activate:      # Install actions for Nautilus
+
         copyFile(pathJoin(installDir, "fm-actions/Nautilus_Nemo/publish"),
                  pathJoin(userHome,nautilusPath, _("Publish via Yandex.Disk")))
         copyFile(pathJoin(installDir, "fm-actions/Nautilus_Nemo/unpublish"),
                  pathJoin(userHome, nautilusPath, _("Unpublish from Yandex.disk")))
         result = True
-      except:
-        pass
-    else:               # Remove actions for Nautilus
-      try:
+      else:             # Remove actions for Nautilus
         deleteFile(pathJoin(userHome, nautilusPath, _("Publish via Yandex.Disk")))
         deleteFile(pathJoin(userHome, nautilusPath, _("Unpublish from Yandex.disk")))
         result = True
-      except:
-        pass
-  # --- Actions for Nemo ---
 
-  if subprocess.call([pm + "nemo>/dev/null 2>&1"], shell=True) == 0:
-    logger.info("Nemo installed")
-    if activate:        # Install actions for Nemo
-      try:
+    # --- Actions for Nemo ---
+    if subprocess.call([pm + "nemo>/dev/null 2>&1"], shell=True) == 0:
+      logger.info("Nemo installed")
+      if activate:      # Install actions for Nemo
         copyFile(pathJoin(installDir, "fm-actions/Nautilus_Nemo/publish"),
                  pathJoin(userHome, ".local/share/nemo/scripts", _("Publish via Yandex.Disk")))
         copyFile(pathJoin(installDir, "fm-actions/Nautilus_Nemo/unpublish"),
                  pathJoin(userHome, ".local/share/nemo/scripts", _("Unpublish from Yandex.disk")))
         result = True
-      except:
-        pass
-    else:               # Remove actions for Nemo
-      try:
+      else:             # Remove actions for Nemo
         deleteFile(pathJoin(userHome, ".gnome2/nemo-scripts", _("Publish via Yandex.Disk")))
         deleteFile(pathJoin(userHome, ".gnome2/nemo-scripts", _("Unpublish from Yandex.disk")))
         result = True
-      except:
-        pass
-  # --- Actions for Thunar ---
-  if subprocess.call([pm + "thunar>/dev/null 2>&1"], shell=True) == 0:
-    logger.info("Thunar installed")
-    ucaPath = pathJoin(userHome, ".config/Thunar/uca.xml")
-    try:
+
+    # --- Actions for Thunar ---
+    if subprocess.call([pm + "thunar>/dev/null 2>&1"], shell=True) == 0:
+      logger.info("Thunar installed")
+      ucaPath = pathJoin(userHome, ".config/Thunar/uca.xml")
       # Read uca.xml
       with open(ucaPath) as ucaf:
         [(ust, actions, uen)] = reFindall(r'(^.*<actions>)(.*)(<\/actions>)', ucaf.read(), reS)
       acts = reFindall(r'(<action>.*?<\/action>)', actions, reS)
       nActs = dict((reFindall(r'<name>(.+?)<\/name>', u, reS)[0], u) for u in acts)
 
-      if activate:        # Install actions for Thunar
+      if activate:      # Install actions for Thunar
         if _("Publish via Yandex.Disk") not in nActs.keys():
           nActs[_("Publish via Yandex.Disk")] = ("<action><icon>folder-publicshare</icon>" +
                            '<name>' + _("Publish via Yandex.Disk") +
@@ -1308,7 +1299,7 @@ def activateActions():          # Install/deinstall file extensions
                            '<directories/><audio-files/><image-files/><other-files/>' +
                            "<text-files/><video-files/></action>")
 
-      else:               # Remove actions for Thunar
+      else:             # Remove actions for Thunar
         if _("Publish via Yandex.Disk") in nActs.keys():
           del nActs[_("Publish via Yandex.Disk")]
         if _("Unpublish from Yandex.disk") in nActs.keys():
@@ -1318,48 +1309,43 @@ def activateActions():          # Install/deinstall file extensions
       with open(ucaPath, 'wt') as ucaf:
         ucaf.write(ust + ''.join(u for u in nActs.values()) + uen)
       result = True
-    except:
-      pass
 
-  # --- Actions for Dolphin ---
-  if subprocess.call([pm + "dolphin>/dev/null 2>&1"], shell=True) == 0:
-    logger.info("Dolphin installed")
-    if activate:        # Install actions for Dolphin
-      try:
+    # --- Actions for Dolphin ---
+    if subprocess.call([pm + "dolphin>/dev/null 2>&1"], shell=True) == 0:
+      logger.info("Dolphin installed")
+      if activate:      # Install actions for Dolphin
         makedirs(pathJoin(userHome, '.local/share/kservices5/ServiceMenus'))
         copyFile(pathJoin(installDir, "fm-actions/Dolphin/ydpublish.desktop"),
                  pathJoin(userHome, ".local/share/kservices5/ServiceMenus/ydpublish.desktop"))
         result = True
-      except:
-        pass
-    else:               # Remove actions for Dolphin
-      try:
+      else:             # Remove actions for Dolphin
         deleteFile(pathJoin(userHome, ".local/share/kservices5/ServiceMenus/ydpublish.desktop"))
         result = True
-      except:
-        pass
-  # --- Actions for Pantheon-files ---
-  if subprocess.call([pm + "pantheon-files>/dev/null 2>&1"], shell=True) == 0:
-    logger.info("Pantheon-files installed")
-    ctrs_path = "/usr/share/contractor/"
-    if activate:        # Install actions for Pantheon-files
-      src_path = pathJoin(installDir, "fm-actions", "pantheon-files")
-      ctr_pub = pathJoin(src_path ,"yandex-disk-indicator-publish.contract")
-      ctr_unpub = pathJoin(src_path ,"yandex-disk-indicator-unpublish.contract")
-      res = subprocess.call(["gksudo", "-D", "yd-tools", "cp", ctr_pub, ctr_unpub, ctrs_path])
-      if res == 0:
-        result = True
-      else:
-        logger.error("Cannot enable actions for Pantheon-files")
-    else:               # Remove actions for Pantheon-files
-      res = subprocess.call(["gksudo", "-D", "yd-tools", "rm",
-              pathJoin(ctrs_path, "yandex-disk-indicator-publish.contract"),
-              pathJoin(ctrs_path, "yandex-disk-indicator-unpublish.contract")])
-      if res == 0:
-        result = True
-      else:
-        logger.error("Cannot disable actions for Pantheon-files")
 
+    # --- Actions for Pantheon-files ---
+    if subprocess.call([pm + "pantheon-files>/dev/null 2>&1"], shell=True) == 0:
+      logger.info("Pantheon-files installed")
+      ctrs_path = "/usr/share/contractor/"
+      if activate:      # Install actions for Pantheon-files
+        src_path = pathJoin(installDir, "fm-actions", "pantheon-files")
+        ctr_pub = pathJoin(src_path ,"yandex-disk-indicator-publish.contract")
+        ctr_unpub = pathJoin(src_path ,"yandex-disk-indicator-unpublish.contract")
+        res = subprocess.call(["gksudo", "-D", "yd-tools", "cp", ctr_pub, ctr_unpub, ctrs_path])
+        if res == 0:
+          result = True
+        else:
+          logger.error("Cannot enable actions for Pantheon-files")
+      else:             # Remove actions for Pantheon-files
+        res = subprocess.call(["gksudo", "-D", "yd-tools", "rm",
+                pathJoin(ctrs_path, "yandex-disk-indicator-publish.contract"),
+                pathJoin(ctrs_path, "yandex-disk-indicator-unpublish.contract")])
+        if res == 0:
+          result = True
+        else:
+          logger.error("Cannot disable actions for Pantheon-files")
+
+  except Exception as e:
+    logger.error("The following error occurred during the FM actions activation:\n %s"%str(e))
   return result
 
 def argParse():                 # Parse command line arguments
