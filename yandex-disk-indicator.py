@@ -466,6 +466,8 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       exList = fileConfig.get('exclude-dirs', None)
       if exList:
         fileConfig['exclude-dirs'] = ''.join([i + ',' for i in CVal(exList)])[:-1]
+      # Don't overwrite proxy and auth values in daemon config
+      del fileConfig['proxy'], fileConfig['auth']
       fileConfig.save()
       self.changed=False
 
