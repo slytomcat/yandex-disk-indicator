@@ -1,7 +1,8 @@
-yd-tools (1.8.15) trusty; urgency=medium
+yd-tools (1.8.16) trusty; urgency=medium
 
   * Changes:
-    -- Updated extensions for Thunar
-    -- Indicator process renamed to yd-tools (command line is stil 'python3 ....')
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Tue, 19 Apr 2016 12:58:13 +0300
+    -- fix for issue #155 (wrongly overwritten proxy value in daemon config file)
+    -- Total error handling in the FM actions activation procedure
+
+ -- Sly_tom_cat <slytomcat@mail.ru>  Mon, 13 Jun 2016 14:29:53 +0300
