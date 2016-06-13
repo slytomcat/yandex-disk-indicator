@@ -456,26 +456,27 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
   class _DConfig(Config):               # Redefined class for daemon config
 
     def save(self):  # Update daemon config file
-      # Make a copy of Self as super class
+      # Make a new Config object
       fileConfig = Config(self.fileName, load=False)
-      fileConfig.update(self)
-      # Convert values representation
-      ro = fileConfig.get('read-only', False)
+      # Copy values that could be changed to the new Config object and convert representation
+      ro = self.get('read-only', False)
       fileConfig['read-only'] = '' if ro else None
-      fileConfig['overwrite'] = '' if fileConfig.get('overwrite', False) and ro else None
-      exList = fileConfig.get('exclude-dirs', None)
-      if exList:
+      fileConfig['overwrite'] = '' if self.get('overwrite', False) and ro else None
+      fileConfig['startonstartofindicator'] = self.get('startonstartofindicator', True)
+      fileConfig['stoponexitfromindicator'] = self.get('stoponexitfromindicator', False)
+      fileConfig['exclude-dirs'] = self.get('exclude-dirs', None)
+      exList = fileConfig['exclude-dirs']
+      if exList is not None:
         fileConfig['exclude-dirs'] = ''.join([i + ',' for i in CVal(exList)])[:-1]
-      # Don't overwrite proxy and auth values in daemon config
-      del fileConfig['proxy'], fileConfig['auth']
+      # Store changed values
       fileConfig.save()
       self.changed=False
 
     def load(self):  # Get daemon config from its config file
       if super(YDDaemon._DConfig, self).load():             # Load config from file
         # Convert values representations
-        self['read-only'] = (self.get('read-only', False) == '')
-        self['overwrite'] = (self.get('overwrite', False) == '')
+        self['read-only'] = (self.get('read-only', None) == '')
+        self['overwrite'] = (self.get('overwrite', None) == '')
         self.setdefault('startonstartofindicator', True)    # New value to start daemon individually
         self.setdefault('stoponexitfromindicator', False)   # New value to stop daemon individually
         exDirs = self.setdefault('exclude-dirs', None)
