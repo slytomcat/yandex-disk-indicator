@@ -472,6 +472,19 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       fileConfig.save()
       self.changed=False
 
+    def getValue(self, st):               # Parse value from string after '='
+      st = st.strip()
+      if st[0] == '"':
+        if st[-1] == '"':
+          st = st[1:-1]
+        else:
+          return None                     # no ending quote
+      words = list(set([s.strip() for s in st.split(',')]))
+      if len(words) == 1:
+        return self.decode(words[0])
+      else:
+        return words
+
     def load(self):  # Get daemon config from its config file
       if super(YDDaemon._DConfig, self).load():             # Load config from file
         # Convert values representations
@@ -480,10 +493,6 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
         self.setdefault('startonstartofindicator', True)    # New value to start daemon individually
         self.setdefault('stoponexitfromindicator', False)   # New value to stop daemon individually
         exDirs = self.setdefault('exclude-dirs', None)
-        if isinstance(exDirs, str):
-          # Additional parsing required when quoted value like "dir,dir,dir" is specified.
-          # When the value specified without quotes it will be already list like [dir, dir, dir].
-          self['exclude-dirs'] = self.getValue(exDirs)
         return True
       else:
         return False
