@@ -1,8 +1,7 @@
-yd-tools (1.8.16) xenial; urgency=medium
+yd-tools (1.8.17) xenial; urgency=medium
 
   * Changes:
 
-    -- fix for issue #155 (wrongly overwritten proxy value in daemon config file)
-    -- Total error handling in the FM actions activation procedure
+    -- Simplified the reading of multiple values from yandex-disk cfg file.
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Mon, 13 Jun 2016 15:16:03 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Tue, 5 Jul 2016 21:28:43 +0300

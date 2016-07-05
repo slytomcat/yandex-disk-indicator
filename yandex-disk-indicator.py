@@ -183,20 +183,32 @@ class Config(dict):             # Configuration
       value = False
     return value
 
-  def getValue(self, st):               # Parse value(s) from string after '='
-    # Get list of values (both variants: quoted and not quoted)
-    words = [p[0]+p[1] for p in reFindall(r'("[^"]*")|([~/.\w-]+)', st)]
-    # Check commas and not correct symbols that are not part of words
-    # Substitute found words by '*' and split line by commas
-    mask = reSub((''.join(r'(?<=[\W])%s(?=[\W])|'%p for p in words))[:-1],
-                   '*', ' %s ' % st).split(',')
-    # Correctly masked value have to be just one '*' and possible surrounded by spaces
-    # Number of '*' must be equal to number of words
-    if sum([len(p.strip()) for p in mask]) == len(words):
-      # Values are OK. Remove quotes, decode and return values.
-      return CVal([self.decode(p[1:-1] if p[0] == '"' else p) for p in words]).get()
-    else:
-      return None                                     # Something wrong in values string
+  def getValue(self, st):               # Find value(s) in string after '='
+    v = CVal()                                  # Values accumulator
+    st = st.strip()                             # Remove starting and ending spaces
+    if st.startswith(','):
+      return None                               # Error: String after '=' starts with comma
+    while True:
+      s = reSearch(r'^("[^"]*")|^([^,]+)', st)  # search for quoted or value without quotes
+      if s is None:
+        return None                             # Error: Nothing found
+      sp = s.span()                             # Remember found positions
+      vv = (st[sp[0]:sp[1]])                    # Get found value
+      if vv.startswith('"'):
+        vv = vv[1:-1]                           # Remove quotes
+      v.add(self.decode(vv))                    # Decode and store value
+      st = st[sp[1]:].lstrip()                  # Remove value and following spaces from string
+      if not len(st):
+        return v.get()                          # EOL normaly reached (after last value in string)
+      else:                                     # String still contain something
+        if st.startswith(','):                  # String is continued with comma?
+          if len(st)>1:                         # String is continued after comma?
+            st = st[1:].lstrip()                # Remove coma and following spaces
+            continue                            # Continue to search values
+          #else:                                # Error: No value after comma
+        #else:                                  # Error: Next symbol is not comma
+        return None                             # Error
+
 
   def load(self, bools=[['true', 'yes', 'y'], ['false', 'no', 'n']], delimiter='='):
     """
@@ -219,7 +231,7 @@ class Config(dict):             # Configuration
       logger.error('Config file read error: %s' % self.fileName)
       self.readSuccess = False
       return False
-    for kv, vv in res:        # Parse each line
+    for kv, vv in res:                # Parse each line
       # Check key
       key = reFindall(r'^"([\w-]+)"$|^([\w-]+)$', kv)
       if not key:
@@ -258,13 +270,13 @@ class Config(dict):             # Configuration
     except:
       logger.warning('Config file access error, a new file (%s) will be created' % self.fileName)
       buf = ''
-    buf = reSub(r'[\n]*$', '\n', buf)    # Remove all ending blank lines except the one.
+    buf = reSub(r'[\n]*$', '\n', buf)     # Remove all ending blank lines except the one.
     for key, value in self.items():
       if value is None:
         res = ''                          # Remove 'key=value' from file if value is None
         logger.debug('Config value \'%s\' will be removed' % key)
       else:                               # Make a line with value
-        res = ''.join([key, self.delimiter,
+        res = key.join([ self.delimiter,
                        ''.join([self.encode(val) + ', ' for val in CVal(value)])[:-2] + '\n'])
         logger.debug('Config value to save: %s'%res[:-1])
       # Find line with key in file the buffer
@@ -467,23 +479,10 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       fileConfig['exclude-dirs'] = self.get('exclude-dirs', None)
       exList = fileConfig['exclude-dirs']
       if exList is not None:
-        fileConfig['exclude-dirs'] = ''.join([i + ',' for i in CVal(exList)])[:-1]
+        fileConfig['exclude-dirs'] = ''.join([v + ',' for v in CVal(exList)])[:-1]
       # Store changed values
       fileConfig.save()
       self.changed=False
-
-    def getValue(self, st):               # Parse value from string after '='
-      st = st.strip()
-      if st[0] == '"':
-        if st[-1] == '"':
-          st = st[1:-1]
-        else:
-          return None                     # no ending quote
-      words = list(set([s.strip() for s in st.split(',')]))
-      if len(words) == 1:
-        return self.decode(words[0])
-      else:
-        return words
 
     def load(self):  # Get daemon config from its config file
       if super(YDDaemon._DConfig, self).load():             # Load config from file
@@ -493,6 +492,10 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
         self.setdefault('startonstartofindicator', True)    # New value to start daemon individually
         self.setdefault('stoponexitfromindicator', False)   # New value to stop daemon individually
         exDirs = self.setdefault('exclude-dirs', None)
+        if not isinstance(exDirs, list):
+          # Additional parsing required when quoted value like "dir,dir,dir" is specified.
+          # When the value specified without quotes it will be already list value [dir, dir, dir].
+          self['exclude-dirs'] = self.getValue(exDirs)
         return True
       else:
         return False
