@@ -3,5 +3,7 @@ yd-tools (1.8.17) xenial; urgency=medium
   * Changes:
 
     -- Simplified the reading of multiple values from yandex-disk cfg file.
+    -- Code review
+    -- Correct typo in english (core language)
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Tue, 5 Jul 2016 21:28:43 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Tue, 8 Jul 2016 18:10:56 +0300

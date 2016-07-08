@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.8.16'
+appVer = '1.8.17'
 #
 #  Copyright 2014 Sly_tom_cat <slytomcat@mail.ru>
 #
@@ -184,35 +184,34 @@ class Config(dict):             # Configuration
     return value
 
   def getValue(self, st):               # Find value(s) in string after '='
-    v = CVal()                                  # Values accumulator
-    st = st.strip()                             # Remove starting and ending spaces
+    v = CVal()                                    # Value accumulator
+    st = st.strip()                               # Remove starting and ending spaces
     if st.startswith(','):
-      return None                               # Error: String after '=' starts with comma
+      return None                                 # Error: String after '=' starts with comma
     while True:
-      s = reSearch(r'^("[^"]*")|^([^,]+)', st)  # search for quoted or value without quotes
+      s = reSearch(r'^("[^"]*")|^([^",#]+)', st)  # Search for quoted or value without quotes
       if s is None:
-        return None                             # Error: Nothing found
-      sp = s.span()                             # Remember found positions
-      vv = (st[sp[0]:sp[1]])                    # Get found value
+        return None                               # Error: Nothing found but value expected
+      start, end = s.span()
+      vv = st[start: end].strip()                 # Get found value
       if vv.startswith('"'):
-        vv = vv[1:-1]                           # Remove quotes
-      v.add(self.decode(vv))                    # Decode and store value
-      st = st[sp[1]:].lstrip()                  # Remove value and following spaces from string
-      if not len(st):
-        return v.get()                          # EOL normaly reached (after last value in string)
-      else:                                     # String still contain something
-        if st.startswith(','):                  # String is continued with comma?
-          if len(st)>1:                         # String is continued after comma?
-            st = st[1:].lstrip()                # Remove coma and following spaces
-            continue                            # Continue to search values
-          #else:                                # Error: No value after comma
-        #else:                                  # Error: Next symbol is not comma
-        return None                             # Error
-
+        vv = vv[1: -1]                            # Remove quotes
+      v.add(self.decode(vv))                      # Decode and store value
+      st = st[end: ].lstrip()                     # Remove value and following spaces from string
+      if st == '':
+        return v.get()                            # EOF normaly reached (after last value in string)
+      else:                                       # String still contain something
+        if st.startswith(','):                    # String is continued with comma?
+          st = st[1:].lstrip()                    # Remove comma and following spaces
+          if st != '':                            # String is continued after comma?
+            continue                              # Continue to search values
+          #else:                                  # Error: No value after comma
+        #else:                                    # Error: Next symbol is not comma
+        return None                               # Error
 
   def load(self, bools=[['true', 'yes', 'y'], ['false', 'no', 'n']], delimiter='='):
     """
-    Reads config file to dictionary (OrderedDict).
+    Reads config file to dictionary.
     Config file should contain key=value rows.
     Key can be quoted or not.
     Value can be one item or list of comma-separated items. Each value item can be quoted or not.
@@ -233,22 +232,22 @@ class Config(dict):             # Configuration
       return False
     for kv, vv in res:                # Parse each line
       # Check key
-      key = reFindall(r'^"([\w-]+)"$|^([\w-]+)$', kv)
-      if not key:
+      key = reFindall(r'^"([^"]+)"$|^([\w-]+)$', kv)
+      if key == []:
         logger.warning('Wrong key in line \'%s %s %s\'' % (kv, self.delimiter, vv))
       else:                           # Key is OK
         key = key[0][0] + key[0][1]   # Join two possible keys variants (with and without quotes)
-        if not vv.strip():
+        if vv.strip() == '':
           logger.warning('No value specified in line \'%s %s %s\'' % (kv, self.delimiter, vv))
         else:                         # Value is not empty
           value = self.getValue(vv)   # Parse values
           if value is None:
             logger.warning('Wrong value(s) in line \'%s %s %s\'' % (kv, self.delimiter, vv))
           else:                       # Value is OK
-            if key in self.keys():    # Check duble values
+            if key in self.keys():    # Check double values
               logger.warning(('Double values for one key:\n%s = %s\nand\n%s = %s\n' +
                               'Last one is stored.') % (key,self[key],key,value))
-            self[key] = value         # Store correct value
+            self[key] = value         # Store last value
             logger.debug('Config value read as: %s = %s' % (key, str(value)))
     logger.info('Config read: %s' % self.fileName)
     return True
@@ -276,14 +275,14 @@ class Config(dict):             # Configuration
         res = ''                          # Remove 'key=value' from file if value is None
         logger.debug('Config value \'%s\' will be removed' % key)
       else:                               # Make a line with value
-        res = key.join([ self.delimiter,
+        res = ''.join([key , self.delimiter,
                        ''.join([self.encode(val) + ', ' for val in CVal(value)])[:-2] + '\n'])
         logger.debug('Config value to save: %s'%res[:-1])
       # Find line with key in file the buffer
       sRe = reSearch(r'^[ \t]*["]?%s["]?[ \t]*%s.+\n' % (key, self.delimiter), buf, flags=reM)
-      if sRe:                             # Value has been found
+      if sRe is not None:                 # Value has been found
         buf = sRe.re.sub(res, buf)        # Replace it with new value
-      elif res:                           # Value was not found and value is not empty
+      elif res != '':                     # Value was not found and value is not empty
         buf += res                        # Add new value to end of file buffer
     try:
       with open(self.fileName, 'wt') as cf:
@@ -301,11 +300,11 @@ class Timer(object):            # Timer for triggering a function periodically
                    if start value is not False. par - is parameter for handler call.
         start    - Start timer. Optionally the new interval can be specified and if timer is
                    already running then the interval is updated (timer restarted with new interval).
-        update   - Updates interval. If timer is running it is restarted with new interval. It it
-                   is not running - then interval just stored.
+        update   - Updates interval. If timer is running it is restarted with new interval. If it
+                   is not running - then new interval is just stored.
         stop     - Stop running timer or do nothing if it is not running.
       Interface variables:
-        active   - True when timer is currently running
+        active   - True when timer is currently running, otherwise - False
   '''
   def __init__(self, interval, handler, par = None, start = True):
     self.interval = interval          # Timer interval (ms)
@@ -352,7 +351,7 @@ class Notification(object):     # On-screen notification
   def send(self, title, message):     # Send notification
     pass                              # This method is redefined by switch method
 
-  def switch(self, mode):             # Change show mode
+  def switch(self, mode=True):        # Change show mode, by default switch it on
     if mode:
       self.send = self._message       # Redefine send as real notification routine
     else:
@@ -394,8 +393,8 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
               'status' - current daemon status
               'progress' - synchronization progress or ''
               'laststatus' - previous daemon status
-              'total' - total Yandex disk spase
-              'used' - currntly used spase
+              'total' - total Yandex disk space
+              'used' - currently used space
               'free' - available space
               'trash' - size of trash
               'lastitems' - list of last synchronized items or []
@@ -427,7 +426,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
                 ('size, ' if self.size else '') +
                 ('last, ' if self.last else '') +
                 ('init, ' if self.init else ''))
-      return '{' + (string[: -2] if string else '')+'}'
+      return '{' + (string[: -2] if string != '' else '')+'}'
 
   class _Watcher(object):               # Daemon iNotify watcher
     '''
@@ -476,10 +475,9 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       fileConfig['overwrite'] = '' if self.get('overwrite', False) and ro else None
       fileConfig['startonstartofindicator'] = self.get('startonstartofindicator', True)
       fileConfig['stoponexitfromindicator'] = self.get('stoponexitfromindicator', False)
-      fileConfig['exclude-dirs'] = self.get('exclude-dirs', None)
-      exList = fileConfig['exclude-dirs']
-      if exList is not None:
-        fileConfig['exclude-dirs'] = ''.join([v + ',' for v in CVal(exList)])[:-1]
+      exList = self.get('exclude-dirs', None)
+      fileConfig['exclude-dirs'] = (None if exList is None else
+                                    ''.join([v + ', ' for v in CVal(exList)])[:-2])
       # Store changed values
       fileConfig.save()
       self.changed=False
@@ -492,7 +490,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
         self.setdefault('startonstartofindicator', True)    # New value to start daemon individually
         self.setdefault('stoponexitfromindicator', False)   # New value to stop daemon individually
         exDirs = self.setdefault('exclude-dirs', None)
-        if not isinstance(exDirs, list):
+        if exDirs is not None and not isinstance(exDirs, list):
           # Additional parsing required when quoted value like "dir,dir,dir" is specified.
           # When the value specified without quotes it will be already list value [dir, dir, dir].
           self['exclude-dirs'] = self.getValue(exDirs)
@@ -515,7 +513,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
                pathExists(self.config.get('dir', '')) and
                pathExists(self.config.get('auth', ''))):
       if self._errorDialog('NOCONFIG') != 0:
-        if ID:
+        if ID != '':
           self.config['dir'] = ''
           # Exit from loop in multi-instance configuration
           break
@@ -529,7 +527,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     self.vals = YDDaemon._dvals.copy()                # Load default daemon status values
     # Check that daemon is running
     out = self.getOutput()
-    if out:                                           # Is daemon running?
+    if out != '':                                     # Is daemon running?
       self._parseOutput(out)                          # Update status values
       #logger.debug('Init status: ' + self.vals['status'])
       #logger.debug('Init vals: ' + str(self.vals))
@@ -552,8 +550,8 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     Handle iNotify and and Timer based events.
     After receiving and parsing the daemon output it raises outside change event if daemon changes
     at least one of its status values.
-    It can be called by timer (when byNotifier=False) or by iNonifier
-    (when byNotifier=True)'''
+    It can be called by timer (when iNtf=False) or by iNonifier (when iNtf=True)
+    '''
 
     # Parse fresh daemon output. Parsing returns true when something changed
     if self._parseOutput(self.getOutput()):
@@ -615,7 +613,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
                       ('Trash size', 'trash')):
       val = res.get(srch, '')
       if key == 'status':                     # Convert status to internal representation
-        #logger.debug('Raw status : \'%s\', previous status: %s'%(val, self.vals['status']))
+        #logger.debug('Raw status: \'%s\', previous status: %s'%(val, self.vals['status']))
         # Store previous status
         self.vals['laststatus'] = self.vals['status']
         # Convert daemon raw status to internal representation
@@ -637,7 +635,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
         if key == 'status':
           self.update.stat = True             # Remember that status changed
         elif key == 'progress':
-          self.update.prog = True             # Remember that progress cahnged
+          self.update.prog = True             # Remember that progress changed
         else:
           self.update.size = True             # Remember that something changed in sizes values
     # Parse last synchronized items
@@ -671,7 +669,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
           'Visit www.yandex.ru, download and install Yandex.Disk daemon.'))
       else:
         dialog.format_secondary_text(_('Yandex.Disk daemon failed to start due to some ' +
-                                       'unrecognised error.'))
+                                       'unrecognized error.'))
     dialog.set_default_size(400, 250)
     dialog.set_icon(GdkPixbuf.Pixbuf.new_from_file(logo))
     response = dialog.run()
@@ -713,7 +711,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       else:
         break
     if err == '':
-      self.vals = YDDaemon._dvals.copy()            # Initialise default values
+      self.vals = YDDaemon._dvals.copy()            # Initialize default values
       self._parseOutput(self.getOutput())           # Parse fresh daemon output
       self.update.init = True                       # Remember that it is initial change event
       self.vals['status'] = 'paused'                # Set current status to avoid index status
@@ -728,7 +726,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
                                     universal_newlines=True)
     except:
       msg = ''
-    if msg:
+    if msg != '':
       self._iNtfyWatcher.stop()
       self._eventHandler(True)          # Manually call evetHanler to raise change event
       return True
@@ -744,7 +742,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
 class Indicator(YDDaemon):      # Yandex.Disk appIndicator
 
   def __init__(self, path, ID):
-    indicatorName = "yandex-disk-%s"%ID[1:-1]
+    indicatorName = "yandex-disk-%s"%ID[1: -1]
     # Create indicator notification engine
     self.notify = Notification(indicatorName, config['notifications'])
     # Setup icons theme
@@ -831,7 +829,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
       self.daemon = daemon                      # Store reference to daemon object for future usage
       Gtk.Menu.__init__(self)                   # Create menu
       self.ID = ID
-      if self.ID:                               # Add addition field in multidaemon mode
+      if self.ID != '':                         # Add addition field in multidaemon mode
         self.yddir = Gtk.MenuItem('');  self.yddir.set_sensitive(False);   self.append(self.yddir)
       self.status = Gtk.MenuItem();     self.status.connect("activate", self.showOutput)
       self.append(self.status)
@@ -920,10 +918,10 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
         self.daemon_stop.set_sensitive(started)
         self.daemon_start.set_sensitive(not started)
         self.last.set_sensitive(started)
-        if self.ID:                                   # Set daemon identity row in multidaemon mode
+        if self.ID != '':                             # Set daemon identity row in multidaemon mode
           folder = (yddir.replace('_', u'\u02CD') if yddir else '< NOT CONFIGURED >')
           self.yddir.set_label(self.ID + _('  Folder: ') + folder)
-        if yddir:                                     # Activate Open YDfolder if daemon configured
+        if yddir != '':                               # Activate Open YDfolder if daemon configured
           self.open_folder.connect("activate", self.openPath, yddir)
           self.open_folder.set_sensitive(True)
         else:
@@ -1215,6 +1213,7 @@ class LockFile(object):         # LockFile
     logger.debug('Lock file %s successfully deleted.' % self.fileName)
 
 def appExit(msg = None):        # Exit from application (it closes all indicators)
+  global indicators
   for i in indicators:
     i.exit()
   lockFile.release()
