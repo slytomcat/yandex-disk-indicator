@@ -233,11 +233,11 @@ class Config(dict):             # Configuration
     for kv, vv in res:                # Parse each line
       # Check key
       key = reFindall(r'^"([^"]+)"$|^([\w-]+)$', kv)
-      if not key:
+      if key == []:
         logger.warning('Wrong key in line \'%s %s %s\'' % (kv, self.delimiter, vv))
       else:                           # Key is OK
         key = key[0][0] + key[0][1]   # Join two possible keys variants (with and without quotes)
-        if not vv.strip():
+        if vv.strip() == '':
           logger.warning('No value specified in line \'%s %s %s\'' % (kv, self.delimiter, vv))
         else:                         # Value is not empty
           value = self.getValue(vv)   # Parse values
@@ -280,9 +280,9 @@ class Config(dict):             # Configuration
         logger.debug('Config value to save: %s'%res[:-1])
       # Find line with key in file the buffer
       sRe = reSearch(r'^[ \t]*["]?%s["]?[ \t]*%s.+\n' % (key, self.delimiter), buf, flags=reM)
-      if sRe:                             # Value has been found
+      if sRe is not None:                 # Value has been found
         buf = sRe.re.sub(res, buf)        # Replace it with new value
-      elif res:                           # Value was not found and value is not empty
+      elif res != '':                     # Value was not found and value is not empty
         buf += res                        # Add new value to end of file buffer
     try:
       with open(self.fileName, 'wt') as cf:
@@ -351,7 +351,7 @@ class Notification(object):     # On-screen notification
   def send(self, title, message):     # Send notification
     pass                              # This method is redefined by switch method
 
-  def switch(self, mode):             # Change show mode
+  def switch(self, mode=True):        # Change show mode, by default switch it on
     if mode:
       self.send = self._message       # Redefine send as real notification routine
     else:
@@ -426,7 +426,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
                 ('size, ' if self.size else '') +
                 ('last, ' if self.last else '') +
                 ('init, ' if self.init else ''))
-      return '{' + (string[: -2] if string else '')+'}'
+      return '{' + (string[: -2] if string != '' else '')+'}'
 
   class _Watcher(object):               # Daemon iNotify watcher
     '''
@@ -490,7 +490,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
         self.setdefault('startonstartofindicator', True)    # New value to start daemon individually
         self.setdefault('stoponexitfromindicator', False)   # New value to stop daemon individually
         exDirs = self.setdefault('exclude-dirs', None)
-        if not isinstance(exDirs, list):
+        if exDirs is not None and not isinstance(exDirs, list):
           # Additional parsing required when quoted value like "dir,dir,dir" is specified.
           # When the value specified without quotes it will be already list value [dir, dir, dir].
           self['exclude-dirs'] = self.getValue(exDirs)
@@ -513,7 +513,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
                pathExists(self.config.get('dir', '')) and
                pathExists(self.config.get('auth', ''))):
       if self._errorDialog('NOCONFIG') != 0:
-        if ID:
+        if ID != '':
           self.config['dir'] = ''
           # Exit from loop in multi-instance configuration
           break
@@ -527,7 +527,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     self.vals = YDDaemon._dvals.copy()                # Load default daemon status values
     # Check that daemon is running
     out = self.getOutput()
-    if out:                                           # Is daemon running?
+    if out != '':                                     # Is daemon running?
       self._parseOutput(out)                          # Update status values
       #logger.debug('Init status: ' + self.vals['status'])
       #logger.debug('Init vals: ' + str(self.vals))
@@ -550,8 +550,8 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     Handle iNotify and and Timer based events.
     After receiving and parsing the daemon output it raises outside change event if daemon changes
     at least one of its status values.
-    It can be called by timer (when byNotifier=False) or by iNonifier
-    (when byNotifier=True)'''
+    It can be called by timer (when iNtf=False) or by iNonifier (when iNtf=True)
+    '''
 
     # Parse fresh daemon output. Parsing returns true when something changed
     if self._parseOutput(self.getOutput()):
@@ -726,7 +726,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
                                     universal_newlines=True)
     except:
       msg = ''
-    if msg:
+    if msg != '':
       self._iNtfyWatcher.stop()
       self._eventHandler(True)          # Manually call evetHanler to raise change event
       return True
@@ -829,7 +829,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
       self.daemon = daemon                      # Store reference to daemon object for future usage
       Gtk.Menu.__init__(self)                   # Create menu
       self.ID = ID
-      if self.ID:                               # Add addition field in multidaemon mode
+      if self.ID != '':                         # Add addition field in multidaemon mode
         self.yddir = Gtk.MenuItem('');  self.yddir.set_sensitive(False);   self.append(self.yddir)
       self.status = Gtk.MenuItem();     self.status.connect("activate", self.showOutput)
       self.append(self.status)
@@ -918,10 +918,10 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
         self.daemon_stop.set_sensitive(started)
         self.daemon_start.set_sensitive(not started)
         self.last.set_sensitive(started)
-        if self.ID:                                   # Set daemon identity row in multidaemon mode
+        if self.ID != '':                             # Set daemon identity row in multidaemon mode
           folder = (yddir.replace('_', u'\u02CD') if yddir else '< NOT CONFIGURED >')
           self.yddir.set_label(self.ID + _('  Folder: ') + folder)
-        if yddir:                                     # Activate Open YDfolder if daemon configured
+        if yddir != '':                               # Activate Open YDfolder if daemon configured
           self.open_folder.connect("activate", self.openPath, yddir)
           self.open_folder.set_sensitive(True)
         else:
@@ -1213,6 +1213,7 @@ class LockFile(object):         # LockFile
     logger.debug('Lock file %s successfully deleted.' % self.fileName)
 
 def appExit(msg = None):        # Exit from application (it closes all indicators)
+  global indicators
   for i in indicators:
     i.exit()
   lockFile.release()
