@@ -1191,9 +1191,9 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
 
 class LockFile(object):         # LockFile
 
-  def __init__(self, fileName):
+  def __init__(self, applicationName):
     ### Check for already running instance of the indicator application in user space ###
-    self.fileName = fileName
+    self.fileName = os.path.join('/run/user', str(os.geteuid()), applicationName + '.pid')
     logger.debug('Lock file is:%s' % self.fileName)
     try:                                                    # Open lock file for write
       self.lockFile = open(self.fileName, 'wt')
@@ -1209,7 +1209,7 @@ class LockFile(object):         # LockFile
     filelock(self.lockFile, LOCK_UN)
     self.lockFile.close()
     logger.debug('Lock file %s successfully unlocked.' % self.fileName)
-    deleteFile(self.fileName)
+    os.remove(self.fileName)
     logger.debug('Lock file %s successfully deleted.' % self.fileName)
 
 def appExit(msg = None):        # Exit from application (it closes all indicators)
@@ -1513,8 +1513,8 @@ if __name__ == '__main__':
     # Update configuration file
     config.save()
 
-  # Check for already running instance of the indicator application with the same config
-  lockFile = LockFile(pathJoin(configPath, 'pid'))
+  # Check for already running instance of the indicator application
+  lockFile = LockFile(appName)
 
   # Make indicator objects for each daemon in daemons list
   indicators = []
