@@ -38,6 +38,7 @@ from os.path import exists as pathExists, join as pathJoin
 from shutil import copy as fileCopy
 from datetime import datetime
 from webbrowser import open_new as openNewBrowser
+from signal import signal, SIGTERM
 
 #### Common utility functions and classes
 def copyFile(src, dst):
@@ -1219,6 +1220,9 @@ def appExit(msg = None):        # Exit from application (it closes all indicator
   lockFile.release()
   sys.exit(msg)
 
+def sigterm_handler(_signo, _stack_frame):
+  appExit('Indicator terminated.')
+
 def activateActions():          # Install/deinstall file extensions
   activate = config["fmextensions"]
   result = False
@@ -1524,6 +1528,9 @@ if __name__ == '__main__':
 
   # Notification engine for application messages (it is used in Preferences dialogue)
   notify = Notification(appName, config['notifications'])
+
+  # Register the SIGTERM handler for graceful exit on kill
+  signal(SIGTERM, sigterm_handler)
 
   # Start GTK Main loop
   Gtk.main()
