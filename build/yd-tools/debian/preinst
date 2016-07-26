@@ -1,7 +1,5 @@
 #! /bin/bash -e
 #DEBHELPER#
-userName=$(eval echo $SUDO_USER) 
-userHome=$(eval echo ~${SUDO_USER})
 
 # check that yandex-disk daemon is installed
 if ! [ -e "/usr/bin/yandex-disk" ]
@@ -9,11 +7,5 @@ then
     zenity  --error --width=350 --height=150 --ok-label="Выход" --title "Yandex.Disk" --text="Yandex.disk CLI utility is not installed! \nVisit www.yandex.ru, download and install Yandex.Disk CLI Utility\n After that repeeat yd-tools installation."
     exit 1
 fi
-
-# kill all running indicators
-for n in $(pgrep -f "python3 /usr/bin/yandex-disk-indicator") 
-do
-    kill $n
-done
 
 exit 0

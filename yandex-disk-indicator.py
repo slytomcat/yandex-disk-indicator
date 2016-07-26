@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.8.17'
+appVer = '1.8.18'
 #
-#  Copyright 2014 Sly_tom_cat <slytomcat@mail.ru>
+#  Copyright 2014-2016 Sly_tom_cat <slytomcat@mail.ru>
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -1220,7 +1220,7 @@ def appExit(msg = None):        # Exit from application (it closes all indicator
   lockFile.release()
   sys.exit(msg)
 
-def sigterm_handler(_signo, _stack_frame):
+def sigtermHandler(_signo, _stack_frame):
   appExit('Indicator terminated.')
 
 def activateActions():          # Install/deinstall file extensions
@@ -1526,11 +1526,11 @@ if __name__ == '__main__':
     indicators.append(Indicator(d.replace('~', userHome),
                                 _('#%d ')%len(indicators) if len(daemons) > 1 else ''))
 
-  # Notification engine for application messages (it is used in Preferences dialogue)
+  # Initianilze notification engine for application messages (it is used in Preferences dialogue)
   notify = Notification(appName, config['notifications'])
 
   # Register the SIGTERM handler for graceful exit on kill
-  signal(SIGTERM, sigterm_handler)
+  signal(SIGTERM, sigtermHandler)
 
   # Start GTK Main loop
   Gtk.main()

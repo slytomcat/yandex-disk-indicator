@@ -1,0 +1,13 @@
+#! /bin/bash -e
+#DEBHELPER#
+
+for pid in $(pgrep yd-tools)
+do 
+  USR=`grep -z USER /proc/$pid/environ | sed -e 's/USER=//'`
+  DSP=`grep -z DISPLAY /proc/$pid/environ | sed -e 's/DISPLAY=//'`
+  DBUS=`grep -z DBUS_SESSION_BUS_ADDRESS /proc/$pid/environ | sed -e 's/DBUS_SESSION_BUS_ADDRESS=//'`
+  kill $pid
+  export DBUS_SESSION_BUS_ADDRESS=$DBUS
+  export DISPLAY=$DSP
+  su $USR -c yandex-disk-indicator&
+done

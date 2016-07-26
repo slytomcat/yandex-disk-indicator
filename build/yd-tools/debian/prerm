@@ -7,10 +7,7 @@ userName=$(eval echo $SUDO_USER)
 userHome=$(eval echo ~${SUDO_USER})
 
 # kill all running indicators
-for n in $(pgrep -f "python3 /usr/bin/yandex-disk-indicator") 
-do
-    kill $n
-done
+pkill yd-tools
 
 if [ "$1" = "remove" ]; then
   if [ -f  "$userHome/.config/autostart/Yandex.Disk-indicator.desktop" ]
