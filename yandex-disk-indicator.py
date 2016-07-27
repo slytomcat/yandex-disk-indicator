@@ -19,26 +19,30 @@ appVer = '1.8.18'
 #  You should have received a copy of the GNU General Public License
 #  along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import gi, os, sys, subprocess, pyinotify
-gi.require_version('Gtk', '3.0')
+from os import remove, makedirs, getpid, geteuid, getenv
+from pyinotify import ProcessEvent, WatchManager, Notifier, IN_MODIFY
+from gi import require_version
+require_version('Gtk', '3.0')
 from gi.repository import Gtk
-gi.require_version('AppIndicator3', '0.1')
+require_version('AppIndicator3', '0.1')
 from gi.repository import AppIndicator3 as appIndicator
-gi.require_version('Notify', '0.7')
+require_version('Notify', '0.7')
 from gi.repository import Notify
 from gi.repository import Gio
 from gi.repository import GLib
 from gi.repository import GdkPixbuf
+from subprocess import check_output, call, CalledProcessError
 from re import findall as reFindall, sub as reSub, search as reSearch, M as reM, S as reS
 from argparse import ArgumentParser
 from gettext import translation
 from logging import basicConfig, getLogger
 from fcntl import flock as filelock, LOCK_UN, LOCK_EX, LOCK_NB
-from os.path import exists as pathExists, join as pathJoin
+from os.path import exists as pathExists, join as pathJoin, relpath as relativePath
 from shutil import copy as fileCopy
 from datetime import datetime
 from webbrowser import open_new as openNewBrowser
 from signal import signal, SIGTERM
+from sys import exit as sysExit
 
 #### Common utility functions and classes
 def copyFile(src, dst):
@@ -49,13 +53,13 @@ def copyFile(src, dst):
 
 def deleteFile(dst):
   try:
-    os.remove(dst)
+    remove(dst)
   except:
     logger.error('File Deletion Error: %s' % dst)
 
 def makedirs(dst):
   try:
-    os.makedirs(dst, exist_ok=True)
+    makedirs(dst, exist_ok=True)
   except:
     logger.error('Dirs creation Error: %s' % dst)
 
@@ -436,12 +440,12 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     '''
     def __init__(self, handler, par=None):
       # Initialize iNotify watcher
-      class _EH(pyinotify.ProcessEvent):           # Event handler class for iNotifier
+      class _EH(ProcessEvent):           # Event handler class for iNotifier
         def process_IN_MODIFY(self, event):
           handler(par)
-      self._watchMngr = pyinotify.WatchManager()   # Create watch manager
+      self._watchMngr = WatchManager()   # Create watch manager
       # Create PyiNotifier
-      self._iNotifier = pyinotify.Notifier(self._watchMngr, _EH(), timeout=0.5)
+      self._iNotifier = Notifier(self._watchMngr, _EH(), timeout=0.5)
       # Timer will call iNotifier handler every .7 seconds (not started initially)
       self._timer = Timer(700, self._iNhandle, start=False)
 
@@ -455,7 +459,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       # Prepare path
       self._path = pathJoin(path.replace('~', userHome), '.sync/cli.log')
       # Add watch
-      self._watch = self._watchMngr.add_watch(self._path, pyinotify.IN_MODIFY, rec = False)
+      self._watch = self._watchMngr.add_watch(self._path, IN_MODIFY, rec = False)
       # Activate timer
       self._timer.start()
 
@@ -577,7 +581,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     if not userLang:      # Change locale settings when it required
       cmd = ['env', '-i', "LANG='en_US.UTF8'"] + cmd
     try:
-      output = subprocess.check_output(cmd, universal_newlines=True)
+      output = check_output(cmd, universal_newlines=True)
     except:
       output = ''         # daemon is not running or bad
     #logger.debug('output = %s' % output)
@@ -677,7 +681,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     dialog.destroy()
     if err == 'NOCONFIG' and response == Gtk.ResponseType.OK:  # Launch Set-up utility
       logger.debug('starting configuration utility: %s' % pathJoin(installDir, 'ya-setup'))
-      retCode = subprocess.call([pathJoin(installDir,'ya-setup'), self.config.fileName])
+      retCode = call([pathJoin(installDir,'ya-setup'), self.config.fileName])
     elif err == 'CANTSTART' and response == Gtk.ResponseType.OK:
       retCode = 0
     else:
@@ -694,11 +698,11 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     err = ''
     while True:
       try:                                          # Try to start
-        msg = subprocess.check_output(['yandex-disk', '-c', self.config.fileName, 'start'],
+        msg = check_output(['yandex-disk', '-c', self.config.fileName, 'start'],
                                       universal_newlines=True)
         logger.info('Start success, message: %s' % msg)
         err =  ''
-      except subprocess.CalledProcessError as e:
+      except CalledProcessError as e:
         logger.error('Daemon start failed:%s' % e.output)
         if e.output == '':                          # Probably 'os: no file'
           return 'NOTINSTALLED'
@@ -723,7 +727,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
 
   def stop(self):                       # Execute 'yandex-disk stop'
     try:
-      msg = subprocess.check_output(['yandex-disk', '-c', self.config.fileName, 'stop'],
+      msg = check_output(['yandex-disk', '-c', self.config.fileName, 'stop'],
                                     universal_newlines=True)
     except:
       msg = ''
@@ -999,9 +1003,9 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
       logger.info('Opening %s' % path)
       if pathExists(path):
         try:
-          os.startfile(path)
+          call(['xdg-open', path])
         except:
-          subprocess.call(['xdg-open', path])
+          logger.error('Start of "%s" failed' % path)
 
     def close(self, widget):                # Quit from indicator
       appExit()
@@ -1067,7 +1071,7 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
       rootDir = self.dconfig['dir']
       dialog.set_current_folder(rootDir)
       if dialog.run() == Gtk.ResponseType.ACCEPT:
-        self.excludeList.append([False, os.path.relpath(dialog.get_filename(), start=rootDir)])
+        self.excludeList.append([False, relativePath(dialog.get_filename(), start=rootDir)])
         self.dconfig.changed = True
       dialog.destroy()
 
@@ -1194,23 +1198,23 @@ class LockFile(object):         # LockFile
 
   def __init__(self, applicationName):
     ### Check for already running instance of the indicator application in user space ###
-    self.fileName = os.path.join('/run/user', str(os.geteuid()), applicationName + '.pid')
+    self.fileName = pathJoin('/run/user', str(geteuid()), applicationName + '.pid')
     logger.debug('Lock file is:%s' % self.fileName)
     try:                                                    # Open lock file for write
       self.lockFile = open(self.fileName, 'wt')
       filelock(self.lockFile, LOCK_EX | LOCK_NB)            # Try to acquire exclusive lock
       logger.debug('Lock file succesfully locked.')
     except:                                                 # File is already locked
-      sys.exit(_('The indicator instance is already running.\n'+
+      sysExit(_('The indicator instance is already running.\n'+
                  '(file %s is locked by another process)') % self.fileName)
-    self.lockFile.write('%d\n' % os.getpid())
+    self.lockFile.write('%d\n' % getpid())
     self.lockFile.flush()
 
   def release(self):
     filelock(self.lockFile, LOCK_UN)
     self.lockFile.close()
     logger.debug('Lock file %s successfully unlocked.' % self.fileName)
-    os.remove(self.fileName)
+    remove(self.fileName)
     logger.debug('Lock file %s successfully deleted.' % self.fileName)
 
 def appExit(msg = None):        # Exit from application (it closes all indicators)
@@ -1218,10 +1222,7 @@ def appExit(msg = None):        # Exit from application (it closes all indicator
   for i in indicators:
     i.exit()
   lockFile.release()
-  sys.exit(msg)
-
-def sigtermHandler(_signo, _stack_frame):
-  appExit('Indicator terminated.')
+  sysExit(msg)
 
 def activateActions():          # Install/deinstall file extensions
   activate = config["fmextensions"]
@@ -1229,19 +1230,19 @@ def activateActions():          # Install/deinstall file extensions
   try:                  # Catch all exceptions during FM action activation/deactivation
 
     # Package manager check
-    if subprocess.call("hash dpkg>/dev/null 2>&1", shell=True)==0:
+    if call("hash dpkg>/dev/null 2>&1", shell=True)==0:
       logger.info("dpkg detected")
       pm = 'dpkg -s '
-    elif subprocess.call("hash rpm>/dev/null 2>&1", shell=True)==0:
+    elif call("hash rpm>/dev/null 2>&1", shell=True)==0:
       logger.info("rpm detected")
       pm = 'rpm -qi '
-    elif subprocess.call("hash pacman>/dev/null 2>&1", shell=True)==0:
+    elif call("hash pacman>/dev/null 2>&1", shell=True)==0:
       logger.info("Pacman detected")
       pm = 'pacman -Qi '
-    elif subprocess.call("hash zypper>/dev/null 2>&1", shell=True)==0:
+    elif call("hash zypper>/dev/null 2>&1", shell=True)==0:
       logger.info("Zypper detected")
       pm = 'zypper info '
-    elif subprocess.call("hash emerge>/dev/null 2>&1", shell=True)==0:
+    elif call("hash emerge>/dev/null 2>&1", shell=True)==0:
       logger.info("Emerge detected")
       pm = 'emerge -pv '
     else:
@@ -1249,9 +1250,9 @@ def activateActions():          # Install/deinstall file extensions
       return result
 
     # --- Actions for Nautilus ---
-    if subprocess.call([pm + "nautilus>/dev/null 2>&1"], shell=True) == 0:
+    if call([pm + "nautilus>/dev/null 2>&1"], shell=True) == 0:
       logger.info("Nautilus installed")
-      ver = subprocess.check_output(["lsb_release -r | sed -n '1{s/[^0-9]//g;p;q}'"], shell=True)
+      ver = check_output(["lsb_release -r | sed -n '1{s/[^0-9]//g;p;q}'"], shell=True)
       if ver != '' and int(ver) < 1210:
         nautilusPath = ".gnome2/nautilus-scripts/"
       else:
@@ -1270,7 +1271,7 @@ def activateActions():          # Install/deinstall file extensions
         result = True
 
     # --- Actions for Nemo ---
-    if subprocess.call([pm + "nemo>/dev/null 2>&1"], shell=True) == 0:
+    if call([pm + "nemo>/dev/null 2>&1"], shell=True) == 0:
       logger.info("Nemo installed")
       if activate:      # Install actions for Nemo
         copyFile(pathJoin(installDir, "fm-actions/Nautilus_Nemo/publish"),
@@ -1284,7 +1285,7 @@ def activateActions():          # Install/deinstall file extensions
         result = True
 
     # --- Actions for Thunar ---
-    if subprocess.call([pm + "thunar>/dev/null 2>&1"], shell=True) == 0:
+    if call([pm + "thunar>/dev/null 2>&1"], shell=True) == 0:
       logger.info("Thunar installed")
       ucaPath = pathJoin(userHome, ".config/Thunar/uca.xml")
       # Read uca.xml
@@ -1329,7 +1330,7 @@ def activateActions():          # Install/deinstall file extensions
       result = True
 
     # --- Actions for Dolphin ---
-    if subprocess.call([pm + "dolphin>/dev/null 2>&1"], shell=True) == 0:
+    if call([pm + "dolphin>/dev/null 2>&1"], shell=True) == 0:
       logger.info("Dolphin installed")
       if activate:      # Install actions for Dolphin
         makedirs(pathJoin(userHome, '.local/share/kservices5/ServiceMenus'))
@@ -1341,20 +1342,20 @@ def activateActions():          # Install/deinstall file extensions
         result = True
 
     # --- Actions for Pantheon-files ---
-    if subprocess.call([pm + "pantheon-files>/dev/null 2>&1"], shell=True) == 0:
+    if call([pm + "pantheon-files>/dev/null 2>&1"], shell=True) == 0:
       logger.info("Pantheon-files installed")
       ctrs_path = "/usr/share/contractor/"
       if activate:      # Install actions for Pantheon-files
         src_path = pathJoin(installDir, "fm-actions", "pantheon-files")
         ctr_pub = pathJoin(src_path ,"yandex-disk-indicator-publish.contract")
         ctr_unpub = pathJoin(src_path ,"yandex-disk-indicator-unpublish.contract")
-        res = subprocess.call(["gksudo", "-D", "yd-tools", "cp", ctr_pub, ctr_unpub, ctrs_path])
+        res = call(["gksudo", "-D", "yd-tools", "cp", ctr_pub, ctr_unpub, ctrs_path])
         if res == 0:
           result = True
         else:
           logger.error("Cannot enable actions for Pantheon-files")
       else:             # Remove actions for Pantheon-files
-        res = subprocess.call(["gksudo", "-D", "yd-tools", "rm",
+        res = call(["gksudo", "-D", "yd-tools", "rm",
                 pathJoin(ctrs_path, "yandex-disk-indicator-publish.contract"),
                 pathJoin(ctrs_path, "yandex-disk-indicator-unpublish.contract")])
         if res == 0:
@@ -1392,7 +1393,7 @@ def argParse():                 # Parse command line arguments
 
 def checkAutoStart(path):       # Check that auto-start is enabled
   if pathExists(path):
-    i = 1 if os.getenv('XDG_CURRENT_DESKTOP') in ('Unity', 'Pantheon') else 0
+    i = 1 if getenv('XDG_CURRENT_DESKTOP') in ('Unity', 'Pantheon') else 0
     with open(path, 'rt') as f:
       attr = reFindall(r'\nHidden=(.+)|\nX-GNOME-Autostart-enabled=(.+)', f.read())
       if attr:
@@ -1416,7 +1417,7 @@ if __name__ == '__main__':
   # See appVer in the beginnig of the code
   appHomeName = 'yd-tools'
   installDir = pathJoin('/usr/share', appHomeName)
-  userHome = os.getenv("HOME")
+  userHome = getenv("HOME")
   logo = pathJoin(installDir, 'icons/yd-128.png')
   configPath = pathJoin(userHome, '.config', appHomeName)
   # Define .desktop files locations for indicator auto-start facility
@@ -1484,7 +1485,7 @@ if __name__ == '__main__':
       # Copy icon themes readme to user config catalogue
       copyFile(pathJoin(installDir, 'icons/readme'), pathJoin(configPath, 'icons/readme'))
     except:
-      sys.exit('Can\'t create configuration files in %s' % configPath)
+      sysExit('Can\'t create configuration files in %s' % configPath)
     # Activate indicator automatic start on system start-up
     if not pathExists(autoStartDst):
       try:
@@ -1510,7 +1511,7 @@ if __name__ == '__main__':
     config.changed = True
   # Check that at least one daemon is in the daemons list
   if not daemons:
-    sys.exit(_('No daemons specified.\nCheck correctness of -r and -c options.'))
+    sysExit(_('No daemons specified.\nCheck correctness of -r and -c options.'))
   # Update config if daemons list has been changed
   if config.changed:
     config['daemons'] = daemons.get()
@@ -1529,8 +1530,8 @@ if __name__ == '__main__':
   # Initianilze notification engine for application messages (it is used in Preferences dialogue)
   notify = Notification(appName, config['notifications'])
 
-  # Register the SIGTERM handler for graceful exit on kill
-  signal(SIGTERM, sigtermHandler)
+  # Register the SIGTERM handler for graceful exit when indicator is killed
+  signal(SIGTERM, lambda _signo, _stack_frame: appExit('Indicator terminated.'))
 
   # Start GTK Main loop
   Gtk.main()
