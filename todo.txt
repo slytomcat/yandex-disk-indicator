@@ -355,3 +355,30 @@ DAEMON-INSTALL_STORY: (ON HOLD)
 6. В preinst скрипте DEB пакета залить wget-ом DEB yandex-disk и поставить его - не получилось т.к. пакетная база залочена и не уедается поставить пакет из preinst скрипта
 Решение: пока 5.
 Результат: нет
+
+
+PROJECT Histry:
+Idea 
+- 2014-04-08, 09:46:51 http://forum.ubuntu.ru/index.php?topic=241992.msg1908444#msg1908444
+First functions to parse CLI daemon output 
+- 2014-04-09, 21:32:08 http://forum.ubuntu.ru/index.php?topic=241992.msg1909078#msg1909078
+Alfa 0.1 version 
+- 2014-04-10, 23:50:32 http://forum.ubuntu.ru/index.php?topic=241992.msg1909651#msg1909651
+Alfa 0.2 version (deb pacakge)
+- 2014-04-11, 15:55:43 http://forum.ubuntu.ru/index.php?topic=241992.msg1909861#msg1909861
+Beta 0.4 version
+- 2014-04-12, 04:20:10 http://forum.ubuntu.ru/index.php?topic=241992.msg1910159#msg1910159
+Ver 0.8 (beta) - Translation to Russian
+- 2014-04-15, 16:24:26 http://forum.ubuntu.ru/index.php?topic=241992.msg1911851#msg1911851
+Publication on Launchpad PPA
+- 2014-04-16, 18:43:55 http://forum.ubuntu.ru/index.php?topic=241992.msg1912370#msg1912370
+Ver 1.0 (first stable)
+- 2014-04-17, 14:57:17 http://forum.ubuntu.ru/index.php?topic=241992.msg1912781#msg1912781
+Icon contest announcement
+- 2014-04-19, 11:14:32 http://forum.ubuntu.ru/index.php?topic=241992.msg1914054#msg1914054
+Icon contest voting
+- 2014-04-30, 10:25:32 http://forum.ubuntu.ru/index.php?topic=241992.msg1920150#msg1920150
+Publication on GitHub
+- 2015-03-13, 18:20:40 http://forum.ubuntu.ru/index.php?topic=241992.msg2044809#msg2044809
+
+The rest of the history is available on GitHub.
