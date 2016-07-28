@@ -1,6 +1,9 @@
 #! /bin/bash -e
 #DEBHELPER#
 
+#echo prinst started
+#sleep 3
+
 # check that yandex-disk daemon is installed
 if ! [ -e "/usr/bin/yandex-disk" ]
 then
@@ -8,4 +11,5 @@ then
     exit 1
 fi
 
+#echo prinst finished
 exit 0

@@ -6,8 +6,8 @@ export LC_ALL=en_US.UTF-8
 userName=$(eval echo $SUDO_USER) 
 userHome=$(eval echo ~${SUDO_USER})
 
-# kill all running indicators
-pkill yd-tools
+#echo prerm started
+#sleep 3
 
 if [ "$1" = "remove" ]; then
   if [ -f  "$userHome/.config/autostart/Yandex.Disk-indicator.desktop" ]
@@ -16,4 +16,5 @@ if [ "$1" = "remove" ]; then
   fi
 fi
 
+#echo prerm finished
 exit 0

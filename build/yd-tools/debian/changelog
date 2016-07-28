@@ -1,9 +1,7 @@
-yd-tools (1.8.18) xenial; urgency=medium
+yd-tools (1.8.19) xenial; urgency=medium
 
   * Changes:
 
-    -- SIGTERM handler added for correct indicator closing when it is killed
-    -- Auto-restart indicator after DEB package upgade
-    -- Import optimization
+    -- fix for issue with postinst script error during DEB update
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Wed, 27 Jul 2016 23:05:52 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Thu, 28 Jul 2016 15:54:16 +0300

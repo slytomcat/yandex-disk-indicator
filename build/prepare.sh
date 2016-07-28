@@ -51,6 +51,7 @@ chmod -R u+rw *
 chmod -R go-w *
 chmod a+x debian/rules
 chmod a+x debian/pre*
+chmod a+x debian/post*
 chmod a+x usr/share/yd-tools/*
 chmod a+x usr/share/yd-tools/fm-actions/Nautilus_Nemo/*
 chmod a+x usr/share/yd-tools/fm-actions/Dolphin/*

@@ -1,13 +1,23 @@
 #! /bin/bash -e
 #DEBHELPER#
 
-for pid in $(pgrep yd-tools)
-do 
-  USR=`grep -z USER /proc/$pid/environ | sed -e 's/USER=//'`
-  DSP=`grep -z DISPLAY /proc/$pid/environ | sed -e 's/DISPLAY=//'`
-  DBUS=`grep -z DBUS_SESSION_BUS_ADDRESS /proc/$pid/environ | sed -e 's/DBUS_SESSION_BUS_ADDRESS=//'`
+#echo postinst started
+#sleep 3
+
+for pid in $(pgrep -f /usr/bin/yandex-disk-indicator)
+do
+  #echo $pid will be killed
+  USR=`grep -z ^USER= /proc/$pid/environ | sed -e 's/USER=//'`
+  #echo $pid belongs to user:$USR
+  DSP=`grep -z ^DISPLAY= /proc/$pid/environ | sed -e 's/DISPLAY=//'`
+  DBUS=`grep -z ^DBUS_SESSION_BUS_ADDRESS= /proc/$pid/environ | sed -e 's/DBUS_SESSION_BUS_ADDRESS=//'`
   kill $pid
+  sleep 2
   export DBUS_SESSION_BUS_ADDRESS=$DBUS
   export DISPLAY=$DSP
-  su $USR -c yandex-disk-indicator&
+  su $USR -c "(yandex-disk-indicator&)&"
 done
+
+#echo pid:$pid 
+#echo postinst finished
+exit 0

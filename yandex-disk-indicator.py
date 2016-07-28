@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.8.18'
+appVer = '1.8.19'
 #
 #  Copyright 2014-2016 Sly_tom_cat <slytomcat@mail.ru>
 #
@@ -1211,11 +1211,14 @@ class LockFile(object):         # LockFile
     self.lockFile.flush()
 
   def release(self):
-    filelock(self.lockFile, LOCK_UN)
-    self.lockFile.close()
-    logger.debug('Lock file %s successfully unlocked.' % self.fileName)
-    remove(self.fileName)
-    logger.debug('Lock file %s successfully deleted.' % self.fileName)
+    try:
+      filelock(self.lockFile, LOCK_UN)
+      self.lockFile.close()
+      logger.debug('Lock file %s successfully unlocked.' % self.fileName)
+      remove(self.fileName)
+      logger.debug('Lock file %s successfully deleted.' % self.fileName)
+    except:
+      logger.error("ERROR: Lock file %s can't be unlocked." % self.fileName)
 
 def appExit(msg = None):        # Exit from application (it closes all indicators)
   global indicators
@@ -1531,7 +1534,7 @@ if __name__ == '__main__':
   notify = Notification(appName, config['notifications'])
 
   # Register the SIGTERM handler for graceful exit when indicator is killed
-  signal(SIGTERM, lambda _signo, _stack_frame: appExit('Indicator terminated.'))
+  signal(SIGTERM, lambda _signo, _stack_frame: appExit())
 
   # Start GTK Main loop
   Gtk.main()
