@@ -27,10 +27,9 @@ from gi.repository import Gtk
 require_version('AppIndicator3', '0.1')
 from gi.repository import AppIndicator3 as appIndicator
 require_version('Notify', '0.7')
-from gi.repository import Notify
-from gi.repository import Gio
+from gi.repository.Notify import init as NotifyInit, Notification as NotifyNotification
 from gi.repository import GLib
-from gi.repository import GdkPixbuf
+from gi.repository.GdkPixbuf import Pixbuf
 from subprocess import check_output, call, CalledProcessError
 from re import findall as reFindall, sub as reSub, search as reSearch, M as reM, S as reS
 from argparse import ArgumentParser
@@ -349,8 +348,8 @@ class Timer(object):            # Timer for triggering a function periodically
 class Notification(object):     # On-screen notification
 
   def __init__(self, app, mode):      # Initialize notification engine
-    Notify.init(app)
-    self.notifier = Notify.Notification()
+    NotifyInit(app)
+    self.notifier = NotifyNotification()
     self.switch(mode)
 
   def send(self, title, message):     # Send notification
@@ -363,11 +362,11 @@ class Notification(object):     # On-screen notification
       self.send = lambda t, m: None   # Redefine send as fake routine
 
   def _message(self, t, m):        # Show on-screen notification message
-    global logo
+    global logoPath
     logger.debug('Message: %s | %s' % (t, m))
     try:
-      self.notifier.update(t, m, logo)  # Update notification
-      self.notifier.show()              # Display new notification
+      self.notifier.update(t, m, logoPath)  # Update notification
+      self.notifier.show()                  # Display new notification
     except:
       logger.error('Message engine failure')
 
@@ -676,7 +675,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
         dialog.format_secondary_text(_('Yandex.Disk daemon failed to start due to some ' +
                                        'unrecognized error.'))
     dialog.set_default_size(400, 250)
-    dialog.set_icon(GdkPixbuf.Pixbuf.new_from_file(logo))
+    dialog.set_icon(logo)
     response = dialog.run()
     dialog.destroy()
     if err == 'NOCONFIG' and response == Gtk.ResponseType.OK:  # Launch Set-up utility
@@ -937,8 +936,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
       for i in indicators:
         i.menu.about.set_sensitive(False)           # Disable menu item
       aboutWindow = Gtk.AboutDialog()
-      pic = GdkPixbuf.Pixbuf.new_from_file(logo)
-      aboutWindow.set_logo(pic);   aboutWindow.set_icon(pic)
+      aboutWindow.set_logo(logo);   aboutWindow.set_icon(logo)
       aboutWindow.set_program_name(_('Yandex.Disk indicator'))
       aboutWindow.set_version(_('Version ') + appVer)
       aboutWindow.set_copyright('Copyright ' + u'\u00a9' + ' 2013-' +
@@ -976,10 +974,10 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
         i.menu.about.set_sensitive(True)            # Enable menu item
 
     def showOutput(self, widget):           # Display daemon output in dialogue window
-      global lang
+      global lang, logo
       widget.set_sensitive(False)                         # Disable menu item
       statusWindow = Gtk.Dialog(_('Yandex.Disk daemon output message'))
-      statusWindow.set_icon(GdkPixbuf.Pixbuf.new_from_file(logo))
+      statusWindow.set_icon(logo)
       statusWindow.set_border_width(6)
       statusWindow.add_button(_('Close'), Gtk.ResponseType.CLOSE)
       textBox = Gtk.TextView()                            # Create text-box to display daemon output
@@ -1020,7 +1018,7 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
       self.parent = parent
       Gtk.Dialog.__init__(self, title=_('Folders that are excluded from synchronization'),
                           parent=parent, flags=1)
-      self.set_icon(GdkPixbuf.Pixbuf.new_from_file(logo))
+      self.set_icon(logo)
       self.set_border_width(6)
       self.add_button(_('Add catalogue'),
                       Gtk.ResponseType.APPLY).connect("clicked", self.addFolder, self)
@@ -1076,13 +1074,13 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
       dialog.destroy()
 
   def __init__(self, widget):
-    global config, indicators
+    global config, indicators, logo
     # Preferences Window routine
     for i in indicators:
       i.menu.preferences.set_sensitive(False)   # Disable menu items to avoid multi-dialogs creation
     # Create Preferences window
     Gtk.Dialog.__init__(self, _('Yandex.Disk-indicator and Yandex.Disks preferences'), flags=1)
-    self.set_icon(GdkPixbuf.Pixbuf.new_from_file(logo))
+    self.set_icon(logo)
     self.set_border_width(6)
     self.add_button(_('Close'), Gtk.ResponseType.CLOSE)
     pref_notebook = Gtk.Notebook()              # Create notebook for indicator and daemon options
@@ -1421,7 +1419,8 @@ if __name__ == '__main__':
   appHomeName = 'yd-tools'
   installDir = pathJoin('/usr/share', appHomeName)
   userHome = getenv("HOME")
-  logo = pathJoin(installDir, 'icons/yd-128.png')
+  logoPath = pathJoin(installDir, 'icons/yd-128.png')
+  logo = Pixbuf.new_from_file(logoPath)
   configPath = pathJoin(userHome, '.config', appHomeName)
   # Define .desktop files locations for indicator auto-start facility
   autoStartSrc = '/usr/share/applications/Yandex.Disk-indicator.desktop'
