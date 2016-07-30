@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: yd-tools\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-07-08 18:05+0300\n"
-"PO-Revision-Date: 2016-07-08 18:05+0300\n"
+"POT-Creation-Date: 2016-07-30 22:11+0300\n"
+"PO-Revision-Date: 2016-07-30 22:12+0300\n"
 "Last-Translator: Sly_tom_cat <slytomcat@mail.ru>\n"
 "Language-Team: ubuntu.ru local team <slytomcat@mail.ru>\n"
 "Language: el_GR\n"
@@ -11,19 +11,16 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-KeywordsList: _;gettext;gettext_noop\n"
-"X-Poedit-Basepath: /home/stc/Yandex.Disk/YD-tools\n"
+"X-Poedit-Basepath: ..\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 1.5.4\n"
-"X-Poedit-SearchPath-0: /media/Backup/Greeklug/Projects/yandex-disk-"
-"indicator\n"
-"X-Poedit-SearchPath-1: /home/stc/Yandex.Disk/YD-tools\n"
+"X-Generator: Poedit 1.8.7.1\n"
+"X-Poedit-SearchPath-0: .\n"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:654
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:663
+#: yandex-disk-indicator.py:658 yandex-disk-indicator.py:667
 msgid "Yandex.Disk Indicator: daemon start failed"
 msgstr "Ένδειξη λειτουργίας του Yandex.Disk: η εκκίνηση της υπηρεσίας απέτυχε"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:656
+#: yandex-disk-indicator.py:660
 msgid ""
 "Yandex.Disk daemon failed to start because it is not configured properly\n"
 "  To configure it up: press OK button.\n"
@@ -34,7 +31,7 @@ msgstr ""
 "  Για να μεταβείτε στη ρύθμιση, πιέστε Ok.\n"
 "Πατήστε Άκυρο για έξοδο."
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:659
+#: yandex-disk-indicator.py:663
 msgid ""
 "Yandex.Disk daemon failed to start.\n"
 "  Press OK to continue without started daemon or Cancel to exit."
@@ -42,7 +39,7 @@ msgstr ""
 "Yandex.Disk δαίμονας απέτυχε να ξεκινήσει.\n"
 "  Πατήστε OK για να συνεχίσετε χωρίς εκκίνηση δαίμονα ή Άκυρο για έξοδο."
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:665
+#: yandex-disk-indicator.py:669
 msgid ""
 "Yandex.Disk daemon failed to start due to network connection issue. \n"
 "  Check the Internet connection and try to start daemon again."
@@ -51,7 +48,7 @@ msgstr ""
 " Ελέγξτε τη σύνδεση σας με το Ίντερνετ και δοκιμάστε ξανά να ξεικινήσετε την "
 "υπηρεσία."
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:668
+#: yandex-disk-indicator.py:672
 msgid ""
 "Yandex.Disk utility is not installed.\n"
 " Visit www.yandex.ru, download and install Yandex.Disk daemon."
@@ -60,165 +57,160 @@ msgstr ""
 "Επισκεφθείτε το www.yandex.ru η http://help.yandex.com/disk/ , κατεβάστε και "
 "εγκαταστήστε τα εργαλεία του Yandex.Disk"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:671
+#: yandex-disk-indicator.py:675
 msgid "Yandex.Disk daemon failed to start due to some unrecognized error."
 msgstr "Εκκίνηση υπηρεσίας Yandex.Disk κατά την εκκίνηση του συστήματος"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:777
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:779
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:782
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:785
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:787
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:789
+#: yandex-disk-indicator.py:781 yandex-disk-indicator.py:783
+#: yandex-disk-indicator.py:786 yandex-disk-indicator.py:789
+#: yandex-disk-indicator.py:791 yandex-disk-indicator.py:793
 msgid "Yandex.Disk "
 msgstr "Δίσκος Yandex "
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:777
+#: yandex-disk-indicator.py:781
 msgid "Yandex.Disk daemon has been started"
 msgstr "Η υπηρεσία Yandex.Disk ξεκίνησε"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:779
+#: yandex-disk-indicator.py:783
 msgid "Synchronization started"
 msgstr "Ο συγχρονισμός άρχισε"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:782
+#: yandex-disk-indicator.py:786
 msgid "Synchronization has been completed"
 msgstr "Ο συγχρονισμός τελείωσε"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:785
+#: yandex-disk-indicator.py:789
 msgid "Synchronization has been paused"
 msgstr "Ο συγχρονισμός είναι σε παύση"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:787
+#: yandex-disk-indicator.py:791
 msgid "Yandex.Disk daemon has been stopped"
 msgstr "Η υπηρεσία Yandex.Disk σταμάτησε"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:789
+#: yandex-disk-indicator.py:793
 msgid "Synchronization ERROR"
 msgstr "Σφάλμα συγχρονισμού"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:840
+#: yandex-disk-indicator.py:844
 msgid "Last synchronized items"
 msgstr "Πρόσφατα συγχρονισμένα αρχεία"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:845
+#: yandex-disk-indicator.py:849
 msgid "Start Yandex.Disk daemon"
 msgstr "Εκκίνηση υπηρεσίας Yandex.Disk"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:848
+#: yandex-disk-indicator.py:852
 msgid "Stop Yandex.Disk daemon"
 msgstr "Διακοπή υπηρεσίας Yandex.Disk"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:851
+#: yandex-disk-indicator.py:855
 msgid "Open Yandex.Disk Folder"
 msgstr "Ανοίξτε τον κατάλογο Yandex.Disk"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:853
+#: yandex-disk-indicator.py:857
 msgid "Open Yandex.Disk on the web"
 msgstr "Ανοίξτε τη σελίδα του Yandex.Disk"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:854
+#: yandex-disk-indicator.py:858
 msgid "https://disk.yandex.com"
 msgstr "https://disk.yandex.com"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:857
+#: yandex-disk-indicator.py:861
 msgid "Preferences"
 msgstr "Προτιμήσεις"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:860
+#: yandex-disk-indicator.py:864
 msgid "Help"
 msgstr "Βοήθεια"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:862
+#: yandex-disk-indicator.py:866
 msgid "Yandex.Disk daemon"
 msgstr "Υπηρεσία  Yandex.Δίσκος"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:863
+#: yandex-disk-indicator.py:867
 msgid "https://yandex.com/support/disk/"
 msgstr "https://yandex.com/support/disk/"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:865
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1174
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1177
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1181
+#: yandex-disk-indicator.py:869 yandex-disk-indicator.py:1177
+#: yandex-disk-indicator.py:1180 yandex-disk-indicator.py:1184
 msgid "Yandex.Disk Indicator"
 msgstr "Ένδειξη λειτουργίας του Yandex.Disk"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:867
+#: yandex-disk-indicator.py:871
 msgid "https://github.com/slytomcat/yandex-disk-indicator/wiki"
 msgstr "http://forum.ubuntu.ru/index.php?topic=241992"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:871
+#: yandex-disk-indicator.py:875
 msgid "About"
 msgstr "Σχετικά με το πρόγραμμα"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:874
+#: yandex-disk-indicator.py:878
 msgid "Quit"
 msgstr "Έξοδος"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:879
+#: yandex-disk-indicator.py:883
 msgid "Synchronized"
 msgstr "Συγχρονίσθηκε"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:879
+#: yandex-disk-indicator.py:883
 msgid "Sync.: "
 msgstr "Συγχρ.:"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:879
+#: yandex-disk-indicator.py:883
 msgid "Not started"
 msgstr "Δεν ξεκίνησε"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:880
+#: yandex-disk-indicator.py:884
 msgid "Paused"
 msgstr "Σε παύση"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:880
+#: yandex-disk-indicator.py:884
 msgid "Not connected"
 msgstr "Χωρίς σύνδεση"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:880
+#: yandex-disk-indicator.py:884
 msgid "Error"
 msgstr "Σφάλμα"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:885
+#: yandex-disk-indicator.py:889
 msgid "Status: "
 msgstr "Κατάσταση:"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:889
+#: yandex-disk-indicator.py:893
 msgid "Used: "
 msgstr "Σε χρήση:"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:890
+#: yandex-disk-indicator.py:894
 msgid "Free: "
 msgstr "Ελεύθερα:"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:890
+#: yandex-disk-indicator.py:894
 msgid ", trash: "
 msgstr ", απορρίμματα: "
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:923
+#: yandex-disk-indicator.py:927
 msgid "  Folder: "
 msgstr "Φάκελος:"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:937
+#: yandex-disk-indicator.py:940
 msgid "Yandex.Disk indicator"
 msgstr "Ένδειξη λειτουργίας του Yandex.Disk"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:938
+#: yandex-disk-indicator.py:941
 msgid "Version "
 msgstr "Έκδοση"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:952
+#: yandex-disk-indicator.py:955
 msgid "Sly_tom_cat (slytomcat@mail.ru) "
 msgstr "Sly_tom_cat (slytomcat@mail.ru) "
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:953
+#: yandex-disk-indicator.py:956
 msgid "ya-setup utility author: Snow Dimon (snowdimon.ru)"
 msgstr ""
 "Ο συγγραφέας του βοηθητικού προγράμματος ρύθμισης παραμέτρων ya-setup: Snow "
 "Dimon (snowdimon.ru)"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:954
+#: yandex-disk-indicator.py:957
 msgid ""
 "\n"
 "Special thanks to:"
@@ -226,45 +218,45 @@ msgstr ""
 "\n"
 "Ειδικές ευχαριστίες στους:"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:955
+#: yandex-disk-indicator.py:958
 msgid ""
 " - Christiaan Diedericks (www.thefanclub.co.za) - autor of Grive tools(used "
 "as example)"
 msgstr ""
 " - Christiaan Diedericks  (www.thefanclub.co.za) - δημιουργό εργαλείου Grive"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:956
+#: yandex-disk-indicator.py:959
 msgid " - ryukusu_luminarius (my-faios@ya.ru) - icons designer"
 msgstr " - ryukusu_luminarius (my-faios@ya.ru) - σχεδιαστή εικονιδίων"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:957
+#: yandex-disk-indicator.py:960
 msgid " - metallcorn (metallcorn@jabber.ru) - icons designer"
 msgstr " - metallcorn (metallcorn@jabber.ru) - σχεδιαστή εικονιδίων"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:958
+#: yandex-disk-indicator.py:961
 msgid " - Chibiko (zenogears@jabber.ru) - deb package creation assistance"
 msgstr ""
 " - Chibiko (zenogears@jabber.ru) - για τη βοήθεια στη δημιουργία πακέτου ."
 "deb "
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:959
+#: yandex-disk-indicator.py:962
 msgid " - RingOV (ringov@mail.ru) - localization assistance"
 msgstr " - RingOV (ringov@mail.ru) - βοήθεια στη μετάφραση"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:960
+#: yandex-disk-indicator.py:963
 msgid " - GreekLUG team (https://launchpad.net/~greeklug) - Greek translation"
 msgstr ""
 " - GreekLUG team (https://launchpad.net/~greeklug) - Ελληνική Μετάφραση "
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:961
+#: yandex-disk-indicator.py:964
 msgid " - Peyu Yovev (spacy00001@gmail.com) - Bulgarian translation"
 msgstr " - Peyu Yovev (spacy00001@gmail.com) - Βουλγάρικη μετάφραση"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:962
+#: yandex-disk-indicator.py:965
 msgid " - Eldar Fahreev (fahreeve@yandex.ru) - FM actions for Pantheon-files"
 msgstr " - Eldar Fahreev (fahreeve@yandex.ru) - FM actions for Pantheon-files"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:963
+#: yandex-disk-indicator.py:966
 msgid ""
 " - Ace Of Snakes (aceofsnakesmain@gmail.com) - optimization of FM actions "
 "for Dolphin"
@@ -272,120 +264,117 @@ msgstr ""
 " - Ace Of Snakes (aceofsnakesmain@gmail.com) - η βελτιστοποίηση της FM "
 "δράσεις για Dolphin"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:964
+#: yandex-disk-indicator.py:967
 msgid ""
 " - Ivan Burmin (https://github.com/Zirrald) - ya-setup multilingual support"
 msgstr ""
 " - Ivan Burmin (https://github.com/Zirrald) - ya-setup πολυγλωσσική "
 "υποστήριξη"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:965
+#: yandex-disk-indicator.py:968
 msgid " - And to all other people who contributed to this project through"
 msgstr "-Και σε όλους τους υπόλοιπους που συνεισέφεραν σε αυτό το έργο μέσω"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:966
+#: yandex-disk-indicator.py:969
 msgid ""
 "   the Ubuntu.ru forum http://forum.ubuntu.ru/index.php?topic=241992 and"
 msgstr ""
 "Το φόρουμ της κοινότητας  Ubuntu.ru http://forum.ubuntu.ru/index.php?"
 "topic=241992"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:967
+#: yandex-disk-indicator.py:970
 msgid "   via github.com https://github.com/slytomcat/yandex-disk-indicator"
 msgstr "   μέσω github.com https://github.com/slytomcat/yandex-disk-indicator"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:976
+#: yandex-disk-indicator.py:979
 msgid "Yandex.Disk daemon output message"
 msgstr "Η υπηρεσία Yandex.Disk ξεκίνησε"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:979
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1024
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1063
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1082
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1298
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1308
+#: yandex-disk-indicator.py:982 yandex-disk-indicator.py:1027
+#: yandex-disk-indicator.py:1066 yandex-disk-indicator.py:1085
+#: yandex-disk-indicator.py:1279 yandex-disk-indicator.py:1289
 msgid "Close"
 msgstr "Κλείσιμο"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1016
+#: yandex-disk-indicator.py:1019
 msgid "Folders that are excluded from synchronization"
 msgstr "Φάκελοι που εξαιρούνται από το συγχρονισμό"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1020
+#: yandex-disk-indicator.py:1023
 msgid "Add catalogue"
 msgstr "Προσθέστε κατάλογο"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1022
+#: yandex-disk-indicator.py:1025
 msgid "Remove selected"
 msgstr "Κατάργηση επιλεγμένων"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1031
+#: yandex-disk-indicator.py:1034
 msgid "Path"
 msgstr "Path"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1061
+#: yandex-disk-indicator.py:1064
 msgid "Select catalogue to add to list"
 msgstr "Επιλέξτε κατάλογο για να προσθέσετε στη λίστα"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1064
+#: yandex-disk-indicator.py:1067
 msgid "Select"
 msgstr "Επιλέξτε"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1079
+#: yandex-disk-indicator.py:1082
 msgid "Yandex.Disk-indicator and Yandex.Disks preferences"
 msgstr ""
 "Ένδειξη λειτουργίας του Yandex.Disk %sκαι Προτιμήσεις της υπηρεσίας Yandex."
 "Disk"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1088
+#: yandex-disk-indicator.py:1091
 msgid "Start Yandex.Disk indicator when you start your computer"
 msgstr ""
 "Ενεργοποίηση της Ένδειξης λειτουργίας του Yandex.Disk κατά την εκκίνηση του "
 "υπολογιστή σας"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1089
+#: yandex-disk-indicator.py:1092
 msgid "Show on-screen notifications"
 msgstr "Εμφάνιση ειδοποιήσεων επί της οθόνης"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1090
+#: yandex-disk-indicator.py:1093
 msgid "Prefer light icon theme"
 msgstr "Επιλέξετε φωτεινό θέμα εικονιδίου"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1091
+#: yandex-disk-indicator.py:1094
 msgid "Activate file manager extensions"
 msgstr "Ενεργοποίηση επεκτάσεων του διαχειριστή αρχείων"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1097
+#: yandex-disk-indicator.py:1100
 msgid "Indicator settings"
 msgstr "Ρυθμίσεις Ένδειξης λειτουργίας Yandex.Disk"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1103
+#: yandex-disk-indicator.py:1106
 #, python-format
 msgid "Start Yandex.Disk daemon %swhen indicator is starting"
 msgstr "Εκκίνηση υπηρεσίας Yandex.Disk %sκατά την εκκίνηση του συστήματος"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1104
+#: yandex-disk-indicator.py:1107
 msgid "When daemon was not started before."
 msgstr "Όταν δαίμονας δεν έχει εκκινηθεί πριν."
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1109
+#: yandex-disk-indicator.py:1112
 #, python-format
 msgid "Stop Yandex.Disk daemon %son closing of indicator"
 msgstr "Διακοπή υπηρεσίας Yandex.Disk %sμε κλείσιμο της μικροεφαρμογής"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1114
+#: yandex-disk-indicator.py:1117
 #, python-format
 msgid "NOTE! You have to reload daemon %sto activate following settings"
 msgstr ""
 "ΣΗΜΕΙΩΣΗ! Θα πρέπει να φορτώσετε εκ νέου το δαίμονα %s για ενεργοποιήσετε "
 "ακόλουθες ρυθμίσεις"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1120
+#: yandex-disk-indicator.py:1123
 msgid "Read-Only: Do not upload locally changed files to Yandex.Disk"
 msgstr ""
 "Μόνο για ανάγνωση: Μην ανεβάσετε τοπικά τροποποιημένα αρχεία στο Yandex.Disk"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1121
+#: yandex-disk-indicator.py:1124
 msgid ""
 "Locally changed files will be renamed if a newer version of this file appear "
 "in Yandex.Disk."
@@ -393,14 +382,14 @@ msgstr ""
 "Τα τοπικά τροποποιημένα αρχεία θα μετονομασθούν εάν μια νέα έκδοση "
 "εμφανιστεί στο Yandex.Disk."
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1125
+#: yandex-disk-indicator.py:1128
 msgid ""
 "Overwrite locally changed files by files from Yandex.Disk (in read-only mode)"
 msgstr ""
 "Αντικατάσταση των τοπικά τροποπιημένων αρχείων από αρχεία από το Yandex.Disk "
 "(σε λειτουργία μόνο-για-ανάγνωση)"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1128
+#: yandex-disk-indicator.py:1131
 msgid ""
 "Locally changed files will be overwritten if a newer version of this file "
 "appear in Yandex.Disk."
@@ -408,79 +397,61 @@ msgstr ""
 "Τα τροποποιημένα αρχεία θα αντικατασταθούν εάν μια νέα έκδοση θα εμφανιστεί "
 "στο Yandex.Disk."
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1137
+#: yandex-disk-indicator.py:1140
 msgid "Excluded folders List"
 msgstr "Λίστα φακέλων που εξαιρούνται"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1138
+#: yandex-disk-indicator.py:1141
 msgid "Folders in the list will not be synchronized."
 msgstr "Folders in the list will not be synchronized."
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1142
+#: yandex-disk-indicator.py:1145
 #, python-format
 msgid "Daemon %soptions"
 msgstr "Επιλογές %s δαίμονα"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1174
+#: yandex-disk-indicator.py:1177
 msgid "Auto-start ON"
 msgstr "Η αυτόματη εκτέλεση είναι ενεργοποιημένη"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1177
+#: yandex-disk-indicator.py:1180
 msgid "Auto-start OFF"
 msgstr "Η αυτόματη εκτέλεση είναι απενεργοποιημένη"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1182
+#: yandex-disk-indicator.py:1185
 msgid "ERROR in setting up of file manager extensions"
 msgstr "ERROR in setting up of file manager extensions"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1203
-#, python-format
-msgid ""
-"The indicator instance is already running.\n"
-"(file %s is locked by another process)"
-msgstr ""
-"Η Ένδειξη λειτουργίας του Yandex.Disk εκτελείται ήδη\n"
-"(το αρχείο %s είναι κλειδωμένο από άλλη διαδικασία)"
-
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1258
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1263
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1272
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1277
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1292
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1293
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1294
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1316
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1317
+#: yandex-disk-indicator.py:1239 yandex-disk-indicator.py:1244
+#: yandex-disk-indicator.py:1253 yandex-disk-indicator.py:1258
+#: yandex-disk-indicator.py:1273 yandex-disk-indicator.py:1274
+#: yandex-disk-indicator.py:1275 yandex-disk-indicator.py:1297
+#: yandex-disk-indicator.py:1298
 msgid "Publish via Yandex.Disk"
 msgstr "Δημοσιεύστε μέσω Yandex.Disk"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1260
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1264
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1274
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1278
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1303
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1304
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1305
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1309
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1318
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1319
+#: yandex-disk-indicator.py:1241 yandex-disk-indicator.py:1245
+#: yandex-disk-indicator.py:1255 yandex-disk-indicator.py:1259
+#: yandex-disk-indicator.py:1284 yandex-disk-indicator.py:1285
+#: yandex-disk-indicator.py:1286 yandex-disk-indicator.py:1290
+#: yandex-disk-indicator.py:1299 yandex-disk-indicator.py:1300
 msgid "Unpublish from Yandex.disk"
 msgstr "Απóσυρση δημοσίευσης από Yandex.Disk"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1299
+#: yandex-disk-indicator.py:1280
 #, python-format
 msgid "URL to file: %f was copied into clipboard."
 msgstr "Διεύθυνσης URL στο αρχείο: %f  έχει αντιγραφεί στο πρόχειρο."
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1365
+#: yandex-disk-indicator.py:1346
 msgid "Desktop indicator for yandex-disk daemon"
 msgstr "Η ένδειξη επιφάνεια εργασίας για το δαίμονα yandex-disk"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1367
+#: yandex-disk-indicator.py:1348
 msgid "Options"
 msgstr "Επιλογές "
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1369
+#: yandex-disk-indicator.py:1350
 msgid ""
 "Sets the logging level: 10 - to show all messages (DEBUG), 20 - to show all "
 "messages except debugging messages (INFO), 30 - to show all messages except "
@@ -494,7 +465,7 @@ msgstr ""
 "τα κρίσιμα μηνύματα (ΣΦΑΛΜΑ), 50 - για να εμφανίσετε μόνο τα κρίσιμα "
 "μηνύματα (κρίσιμη). Προεπιλογή: 30"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1376
+#: yandex-disk-indicator.py:1357
 msgid ""
 "Path to configuration file of YandexDisk daemon. This daemon will be added "
 "to daemons list if it is not in the current configuration.Default: ''"
@@ -503,7 +474,7 @@ msgstr ""
 "προστεθεί στη λίστα με δαίμονες αν δεν είναι στην τρέχουσα διαμόρφωση."
 "Προεπιλογή:\""
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1381
+#: yandex-disk-indicator.py:1362
 msgid ""
 "Path to configuration file of daemon that should be removed from daemos "
 "list. Default: ''"
@@ -511,15 +482,21 @@ msgstr ""
 "Διαδρομή προς αρχείο ρυθμίσεων του δαίμονα που πρέπει να αφαιρεθεί από τη "
 "λίστα του δαίμονα. Προεπιλογή:\""
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1383
+#: yandex-disk-indicator.py:1364
 msgid "Show this help message and exit"
 msgstr "Εμφάνιση μηνύματος βοήθειας και έξοδος"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1385
+#: yandex-disk-indicator.py:1366
 msgid "Print version and exit"
 msgstr "Εμφάνιση έκδοσης και έξοδος"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1508
+#: yandex-disk-indicator.py:1419
+msgid "The indicator instance is already running."
+msgstr ""
+"Η Ένδειξη λειτουργίας του Yandex.Disk εκτελείται ήδη\n"
+"(το αρχείο %s είναι κλειδωμένο από άλλη διαδικασία)"
+
+#: yandex-disk-indicator.py:1500
 msgid ""
 "No daemons specified.\n"
 "Check correctness of -r and -c options."
@@ -527,7 +504,14 @@ msgstr ""
 "Δεν καθορίζεται ο δαίμονας.\n"
 "Ελέγξτε την ορθογραφία των -r και -c επιλογών"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1522
+#: yandex-disk-indicator.py:1511
 #, python-format
 msgid "#%d "
 msgstr "#%d "
+
+#~ msgid ""
+#~ "The indicator instance is already running.\n"
+#~ "(file %s is locked by another process)"
+#~ msgstr ""
+#~ "Η Ένδειξη λειτουργίας του Yandex.Disk εκτελείται ήδη\n"
+#~ "(το αρχείο %s είναι κλειδωμένο από άλλη διαδικασία)"

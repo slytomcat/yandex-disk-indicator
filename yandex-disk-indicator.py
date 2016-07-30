@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.9.0'
+appVer = '1.9.1'
 #
 #  Copyright 2014-2016 Sly_tom_cat <slytomcat@mail.ru>
 #
@@ -1192,37 +1192,11 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
     elif key == 'read-only':
       ow.set_sensitive(toggleState)
 
-class LockFile(object):         # LockFile
-
-  def __init__(self, applicationName):
-    ### Check for already running instance of the indicator application in user space ###
-    self.fileName = pathJoin('/run/user', str(geteuid()), applicationName + '.pid')
-    logger.debug('Lock file is:%s' % self.fileName)
-    try:                                                    # Open lock file for write
-      self.lockFile = open(self.fileName, 'wt')
-      filelock(self.lockFile, LOCK_EX | LOCK_NB)            # Try to acquire exclusive lock
-      logger.debug('Lock file succesfully locked.')
-    except:                                                 # File is already locked
-      sysExit(_('The indicator instance is already running.\n'+
-                 '(file %s is locked by another process)') % self.fileName)
-    self.lockFile.write('%d\n' % getpid())
-    self.lockFile.flush()
-
-  def release(self):
-    try:
-      filelock(self.lockFile, LOCK_UN)
-      self.lockFile.close()
-      logger.debug('Lock file %s successfully unlocked.' % self.fileName)
-      remove(self.fileName)
-      logger.debug('Lock file %s successfully deleted.' % self.fileName)
-    except:
-      logger.error("ERROR: Lock file %s can't be unlocked." % self.fileName)
-
 def appExit(msg = None):        # Exit from application (it closes all indicators)
   global indicators
   for i in indicators:
     i.exit()
-  lockFile.release()
+  #lockFile.release()
   sysExit(msg)
 
 def activateActions():          # Install/deinstall file extensions
@@ -1411,12 +1385,14 @@ def setProcName(newname):
   buff.value = bytes(newname, 'UTF8')
   libc.prctl(15, byref(buff), 0, 0, 0)
 
+
 ###################### MAIN #########################
 if __name__ == '__main__':
   # Application constants
   appName = 'yandex-disk-indicator'
   # See appVer in the beginnig of the code
   appHomeName = 'yd-tools'
+  # Check for already running instance of the indicator application
   installDir = pathJoin('/usr/share', appHomeName)
   userHome = getenv("HOME")
   logoPath = pathJoin(installDir, 'icons/yd-128.png')
@@ -1426,9 +1402,6 @@ if __name__ == '__main__':
   autoStartSrc = '/usr/share/applications/Yandex.Disk-indicator.desktop'
   autoStartDst = pathJoin(userHome, '.config/autostart/Yandex.Disk-indicator.desktop')
 
-  # Change the process name
-  setProcName(appHomeName)
-
   # Initialize logging
   basicConfig(format='%(asctime)-15s %(levelname)-8s %(message)s')
   logger = getLogger('')
@@ -1436,6 +1409,17 @@ if __name__ == '__main__':
   # Setup localization
   # Load translation object (or NullTranslations) and define _() function.
   translation(appName, '/usr/share/locale', fallback=True).install()
+
+  # Change the process name
+  setProcName(appHomeName)
+
+  # Check for already running instance of the indicator application
+  if (str(getpid()) !=
+      check_output(["pgrep", '-u', str(geteuid()), "yd-tools"], universal_newlines=True).strip()):
+    sysExit(_('The indicator instance is already running.'))
+
+  # Change the process name
+  setProcName(appHomeName)
 
   # Get command line arguments or their default values
   args = argParse()
@@ -1519,9 +1503,6 @@ if __name__ == '__main__':
     config['daemons'] = daemons.get()
     # Update configuration file
     config.save()
-
-  # Check for already running instance of the indicator application
-  lockFile = LockFile(appName)
 
   # Make indicator objects for each daemon in daemons list
   indicators = []
