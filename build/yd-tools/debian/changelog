@@ -1,7 +1,7 @@
-yd-tools (1.9.0) xenial; urgency=medium
+yd-tools (1.9.1) xenial; urgency=medium
 
   * Changes:
 
-    -- fix for issue with postinst script error during DEB update
+    -- Checking of already runnig instance switched from lockfile to pgrep utility
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Thu, 28 Jul 2016 15:54:16 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Mon, 1 Aug 2016 0:00:32 +0300
