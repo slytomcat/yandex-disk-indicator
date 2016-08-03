@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.9.1'
+appVer = '1.9.2'
 #
 #  Copyright 2014-2016 Sly_tom_cat <slytomcat@mail.ru>
 #
@@ -56,7 +56,7 @@ def deleteFile(dst):
   except:
     logger.error('File Deletion Error: %s' % dst)
 
-def makedirs(dst):
+def makeDirs(dst):
   try:
     makedirs(dst, exist_ok=True)
   except:
@@ -1308,7 +1308,7 @@ def activateActions():          # Install/deinstall file extensions
     if call([pm + "dolphin>/dev/null 2>&1"], shell=True) == 0:
       logger.info("Dolphin installed")
       if activate:      # Install actions for Dolphin
-        makedirs(pathJoin(userHome, '.local/share/kservices5/ServiceMenus'))
+        makeDirs(pathJoin(userHome, '.local/share/kservices5/ServiceMenus'))
         copyFile(pathJoin(installDir, "fm-actions/Dolphin/ydpublish.desktop"),
                  pathJoin(userHome, ".local/share/kservices5/ServiceMenus/ydpublish.desktop"))
         result = True
@@ -1418,9 +1418,6 @@ if __name__ == '__main__':
       check_output(["pgrep", '-u', str(geteuid()), "yd-tools"], universal_newlines=True).strip()):
     sysExit(_('The indicator instance is already running.'))
 
-  # Change the process name
-  setProcName(appHomeName)
-
   # Get command line arguments or their default values
   args = argParse()
 
@@ -1465,9 +1462,9 @@ if __name__ == '__main__':
     logger.info('No config, probably it is a first run.')
     # Create application config folders in ~/.config
     try:
-      makedirs(configPath)
-      makedirs(pathJoin(configPath, 'icons/light'))
-      makedirs(pathJoin(configPath, 'icons/dark'))
+      makeDirs(configPath)
+      makeDirs(pathJoin(configPath, 'icons/light'))
+      makeDirs(pathJoin(configPath, 'icons/dark'))
       # Copy icon themes readme to user config catalogue
       copyFile(pathJoin(installDir, 'icons/readme'), pathJoin(configPath, 'icons/readme'))
     except:
@@ -1475,7 +1472,7 @@ if __name__ == '__main__':
     # Activate indicator automatic start on system start-up
     if not pathExists(autoStartDst):
       try:
-        makedirs(pathJoin(userHome, '.config/autostart'))
+        makeDirs(pathJoin(userHome, '.config/autostart'))
         copyFile(autoStartSrc, autoStartDst)
         config['autostart'] = True
       except:

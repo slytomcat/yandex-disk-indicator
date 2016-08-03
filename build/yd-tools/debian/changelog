@@ -1,7 +1,7 @@
-yd-tools (1.9.1) xenial; urgency=medium
+yd-tools (1.9.2) xenial; urgency=medium
 
   * Changes:
 
-    -- Checking of already runnig instance switched from lockfile to pgrep utility
+    -- Fix for folder creation error (caused by mistake during library optimization)
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Mon, 1 Aug 2016 0:00:32 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Wed, 3 Aug 2016 23:06:22 +0300
