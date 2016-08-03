@@ -1,0 +1,15 @@
+[Desktop Entry]
+Type=Action
+Name=Add public link on Yandex.Disk
+Name[ru]=Опубликовать через Яндекс.Диск
+Icon=/usr/share/yd-tools/icons/yd-128.png
+Icon[ru]=/usr/share/yd-tools/icons/yd-128.png
+ToolbarLabel=Add public link on Yandex.Disk
+ToolbarLabel[ru]=Опубликовать через Яндекс.Диск
+Profiles=profile-zero;
+
+[X-Action-Profile profile-zero]
+Name=Add public link on Yandex.Disk
+Name[ru]=Опубликовать через Яндекс.Диск
+Exec=/usr/share/yd-tools/fm-actions/Nautilus_Nemo/publish %f
+NotShowIn=KDE;

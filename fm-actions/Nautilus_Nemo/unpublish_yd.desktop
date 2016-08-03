@@ -1,0 +1,15 @@
+[Desktop Entry]
+Type=Action
+Name=Remove public link from Yandex.Disk
+Name[ru]=Убрать из публикации через Яндекс.Диск
+Icon=/usr/share/yd-tools/icons/yd-128_g.png
+Icon[ru_RU]=/usr/share/yd-tools/icons/yd-128_g.png
+ToolbarLabel[ru_RU]=unpublish
+ToolbarLabel[ru]=unpublish
+Profiles=profile-zero;
+
+[X-Action-Profile profile-zero]
+Name=Remove public link from Yandex.Disk
+Name[ru]=Убрать из публикации через Яндекс.Диск
+Exec=/usr/share/yd-tools/fm-actions/Nautilus_Nemo/unpublish %f
+NotShowIn=KDE;
