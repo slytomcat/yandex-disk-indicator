@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.9.1'
+appVer = '1.9.3'
 #
 #  Copyright 2014-2016 Sly_tom_cat <slytomcat@mail.ru>
 #
@@ -27,7 +27,8 @@ from gi.repository import Gtk
 require_version('AppIndicator3', '0.1')
 from gi.repository import AppIndicator3 as appIndicator
 require_version('Notify', '0.7')
-from gi.repository.Notify import init as NotifyInit, Notification as NotifyNotification
+from gi.repository import Notify
+#from gi.repository.Notify import init as NotifyInit, Notification as NotifyNotification
 from gi.repository import GLib
 from gi.repository.GdkPixbuf import Pixbuf
 from subprocess import check_output, call, CalledProcessError
@@ -56,7 +57,7 @@ def deleteFile(dst):
   except:
     logger.error('File Deletion Error: %s' % dst)
 
-def makedirs(dst):
+def makeDirs(dst):
   try:
     makedirs(dst, exist_ok=True)
   except:
@@ -347,26 +348,33 @@ class Timer(object):            # Timer for triggering a function periodically
 
 class Notification(object):     # On-screen notification
 
-  def __init__(self, app, mode):      # Initialize notification engine
-    NotifyInit(app)
-    self.notifier = NotifyNotification()
+  def __init__(self, title, mode):  # Initialize notification engine
+    if not Notify.is_initted():
+      Notify.init(appName)
+    self.title = title
+    self.note = None
     self.switch(mode)
 
-  def send(self, title, message):     # Send notification
-    pass                              # This method is redefined by switch method
+  def send(self, message):          # Send notification
+    pass                            # This method is redefined by switch method
 
-  def switch(self, mode=True):        # Change show mode, by default switch it on
+  def switch(self, mode=True):      # Change show mode, by default switch it on
     if mode:
-      self.send = self._message       # Redefine send as real notification routine
+      self.send = self._message     # Redefine send as real notification routine
     else:
-      self.send = lambda t, m: None   # Redefine send as fake routine
+      self.send = lambda m: None    # Redefine send as fake routine
 
-  def _message(self, t, m):        # Show on-screen notification message
-    global logoPath
-    logger.debug('Message: %s | %s' % (t, m))
-    try:
-      self.notifier.update(t, m, logoPath)  # Update notification
-      self.notifier.show()                  # Display new notification
+  def _message(self, messg):        # Show on-screen notification message
+    global logo
+    logger.debug('Message: %s | %s' % (self.title, messg))
+    if self.note is not None:
+      #if self.note.props.closed_reason = -1:
+      self.note.close()
+      self.note = None
+    try:                            # Create notification
+      self.note = Notify.Notification.new(self.title, messg)
+      self.note.set_image_from_pixbuf(logo)
+      self.note.show()              # Display new notification
     except:
       logger.error('Message engine failure')
 
@@ -748,7 +756,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
   def __init__(self, path, ID):
     indicatorName = "yandex-disk-%s"%ID[1: -1]
     # Create indicator notification engine
-    self.notify = Notification(indicatorName, config['notifications'])
+    self.notify = Notification(_('Yandex.Disk ') + ID, config['notifications'])
     # Setup icons theme
     self.setIconTheme(config['theme'])
     # Create timer object for icon animation support (don't start it here)
@@ -778,19 +786,19 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
     # Create notifications for status change events
     if update.stat:
       if vals['laststatus'] == 'none':    # Daemon has been started
-        self.notify.send(_('Yandex.Disk ')+self.ID, _('Yandex.Disk daemon has been started'))
+        self.notify.send(_('Yandex.Disk daemon has been started'))
       if vals['status'] == 'busy':        # Just entered into 'busy'
-        self.notify.send(_('Yandex.Disk ')+self.ID, _('Synchronization started'))
+        self.notify.send(_('Synchronization started'))
       elif vals['status'] == 'idle':      # Just entered into 'idle'
         if vals['laststatus'] == 'busy':  # ...from 'busy' status
-          self.notify.send(_('Yandex.Disk ')+self.ID, _('Synchronization has been completed'))
+          self.notify.send(_('Synchronization has been completed'))
       elif vals['status'] =='paused':     # Just entered into 'paused'
         if vals['laststatus'] != 'none':  # ...not from 'none' status
-          self.notify.send(_('Yandex.Disk ')+self.ID, _('Synchronization has been paused'))
+          self.notify.send(_('Synchronization has been paused'))
       elif vals['status'] == 'none':      # Just entered into 'none' from some another status
-          self.notify.send(_('Yandex.Disk ')+self.ID, _('Yandex.Disk daemon has been stopped'))
+          self.notify.send(_('Yandex.Disk daemon has been stopped'))
       else:                               # status is 'error' or 'no-net'
-        self.notify.send(_('Yandex.Disk ')+self.ID, _('Synchronization ERROR'))
+        self.notify.send(_('Synchronization ERROR'))
 
   def setIconTheme(self, theme):    # Determine paths to icons according to current theme
     global installDir, configPath
@@ -1174,15 +1182,14 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
     elif key == 'autostart':
       if toggleState:
         copyFile(autoStartSrc, autoStartDst)
-        notify.send(_('Yandex.Disk Indicator'), _('Auto-start ON'))
+        notify.send(_('Auto-start ON'))
       else:
         deleteFile(autoStartDst)
-        notify.send(_('Yandex.Disk Indicator'), _('Auto-start OFF'))
+        notify.send(_('Auto-start OFF'))
     elif key == 'fmextensions':
       if not button.get_inconsistent():         # It is a first call
         if not activateActions():               # When activation/deactivation is not success:
-          notify.send(_('Yandex.Disk Indicator'),
-                      _('ERROR in setting up of file manager extensions'))
+          notify.send(_('ERROR in setting up of file manager extensions'))
           toggleState = not toggleState         # revert settings back
           button.set_inconsistent(True)         # set inconsistent state to detect second call
           button.set_active(toggleState)        # set check-button to reverted status
@@ -1308,7 +1315,7 @@ def activateActions():          # Install/deinstall file extensions
     if call([pm + "dolphin>/dev/null 2>&1"], shell=True) == 0:
       logger.info("Dolphin installed")
       if activate:      # Install actions for Dolphin
-        makedirs(pathJoin(userHome, '.local/share/kservices5/ServiceMenus'))
+        makeDirs(pathJoin(userHome, '.local/share/kservices5/ServiceMenus'))
         copyFile(pathJoin(installDir, "fm-actions/Dolphin/ydpublish.desktop"),
                  pathJoin(userHome, ".local/share/kservices5/ServiceMenus/ydpublish.desktop"))
         result = True
@@ -1395,8 +1402,8 @@ if __name__ == '__main__':
   # Check for already running instance of the indicator application
   installDir = pathJoin('/usr/share', appHomeName)
   userHome = getenv("HOME")
-  logoPath = pathJoin(installDir, 'icons/yd-128.png')
-  logo = Pixbuf.new_from_file(logoPath)
+  ######logoPath = pathJoin(installDir, 'icons/yd-128.png')
+  logo = Pixbuf.new_from_file(pathJoin(installDir, 'icons/yd-128.png'))
   configPath = pathJoin(userHome, '.config', appHomeName)
   # Define .desktop files locations for indicator auto-start facility
   autoStartSrc = '/usr/share/applications/Yandex.Disk-indicator.desktop'
@@ -1417,9 +1424,6 @@ if __name__ == '__main__':
   if (str(getpid()) !=
       check_output(["pgrep", '-u', str(geteuid()), "yd-tools"], universal_newlines=True).strip()):
     sysExit(_('The indicator instance is already running.'))
-
-  # Change the process name
-  setProcName(appHomeName)
 
   # Get command line arguments or their default values
   args = argParse()
@@ -1465,9 +1469,9 @@ if __name__ == '__main__':
     logger.info('No config, probably it is a first run.')
     # Create application config folders in ~/.config
     try:
-      makedirs(configPath)
-      makedirs(pathJoin(configPath, 'icons/light'))
-      makedirs(pathJoin(configPath, 'icons/dark'))
+      makeDirs(configPath)
+      makeDirs(pathJoin(configPath, 'icons/light'))
+      makeDirs(pathJoin(configPath, 'icons/dark'))
       # Copy icon themes readme to user config catalogue
       copyFile(pathJoin(installDir, 'icons/readme'), pathJoin(configPath, 'icons/readme'))
     except:
@@ -1475,7 +1479,7 @@ if __name__ == '__main__':
     # Activate indicator automatic start on system start-up
     if not pathExists(autoStartDst):
       try:
-        makedirs(pathJoin(userHome, '.config/autostart'))
+        makeDirs(pathJoin(userHome, '.config/autostart'))
         copyFile(autoStartSrc, autoStartDst)
         config['autostart'] = True
       except:
@@ -1511,7 +1515,7 @@ if __name__ == '__main__':
                                 _('#%d ')%len(indicators) if len(daemons) > 1 else ''))
 
   # Initianilze notification engine for application messages (it is used in Preferences dialogue)
-  notify = Notification(appName, config['notifications'])
+  notify = Notification(_('Yandex.Disk Indicator'), config['notifications'])
 
   # Register the SIGTERM handler for graceful exit when indicator is killed
   signal(SIGTERM, lambda _signo, _stack_frame: appExit())
