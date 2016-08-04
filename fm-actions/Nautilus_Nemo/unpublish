@@ -1,6 +1,18 @@
 #!/bin/bash
 #### Author: Snow Dimon ####
 #### Website: snowdimon.ru ####
-zenity --info --window-icon=/usr/share/yd-tools/icons/yd-128_g.png --ok-label="Закрыть" --title="Yandex.Disk" --text="$*
+
+### Language
+lang_home="/usr/share/yd-tools/translations"
+
+lang_file="$lang_home/actions-$(echo $LANG | cut -c 1-2).lang"
+
+if [ ! -f $lang_file ]; then
+    lang_file="$lang_home/actions-en.lang"
+fi
+
+source $lang_file
+
+zenity --info --window-icon=/usr/share/yd-tools/icons/yd-128_g.png --ok-label="$_Close" --title="Yandex.Disk" --text="$*
  `yandex-disk unpublish "$*"`"
 

@@ -2,9 +2,20 @@
 #### Author: Snow Dimon ####
 #### Website: snowdimon.ru ####
 
+### Language
+lang_home="/usr/share/yd-tools/translations"
+
+lang_file="$lang_home/actions-$(echo $LANG | cut -c 1-2).lang"
+
+if [ ! -f $lang_file ]; then
+    lang_file="$lang_home/actions-en.lang"
+fi
+
+source $lang_file
+
 f=`yandex-disk publish "$*" | xclip -filter -selection clipboard`
-zenity --info --window-icon /usr/share/yd-tools/icons/yd-128_g.png --title="Yandex.Disk" --ok-label="Закрыть" --text="Ссылка на файл $*
+zenity --info --window-icon /usr/share/yd-tools/icons/yd-128_g.png --title="Yandex.Disk" --ok-label="$_Close" --text="$_Symlink $*
 
 $f
 
-скопирована в буфер обмена."
+$_Copy."
