@@ -2,6 +2,6 @@ yd-tools (1.9.2) xenial; urgency=medium
 
   * Changes:
 
-    -- Fix for folder creation error (caused by mistake during library optimization)
+    -- Changes in notification treatment (new messages insead of update).
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Wed, 3 Aug 2016 23:06:22 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Thu, 4 Aug 2016 17:43:52 +0300
