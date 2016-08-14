@@ -15,7 +15,10 @@ Name[be]=Апублікаваць праз Яндекс.Дыск
 Icon=/usr/share/yd-tools/icons/yd-128.png
 Exec=yandex-disk publish %F | xclip -filter -selection clipboard; zenity --info --window-icon=/usr/share/yd-tools/icons/yd-128.png --title="Yandex.Disk"  --ok-label="Close" --text="Public link to the %F is copied to the clipboard." 
 Exec[ru]=yandex-disk publish %F | xclip -filter -selection clipboard; zenity --info --window-icon=/usr/share/yd-tools/icons/yd-128.png --title="Yandex.Disk"  --ok-label="Закрыть" --text="Ссылка на файл: %F скопирована в буфер обмена." 
-Exec[be]=yandex-disk publish %F | xclip -filter -selection clipboard; zenity --info --window-icon = /usr/share/yd-tools/icons/yd-128.png --title = "Yandex.Disk" --ok-label = "Зачыніць" --text = "Спасылка на файл:%F скапіравана ў буфер абмену. "
+Exec[be]=yandex-disk publish %F | xclip -filter -selection clipboard; zenity --info --window-icon = /usr/share/yd-tools/icons/yd-128.png --title = "Yandex.Disk" --ok-label = "Зачыніць" --text = "Спасылка на файл:%F скапіравана ў буфер абмену."
+Exec[bg]=yandex-disk publish %F | xclip -filter -selection clipboard; zenity --info --window-icon = /usr/share/yd-tools/icons/yd-128.png --title = "Yandex.Disk" --ok-label = "Затвори" --text = "Адрес на файла:%F е копиран в клипорда."
+Exec[el]=yandex-disk publish %F | xclip -filter -selection clipboard; zenity --info --window-icon = /usr/share/yd-tools/icons/yd-128.png --title = "Yandex.Disk" --ok-label = "Κλείσιμο" --text = "Διεύθυνσης URL στο αρχείο:%F έχει αντιγραφεί στο πρόχειρο."
+
 
 [Desktop Action UnpublishFromYandex]
 Name=Remove public link from Yandex.Disk
@@ -25,3 +28,6 @@ Icon=/usr/share/yd-tools/icons/yd-128_g.png
 Exec=zenity --info --window-icon=/usr/share/yd-tools/icons/yd-128_g.png  --title="Yandex.Disk" --ok-label="Close" --text="%c. `yandex-disk unpublish %F`"
 Exec[ru]=zenity --info --window-icon=/usr/share/yd-tools/icons/yd-128_g.png  --title="Yandex.Disk" --ok-label="Закрыть" --text="%c. `yandex-disk unpublish %F`"
 Exec[be]=zenity --info --window-icon = /usr/share/yd-tools/icons/yd-128_g.png --title = "Yandex.Disk" --ok-label = "Зачыніць" - -text = "%c.` yandex-disk unpublish %F`"
+Exec[bg]=zenity --info --window-icon = /usr/share/yd-tools/icons/yd-128_g.png --title = "Yandex.Disk" --ok-label = "Затвори" - -text = "%c.` yandex-disk unpublish %F`"
+Exec[el]=zenity --info --window-icon = /usr/share/yd-tools/icons/yd-128_g.png --title = "Yandex.Disk" --ok-label = "Κλείσιμο" - -text = "%c.` yandex-disk unpublish %F`"
+
