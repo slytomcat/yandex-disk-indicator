@@ -44,7 +44,7 @@ from webbrowser import open_new as openNewBrowser
 from signal import signal, SIGTERM
 from sys import exit as sysExit
 
-#### Common utility functions and classes
+#################### Common utility functions and classes ####################
 def copyFile(src, dst):
   try:
     fileCopy (src, dst)
@@ -378,7 +378,7 @@ class Notification(object):     # On-screen notification
     except:
       logger.error('Message engine failure')
 
-#### Main daemon/indicator classes
+#################### Main daemon/indicator classes ####################
 class YDDaemon(object):         # Yandex.Disk daemon interface
   '''
   This is the fully automated class that serves as daemon interface.
@@ -1392,7 +1392,6 @@ def setProcName(newname):
   buff.value = bytes(newname, 'UTF8')
   libc.prctl(15, byref(buff), 0, 0, 0)
 
-
 ###################### MAIN #########################
 if __name__ == '__main__':
   # Application constants
@@ -1400,9 +1399,8 @@ if __name__ == '__main__':
   # See appVer in the beginnig of the code
   appHomeName = 'yd-tools'
   # Check for already running instance of the indicator application
-  installDir = pathJoin('/usr/share', appHomeName)
   userHome = getenv("HOME")
-  ######logoPath = pathJoin(installDir, 'icons/yd-128.png')
+  installDir = pathJoin('/usr/share', appHomeName)
   logo = Pixbuf.new_from_file(pathJoin(installDir, 'icons/yd-128.png'))
   configPath = pathJoin(userHome, '.config', appHomeName)
   # Define .desktop files locations for indicator auto-start facility
