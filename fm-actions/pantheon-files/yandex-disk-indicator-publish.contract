@@ -1,6 +1,9 @@
 [Contractor Entry]
 Name=Publish via Yandex.Disk
 Name[ru]=Опубликовать через Яндекс.Диск
+Name[be]=Publish via Yandex.Disk
+Name[bg]=Publish via Yandex.Disk
+Name[el]=Publish via Yandex.Disk
 Icon=publish-via-yandex.disk
 Description=Publish via Yandex.Disk
 MimeType=!inode;

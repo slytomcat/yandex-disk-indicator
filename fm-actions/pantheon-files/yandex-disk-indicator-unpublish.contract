@@ -1,6 +1,9 @@
 [Contractor Entry]
 Name=Unublish via Yandex.Disk
 Name[ru]=Убрать из публикации через Яндекс.Диск
+Name[be]=Прыбраць з публікацыі праз Яндекс.Дыск
+Name[bg]=Unublish via Yandex.Disk
+Name[el]=Unublish via Yandex.Disk
 Icon=publish-via-yandex.disk
 Description=Publish via Yandex.Disk
 MimeType=!inode;

@@ -1,7 +1,9 @@
-yd-tools (1.9.2) xenial; urgency=medium
+
+yd-tools (1.9.3) xenial; urgency=medium
 
   * Changes:
 
     -- Changes in notification treatment (new messages insead of update).
+    -- Caja file-manager extensions added.
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Thu, 4 Aug 2016 17:43:52 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Thu, 16 Aug 2016 16:01:02 +0300

@@ -1345,6 +1345,20 @@ def activateActions():          # Install/deinstall file extensions
         else:
           logger.error("Cannot disable actions for Pantheon-files")
 
+    # --- Actions for Caja ---
+    if call([pm + "caja>/dev/null 2>&1"], shell=True) == 0:
+      logger.info("Caja installed")
+      if activate:      # Install actions for Nemo
+        copyFile(pathJoin(installDir, "fm-actions/Nautilus_Nemo/publish"),
+                 pathJoin(userHome, ".config/caja/scripts", _("Publish via Yandex.Disk")))
+        copyFile(pathJoin(installDir, "fm-actions/Nautilus_Nemo/unpublish"),
+                 pathJoin(userHome, ".config/caja/scripts", _("Unpublish from Yandex.disk")))
+        result = True
+      else:             # Remove actions for Nemo
+        deleteFile(pathJoin(userHome, ".config/caja/scripts", _("Publish via Yandex.Disk")))
+        deleteFile(pathJoin(userHome, ".config/caja/scripts", _("Unpublish from Yandex.disk")))
+        result = True
+
   except Exception as e:
     logger.error("The following error occurred during the FM actions activation:\n %s"%str(e))
   return result
