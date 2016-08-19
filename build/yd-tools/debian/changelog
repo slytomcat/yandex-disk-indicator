@@ -4,6 +4,8 @@ yd-tools (1.9.3) xenial; urgency=medium
   * Changes:
 
     -- Changes in notification treatment (new messages insead of update).
+    -- FM-actins localization.
     -- Caja file-manager extensions added.
+    -- Code review (via pep8/pylint) 
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Thu, 16 Aug 2016 16:01:02 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Fri, 19 Aug 2016 09:24:02 +0300
