@@ -1073,7 +1073,7 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
       rootDir = self.dconfig['dir']
       dialog.set_current_folder(rootDir)
       if dialog.run() == Gtk.ResponseType.ACCEPT:
-        self.excList.append([False, relativePath(dialog.get_filename(), start=rootDir)])
+        self.exList.append([False, relativePath(dialog.get_filename(), start=rootDir)])
         self.dconfig.changed = True
       dialog.destroy()
 
