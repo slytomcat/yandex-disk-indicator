@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 #  Yandex.Disk indicator
-appVer = '1.9.3'
+appVer = '1.9.4'
 #
 #  Copyright 2014-2016 Sly_tom_cat <slytomcat@mail.ru>
 #

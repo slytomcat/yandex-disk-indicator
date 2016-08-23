@@ -1,11 +1,8 @@
 
-yd-tools (1.9.3) xenial; urgency=medium
+yd-tools (1.9.4) xenial; urgency=medium
 
   * Changes:
 
-    -- Changes in notification treatment (new messages insead of update).
-    -- FM-actins localization.
-    -- Caja file-manager extensions added.
-    -- Code review (via pep8/pylint) 
+    -- Fix for error in "Add excluded folder" dialog 
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Fri, 19 Aug 2016 09:24:02 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Thu, 23 Aug 2016 22:30:26 +0300
