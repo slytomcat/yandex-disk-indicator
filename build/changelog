@@ -1,0 +1,6 @@
+yd-tools (@version) @serie; urgency=medium
+
+  * Changes:
+    - Fix for error in "Add excluded folder" dialog 
+
+ -- Sly_tom_cat <slytomcat@mail.ru>  @date

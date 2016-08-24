@@ -1,8 +1,6 @@
-
 yd-tools (1.9.4) xenial; urgency=medium
 
   * Changes:
+    - Fix for error in "Add excluded folder" dialog 
 
-    -- Fix for error in "Add excluded folder" dialog 
-
- -- Sly_tom_cat <slytomcat@mail.ru>  Thu, 23 Aug 2016 22:30:26 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Wed, 24 Aug 2016 01:46:34 +0300
