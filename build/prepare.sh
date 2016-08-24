@@ -1,5 +1,18 @@
 #!/bin/bash
-cd yd-tools/
+
+# prepare changelog
+version=$(sed -n "/appVer = '.*'/p" ../yandex-disk-indicator.py | grep -o '[0-9]\.[0-9]\.[0-9]')
+serie='xenial'
+clear
+
+sed "s/@serie/$serie/" changelog > yd-tools/debian/changelog
+sed -i "s/@version/$version/" yd-tools/debian/changelog
+sed -i "s/@date/$(date -R)/" yd-tools/debian/changelog
+cat yd-tools/debian/changelog 
+
+# prepare buld directory
+mv yd-tools yd-tools-$version
+cd yd-tools-*/
 mkdir -p usr/bin
 mkdir -p usr/share/applications
 mkdir -p usr/share/locale/ru/LC_MESSAGES
@@ -54,7 +67,6 @@ chmod a+x debian/pre*
 chmod a+x debian/post*
 chmod a+x usr/share/yd-tools/*
 chmod a+x usr/share/yd-tools/fm-actions/Nautilus_Nemo/*
-chmod a+x usr/share/yd-tools/fm-actions/Dolphin/*
 chmod a+x usr/share/yd-tools/fm-actions/pantheon-files/*.sh
 chmod a+x usr/bin/*
 chmod a+x usr/share/applications/*

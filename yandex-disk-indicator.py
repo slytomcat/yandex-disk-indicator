@@ -1,23 +1,23 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-#  Yandex.Disk indicator
+appName = 'yandex-disk-indicator'
 appVer = '1.9.4'
 #
-#  Copyright 2014-2016 Sly_tom_cat <slytomcat@mail.ru>
+#  Copyright 2013-2016 Sly_tom_cat <slytomcat@mail.ru>
 #
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 3 of the License, or
-#  (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with this program. If not, see <http://www.gnu.org/licenses/>.
+LICENSE = ('This program is free software: you can redistribute it and/or \n' +
+           'modify it under the terms of the GNU General Public License as \n' +
+           'published by the Free Software Foundation, either version 3 of \n' +
+           'the License, or (at your option) any later version.\n' +
+           '\n'+
+           'This program is distributed in the hope that it will be useful, \n' +
+           'but WITHOUT ANY WARRANTY; without even the implied warranty \n' +
+           'of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. \n' +
+           'See the GNU General Public License for more details.\n' +
+           '\n'+
+           'You should have received a copy of the GNU General Public License \n' +
+           'along with this program.  If not, see http://www.gnu.org/licenses' )
 
 from os import remove, makedirs, getpid, geteuid, getenv
 from pyinotify import ProcessEvent, WatchManager, Notifier, IN_MODIFY
@@ -28,7 +28,9 @@ require_version('AppIndicator3', '0.1')
 from gi.repository import AppIndicator3 as appIndicator
 require_version('Notify', '0.7')
 from gi.repository import Notify
+require_version('GLib', '2.0')
 from gi.repository import GLib
+require_version('GdkPixbuf', '2.0')
 from gi.repository.GdkPixbuf import Pixbuf
 from subprocess import check_output, call, CalledProcessError
 from re import findall as reFindall, sub as reSub, search as reSearch, M as reM, S as reS
@@ -945,21 +947,11 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
       aboutWindow.set_version(_('Version ') + appVer)
       aboutWindow.set_copyright('Copyright ' + u'\u00a9' + ' 2013-' +
                                 datetime.now().strftime("%Y") + '\nSly_tom_cat')
-      aboutWindow.set_license(
-          'This program is free software: you can redistribute it and/or \n' +
-          'modify it under the terms of the GNU General Public License as \n' +
-          'published by the Free Software Foundation, either version 3 of \n' +
-          'the License, or (at your option) any later version.\n\n' +
-          'This program is distributed in the hope that it will be useful, \n' +
-          'but WITHOUT ANY WARRANTY; without even the implied warranty \n' +
-          'of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. \n' +
-          'See the GNU General Public License for more details.\n\n' +
-          'You should have received a copy of the GNU General Public License \n' +
-          'along with this program.  If not, see http://www.gnu.org/licenses')
+      aboutWindow.set_license(LICENSE)
       aboutWindow.set_authors([_('Sly_tom_cat (slytomcat@mail.ru) '),
         _('ya-setup utility author: Snow Dimon (snowdimon.ru)'),
         _('\nSpecial thanks to:'),
-        _(' - Christiaan Diedericks (www.thefanclub.co.za) - autor of Grive tools(used as example)'),
+        _(' - Christiaan Diedericks (www.thefanclub.co.za) - autor of Grive tools'),
         _(' - ryukusu_luminarius (my-faios@ya.ru) - icons designer'),
         _(' - metallcorn (metallcorn@jabber.ru) - icons designer'),
         _(' - Chibiko (zenogears@jabber.ru) - deb package creation assistance'),
