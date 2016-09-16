@@ -11,8 +11,7 @@ sed -i "s/@date/$(date -R)/" yd-tools/debian/changelog
 cat yd-tools/debian/changelog 
 
 # prepare buld directory
-mv yd-tools yd-tools-$version
-cd yd-tools-*/
+cd yd-tools/
 mkdir -p usr/bin
 mkdir -p usr/share/applications
 mkdir -p usr/share/locale/ru/LC_MESSAGES
