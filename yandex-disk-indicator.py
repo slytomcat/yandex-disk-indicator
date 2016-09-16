@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 appName = 'yandex-disk-indicator'
-appVer = '1.9.4'
+appVer = '1.9.5'
 #
 #  Copyright 2013-2016 Sly_tom_cat <slytomcat@mail.ru>
 #
@@ -1415,6 +1415,9 @@ if __name__ == '__main__':
   # Load translation object (or NullTranslations) and define _() function.
   translation(appName, '/usr/share/locale', fallback=True).install()
 
+  # Get command line arguments or their default values
+  args = argParse()
+
   # Change the process name
   setProcName(appHomeName)
 
@@ -1422,9 +1425,6 @@ if __name__ == '__main__':
   if (str(getpid()) !=
       check_output(["pgrep", '-u', str(geteuid()), "yd-tools"], universal_newlines=True).strip()):
     sysExit(_('The indicator instance is already running.'))
-
-  # Get command line arguments or their default values
-  args = argParse()
 
   # Set user specified logging level
   logger.setLevel(args.level)
