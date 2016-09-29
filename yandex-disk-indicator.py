@@ -1145,7 +1145,7 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
       config.save()                             # Save app config
     for i in indicators:
       if i.config.changed:
-        i.config.save()                  # Save daemon options in config file
+        i.config.save()                         # Save daemon options in config file
       i.menu.preferences.set_sensitive(True)    # Enable menu items
     self.destroy()
 
