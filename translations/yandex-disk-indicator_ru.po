@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: yd-tools\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-08-25 01:59+0300\n"
-"PO-Revision-Date: 2016-09-16 17:21+0300\n"
+"POT-Creation-Date: 2016-10-04 21:24+0300\n"
+"PO-Revision-Date: 2016-10-04 21:24+0300\n"
 "Last-Translator: Sly_tom_cat <slytomcat@mail.ru>\n"
 "Language-Team: ubuntu.ru local team <slytomcat@mail.ru>\n"
 "Language: ru_RU\n"
@@ -13,7 +13,7 @@ msgstr ""
 "X-Poedit-KeywordsList: _;gettext;gettext_noop\n"
 "X-Poedit-Basepath: /home/stc/Yandex.Disk/YD-tools\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 1.5.4\n"
+"X-Generator: Poedit 1.8.7.1\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Poedit-SearchPath-0: /home/stc/Yandex.Disk/YD-tools\n"
@@ -134,8 +134,11 @@ msgid "Yandex.Disk Indicator"
 msgstr "Индикатор Яндекс.Диск"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:877
-msgid "https://github.com/slytomcat/yandex-disk-indicator/wiki"
-msgstr "http://forum.ubuntu.ru/index.php?topic=241992"
+msgid ""
+"https://github.com/slytomcat/yandex-disk-indicator/wiki/Yandex-disk-indicator"
+msgstr ""
+"https://github.com/slytomcat/yandex-disk-indicator/wiki/%D0%98%D0%BD"
+"%D0%B4%D0%B8%D0%BA%D0%B0%D1%82%D0%BE%D1%80-Yandex-disk"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:881
 msgid "About"
@@ -493,7 +496,7 @@ msgstr "Показать эту справку и выйти"
 msgid "Print version and exit"
 msgstr "Напечатать версию и выйти"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1424
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1427
 msgid "The indicator instance is already running."
 msgstr "Другой экземпляр индикатора уже запущен."
 
@@ -509,6 +512,9 @@ msgstr ""
 #, python-format
 msgid "#%d "
 msgstr "№%d "
+
+#~ msgid "https://github.com/slytomcat/yandex-disk-indicator/wiki"
+#~ msgstr "http://forum.ubuntu.ru/index.php?topic=241992"
 
 #~ msgid ""
 #~ " - Christiaan Diedericks (www.thefanclub.co.za) - autor of Grive "

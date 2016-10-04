@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 appName = 'yandex-disk-indicator'
-appVer = '1.9.5'
+appVer = '1.9.6'
 #
 #  Copyright 2013-2016 Sly_tom_cat <slytomcat@mail.ru>
 #
@@ -874,7 +874,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
       m_help.append(help1)
       help2 = Gtk.MenuItem(_('Yandex.Disk Indicator'))
       help2.connect("activate", self.openInBrowser,
-                    _('https://github.com/slytomcat/yandex-disk-indicator/wiki'))
+                _('https://github.com/slytomcat/yandex-disk-indicator/wiki/Yandex-disk-indicator'))
       m_help.append(help2)
       open_help.set_submenu(m_help)
       self.append(open_help)

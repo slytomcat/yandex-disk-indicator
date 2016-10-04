@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: yd-tools\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-08-25 01:58+0300\n"
-"PO-Revision-Date: 2016-08-25 01:59+0300\n"
+"POT-Creation-Date: 2016-10-04 21:25+0300\n"
+"PO-Revision-Date: 2016-10-04 21:26+0300\n"
 "Last-Translator: Sly_tom_cat <slytomcat@mail.ru>\n"
 "Language-Team: ubuntu.ru local team <slytomcat@mail.ru>\n"
 "Language: el_GR\n"
@@ -134,8 +134,10 @@ msgid "Yandex.Disk Indicator"
 msgstr "Ένδειξη λειτουργίας του Yandex.Disk"
 
 #: yandex-disk-indicator.py:877
-msgid "https://github.com/slytomcat/yandex-disk-indicator/wiki"
-msgstr "http://forum.ubuntu.ru/index.php?topic=241992"
+msgid ""
+"https://github.com/slytomcat/yandex-disk-indicator/wiki/Yandex-disk-indicator"
+msgstr ""
+"https://github.com/slytomcat/yandex-disk-indicator/wiki/Yandex-disk-indicator"
 
 #: yandex-disk-indicator.py:881
 msgid "About"
@@ -487,7 +489,7 @@ msgstr "Εμφάνιση μηνύματος βοήθειας και έξοδος
 msgid "Print version and exit"
 msgstr "Εμφάνιση έκδοσης και έξοδος"
 
-#: yandex-disk-indicator.py:1424
+#: yandex-disk-indicator.py:1427
 msgid "The indicator instance is already running."
 msgstr ""
 "Η Ένδειξη λειτουργίας του Yandex.Disk εκτελείται ήδη\n"
@@ -505,6 +507,9 @@ msgstr ""
 #, python-format
 msgid "#%d "
 msgstr "#%d "
+
+#~ msgid "https://github.com/slytomcat/yandex-disk-indicator/wiki"
+#~ msgstr "http://forum.ubuntu.ru/index.php?topic=241992"
 
 #~ msgid ""
 #~ " - Christiaan Diedericks (www.thefanclub.co.za) - autor of Grive "
