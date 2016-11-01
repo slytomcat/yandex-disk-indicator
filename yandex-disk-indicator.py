@@ -29,7 +29,7 @@ from gi.repository import AppIndicator3 as appIndicator
 require_version('Notify', '0.7')
 from gi.repository import Notify
 require_version('GLib', '2.0')
-from gi.repository import GLib
+from gi.repository.GLib import timeout_add, source_remove
 require_version('GdkPixbuf', '2.0')
 from gi.repository.GdkPixbuf import Pixbuf
 from subprocess import check_output, call, CalledProcessError
@@ -324,9 +324,9 @@ class Timer(object):            # Timer for triggering a function periodically
     if not self.active:
       self.interval = interval
       if self.par is None:
-        self.timer = GLib.timeout_add(interval, self.handler)
+        self.timer = timeout_add(interval, self.handler)
       else:
-        self.timer = GLib.timeout_add(interval, self.handler, self.par)
+        self.timer = timeout_add(interval, self.handler, self.par)
       self.active = True
       # logger.debug('timer started %s %s' %(self.timer, interval))
     else:
@@ -342,7 +342,7 @@ class Timer(object):            # Timer for triggering a function periodically
   def stop(self):                     # Stop active timer
     if self.active:
       # logger.debug('timer to stop %s' %(self.timer))
-      GLib.source_remove(self.timer)
+      source_remove(self.timer)
       self.active = False
 
 class Notification(object):     # On-screen notification
@@ -837,6 +837,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
 
     def __init__(self, daemon, ID):
       self.daemon = daemon                      # Store reference to daemon object for future usage
+      self.folder = ''
       Gtk.Menu.__init__(self)                   # Create menu
       self.ID = ID
       if self.ID != '':                         # Add addition field in multidaemon mode
@@ -859,6 +860,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
       self.daemon_stop.connect("activate", self.stopDaemon)
       self.append(self.daemon_stop)
       self.open_folder = Gtk.MenuItem(_('Open Yandex.Disk Folder'))
+      self.open_folder.connect("activate", lambda w: self.openPath(w, self.folder))
       self.append(self.open_folder)
       open_web = Gtk.MenuItem(_('Open Yandex.Disk on the web'))
       open_web.connect("activate", self.openInBrowser, _('https://disk.yandex.com'))
@@ -890,6 +892,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
                         'paused': _('Paused'), 'no_net': _('Not connected'), 'error': _('Error')}
 
     def update(self, vals, update, yddir):  # Update information in menu
+      self.folder = yddir
       # Update status data
       if update.stat or update.prog or update.init:
         self.status.set_label(_('Status: ') + self.YD_STATUS[vals['status']] +
@@ -916,10 +919,8 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
             widget.set_sensitive(False)               # Don't allow to open non-existing path
           self.lastItems.append(widget)
           widget.show()
-        if not vals['lastitems']:                     # No items in list?
-          self.last.set_sensitive(False)
-        else:                                         # There are some items in list
-          self.last.set_sensitive(True)
+        # Switch off last items menu sensitivity if no items in list
+        self.last.set_sensitive(len(vals['lastitems']) != 0)
         logger.debug("Sub-menu 'Last synchronized' has been updated")
       # Update 'static' elements of menu
       if 'none' in (vals['status'], vals['laststatus']) or update.init:
@@ -932,7 +933,6 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
           folder = (yddir.replace('_', u'\u02CD') if yddir else '< NOT CONFIGURED >')
           self.yddir.set_label(self.ID + _('  Folder: ') + folder)
         if yddir != '':                               # Activate Open YDfolder if daemon configured
-          self.open_folder.connect("activate", self.openPath, yddir)
           self.open_folder.set_sensitive(True)
         else:
           self.open_folder.set_sensitive(False)
