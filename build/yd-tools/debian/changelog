@@ -1,7 +1,6 @@
-yd-tools (1.9.5) xenial; urgency=medium
+yd-tools (1.9.6) xenial; urgency=medium
   * Changes:
-    - Fix for issue #164
-    - Package optimization
-    -Build scripts changes 
+    - Fix for issue #166
+    - Help URLs changed
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Fri, 16 Sep 2016 23:37:02 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Tue, 01 Nov 2016 19:07:09 +0300
