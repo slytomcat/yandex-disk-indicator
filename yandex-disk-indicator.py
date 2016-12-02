@@ -4,7 +4,7 @@
 appName = 'yandex-disk-indicator'
 appVer = '1.9.6'
 #
-#  Copyright 2013-2016 Sly_tom_cat <slytomcat@mail.ru>
+COPYRIGHT = 'Copyright ' + u'\u00a9' + ' 2013-2016 Sly_tom_cat'
 #
 LICENSE = ('This program is free software: you can redistribute it and/or \n' +
            'modify it under the terms of the GNU General Public License as \n' +
@@ -945,8 +945,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
       aboutWindow.set_logo(logo);   aboutWindow.set_icon(logo)
       aboutWindow.set_program_name(_('Yandex.Disk indicator'))
       aboutWindow.set_version(_('Version ') + appVer)
-      aboutWindow.set_copyright('Copyright ' + u'\u00a9' + ' 2013-' +
-                                datetime.now().strftime("%Y") + '\nSly_tom_cat')
+      aboutWindow.set_copyright(COPYRIGHT)
       aboutWindow.set_license(LICENSE)
       aboutWindow.set_authors([_('Sly_tom_cat (slytomcat@mail.ru) '),
         _('ya-setup utility author: Snow Dimon (snowdimon.ru)'),
