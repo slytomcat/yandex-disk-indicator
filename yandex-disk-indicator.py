@@ -279,8 +279,8 @@ class Config(dict):             # Configuration
         res = ''                          # Remove 'key=value' from file if value is None
         logger.debug('Config value \'%s\' will be removed' % key)
       else:                               # Make a line with value
-        res = ''.join([key, self.delimiter,
-                       ''.join([self.encode(val) + ', ' for val in CVal(value)])[:-2] + '\n'])
+        res = self.delimiter.join([key,
+                                   ', '.join([self.encode(val) for val in CVal(value)])]) + '\n'
         logger.debug('Config value to save: %s' % res[:-1])
       # Find line with key in file the buffer
       sRe = reSearch(r'^[ \t]*["]?%s["]?[ \t]*%s.+\n' % (key, self.delimiter), buf, flags=reM)
@@ -488,7 +488,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       fileConfig['stoponexitfromindicator'] = self.get('stoponexitfromindicator', False)
       exList = self.get('exclude-dirs', None)
       fileConfig['exclude-dirs'] = (None if exList is None else
-                                    ''.join([v + ', ' for v in CVal(exList)])[:-2])
+                                    ', '.join([v  for v in CVal(exList)]))
       # Store changed values
       fileConfig.save()
       self.changed = False
