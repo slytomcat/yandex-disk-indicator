@@ -5,11 +5,11 @@
 #sleep 3
 
 # check that yandex-disk daemon is installed
-if ! [ -e "/usr/bin/yandex-disk" ]
-then
-    zenity  --error --width=350 --height=150 --ok-label="Выход" --title "Yandex.Disk" --text="Yandex.disk CLI utility is not installed! \nVisit www.yandex.ru, download and install Yandex.Disk CLI Utility\n After that repeeat yd-tools installation."
-    exit 1
-fi
+#if ! [ -e "/usr/bin/yandex-disk" ]
+#then
+#    zenity  --error --width=350 --height=150 --ok-label="Выход" --title "Yandex.Disk" --text="Yandex.disk CLI utility is not installed! \nVisit www.yandex.ru, download and install Yandex.Disk CLI Utility\n After that repeeat yd-tools installation."
+#    exit 1
+#fi
 
 #echo prinst finished
 exit 0
