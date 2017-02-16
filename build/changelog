@@ -1,6 +1,7 @@
 yd-tools (@version) @serie; urgency=medium
   * Changes:
-    - Fix for issue #166
-    - Help URLs changed
+    - Fix for issue #169
+    - build scrips: switch to gpg2 signing (required for gpg-agent 2.x)
+    - correct str.join usage
 
  -- Sly_tom_cat <slytomcat@mail.ru>  @date
