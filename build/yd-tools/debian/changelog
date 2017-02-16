@@ -1,6 +1,7 @@
-yd-tools (1.9.6) xenial; urgency=medium
+yd-tools (1.9.7) xenial; urgency=medium
   * Changes:
-    - Fix for issue #166
-    - Help URLs changed
+    - Fix for issue #169
+    - build scrips: switch to gpg2 signing (required for gpg-agent 2.x)
+    - correct str.join usage
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Tue, 07 Feb 2017 11:08:50 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Thu, 16 Feb 2017 20:38:18 +0300
