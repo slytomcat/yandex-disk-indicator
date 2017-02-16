@@ -585,7 +585,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
   def getOutput(self, userLang=False):  # Get result of 'yandex-disk status'
     cmd = ['yandex-disk', '-c', self.config.fileName, 'status']
     if not userLang:      # Change locale settings when it required
-      cmd = ['env', '-i', "LANG='en_US.UTF8'"] + cmd
+      cmd = ['env', '-i', "LANG='en_US.UTF8'", "TMPDIR=%s"%tmpDir] + cmd
     try:
       output = check_output(cmd, universal_newlines=True)
     except:
@@ -1402,6 +1402,9 @@ if __name__ == '__main__':
   installDir = pathJoin('/usr/share', appHomeName)
   logo = Pixbuf.new_from_file(pathJoin(installDir, 'icons/yd-128.png'))
   configPath = pathJoin(userHome, '.config', appHomeName)
+  tmpDir = getenv("TMPDIR")
+  if tmpDir is None:
+    tmpDir = '/tmp'
   # Define .desktop files locations for indicator auto-start facility
   autoStartSrc = '/usr/share/applications/Yandex.Disk-indicator.desktop'
   autoStartDst = pathJoin(userHome, '.config/autostart/Yandex.Disk-indicator.desktop')
