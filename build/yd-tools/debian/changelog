@@ -4,4 +4,4 @@ yd-tools (1.9.7) xenial; urgency=medium
     - build scrips: switch to gpg2 signing (required for gpg-agent 2.x)
     - correct str.join usage
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Thu, 16 Feb 2017 20:38:18 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Fri, 17 Feb 2017 01:00:49 +0300
