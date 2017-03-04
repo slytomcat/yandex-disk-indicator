@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 appName = 'yandex-disk-indicator'
-appVer = '1.9.7'
+appVer = '1.9.8'
 #
 COPYRIGHT = 'Copyright ' + u'\u00a9' + ' 2013-2016 Sly_tom_cat'
 #

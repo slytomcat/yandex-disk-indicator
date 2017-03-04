@@ -1,7 +1,6 @@
 yd-tools (@version) @serie; urgency=medium
   * Changes:
-    - Fix for issue #169
-    - build scrips: switch to gpg2 signing (required for gpg-agent 2.x)
-    - correct str.join usage
+    - check -c and -d values with expanded '~' to full path 
+    - clean build dir via git clean
 
  -- Sly_tom_cat <slytomcat@mail.ru>  @date
