@@ -7,10 +7,11 @@
 for pid in $(pgrep -f /usr/bin/yandex-disk-indicator)
 do
   #echo $pid will be killed
-  USR=`grep -z ^USER= /proc/$pid/environ | sed -e 's/USER=//'`
+  USR=`grep -z ^USER= /proc/$pid/environ | sed 's/USER=//'`
   #echo $pid belongs to user:$USR
-  DSP=`grep -z ^DISPLAY= /proc/$pid/environ | sed -e 's/DISPLAY=//'`
-  DBUS=`grep -z ^DBUS_SESSION_BUS_ADDRESS= /proc/$pid/environ | sed -e 's/DBUS_SESSION_BUS_ADDRESS=//'`
+  DSP=`grep -z ^DISPLAY= /proc/$pid/environ | sed 's/DISPLAY=//'`
+  DBUS=`grep -z ^DBUS_SESSION_BUS_ADDRESS= /proc/$pid/environ | sed 's/DBUS_SESSION_BUS_ADDRESS=//'`
+  #echo Display = $DSP, DBUS = $DBUS
   kill $pid
   sleep 2
   export DBUS_SESSION_BUS_ADDRESS=$DBUS
