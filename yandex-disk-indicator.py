@@ -37,7 +37,7 @@ from re import findall as reFindall, sub as reSub, search as reSearch, M as reM,
 from argparse import ArgumentParser
 from gettext import translation
 from logging import basicConfig, getLogger
-from os.path import exists as pathExists, join as pathJoin, relpath as relativePath
+from os.path import exists as pathExists, join as pathJoin, relpath as relativePath, expanduser
 from shutil import copy as fileCopy
 from datetime import datetime
 from webbrowser import open_new as openNewBrowser
@@ -1491,20 +1491,24 @@ if __name__ == '__main__':
     config.changed = True
 
   # Add new daemon if it is not in current list
-  daemons = CVal(config['daemons'])
-  if args.cfg and args.cfg not in daemons:
-    daemons.add(args.cfg)
-    config.changed = True
+  daemons = [expanduser(d) for d in CVal(config['daemons'])]
+  if args.cfg:
+    args.cfg = expanduser(args.cfg)
+    if args.cfg not in daemons:
+      daemons.append(args.cfg)
+      config.changed = True
   # Remove daemon if it is in the current list
-  if args.rcfg and args.rcfg in daemons:
-    daemons.remove(args.rcfg)
-    config.changed = True
+  if args.rcfg:
+    args.rcfg = expanduser(args.rcfg)
+    if args.rcfg in daemons:
+      daemons.remove(args.rcfg)
+      config.changed = True
   # Check that at least one daemon is in the daemons list
   if not daemons:
     sysExit(_('No daemons specified.\nCheck correctness of -r and -c options.'))
   # Update config if daemons list has been changed
   if config.changed:
-    config['daemons'] = daemons.get()
+    config['daemons'] = CVal(daemons).get()
     # Update configuration file
     config.save()
 
