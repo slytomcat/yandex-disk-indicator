@@ -1015,6 +1015,7 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
                           parent=parent, flags=1)
       self.set_icon(logo)
       self.set_border_width(6)
+      self.set_size_request(400,300)
       self.add_button(_('Add catalogue'),
                       Gtk.ResponseType.APPLY).connect("clicked", self.addFolder, self)
       self.add_button(_('Remove selected'),
@@ -1027,20 +1028,25 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
       render.connect("toggled", self.lineToggled)
       view.append_column(Gtk.TreeViewColumn(" ", render, active=0))
       view.append_column(Gtk.TreeViewColumn(_('Path'), Gtk.CellRendererText(), text=1))
-      self.get_content_area().add(view)
+      scroll = Gtk.ScrolledWindow()
+      scroll.set_min_content_height(240)
+      scroll.add_with_viewport(view)
+      self.get_content_area().add(scroll)
       # Populate list with paths from "exclude-dirs" property of daemon configuration
-      for val in CVal(self.dconfig.get('exclude-dirs', None)):
+      self.dirset = [val for val in CVal(self.dconfig.get('exclude-dirs', None))]
+      for val in self.dirset:
         self.exList.append([False, val])
+      logger.debug(str(self.dirset))
       self.show_all()
+
 
     def exitFromDialog(self, widget):     # Save list from dialogue to "exclude-dirs" property
       if self.dconfig.changed:
         eList = CVal()                                      # Store path value from dialogue rows
-        listIter = self.exList.get_iter_first()
-        while listIter is not None:
-          eList.add(self.exList.get(listIter, 1)[0])
-          listIter = self.exList.iter_next(listIter)
+        for i in self.dirset:
+          eList.add(i)
         self.dconfig['exclude-dirs'] = eList.get()          # Save collected value
+      logger.debug(str(self.dirset))
       self.destroy()                                        # Close dialogue
 
     def lineToggled(self, widget, path):  # Line click handler, it switch row selection
@@ -1050,10 +1056,12 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
       listIiter = self.exList.get_iter_first()
       while listIiter is not None and self.exList.iter_is_valid(listIiter):
         if self.exList.get(listIiter, 0)[0]:
+          self.dirset.remove(self.exList.get(listIiter, 1)[0])
           self.exList.remove(listIiter)
           self.dconfig.changed = True
         else:
           listIiter = self.exList.iter_next(listIiter)
+      logger.debug(str(self.dirset))
 
     def addFolder(self, widget, parent):  # Add new path to list via FileChooserDialog
       dialog = Gtk.FileChooserDialog(_('Select catalogue to add to list'), parent,
@@ -1064,9 +1072,13 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
       rootDir = self.dconfig['dir']
       dialog.set_current_folder(rootDir)
       if dialog.run() == Gtk.ResponseType.ACCEPT:
-        self.exList.append([False, relativePath(dialog.get_filename(), start=rootDir)])
-        self.dconfig.changed = True
+        path = relativePath(dialog.get_filename(), start=rootDir)
+        if path not in self.dirset:
+          self.exList.append([False, path])
+          self.dirset.append(path)
+          self.dconfig.changed = True
       dialog.destroy()
+      logger.debug(str(self.dirset))
 
   def __init__(self, widget):
     global config, indicators, logo
