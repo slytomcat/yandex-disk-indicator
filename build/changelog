@@ -1,6 +1,6 @@
 yd-tools (@version) @serie; urgency=medium
   * Changes:
-    - check -c and -d values with expanded '~' to full path 
-    - clean build dir via git clean
+    - Scrollbar for exclude list is added
+    - Don't allow to add duplicates in exclude list dialog
 
  -- Sly_tom_cat <slytomcat@mail.ru>  @date
