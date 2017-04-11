@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: yd-tools\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-10-04 21:27+0300\n"
-"PO-Revision-Date: 2016-10-04 21:27+0300\n"
+"POT-Creation-Date: 2017-04-11 23:52+0300\n"
+"PO-Revision-Date: 2017-04-11 23:54+0300\n"
 "Last-Translator: Sly_tom_cat <slytomcat@mail.ru>\n"
 "Language-Team: Ace Of Snakes <aceofsnakesmain@gmail.com>\n"
 "Language: be\n"
@@ -17,12 +17,12 @@ msgstr ""
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Poedit-SearchPath-0: /home/stc/Yandex.Disk/YD-tools\n"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:664
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:673
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:666
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:675
 msgid "Yandex.Disk Indicator: daemon start failed"
 msgstr "Індыкатар Яндекс.Дыск: запуск сэрвісу не атрымаўся"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:666
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:668
 msgid ""
 "Yandex.Disk daemon failed to start because it is not configured properly\n"
 "  To configure it up: press OK button.\n"
@@ -31,7 +31,7 @@ msgstr ""
 "Сэрвіс Яндекс.Дыск не змог стартаваць. Верагодна, Яндекс.Дыск не настроены.\n"
 "Для пераходу да налады націсніце Ok. Націсніце Cancel для выхаду."
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:669
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:671
 msgid ""
 "Yandex.Disk daemon failed to start.\n"
 "  Press OK to continue without started daemon or Cancel to exit."
@@ -39,7 +39,7 @@ msgstr ""
 "Сэрвіс Яндекс.Дыск не змог стартаваць. Націсніце Ok для працягу без "
 "запушчанага сэрвісу або Cancel для выхаду."
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:675
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:677
 msgid ""
 "Yandex.Disk daemon failed to start due to network connection issue. \n"
 "  Check the Internet connection and try to start daemon again."
@@ -47,7 +47,7 @@ msgstr ""
 "Сэрвіс Яндекс.Дыск не змог стартаваць. Націсніце Ok для працягу без "
 "запушчанага сэрвісу або Cancel для выхаду."
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:678
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:680
 msgid ""
 "Yandex.Disk utility is not installed.\n"
 " Visit www.yandex.ru, download and install Yandex.Disk daemon."
@@ -55,157 +55,153 @@ msgstr ""
 "Утыліта Яндекс. Дыск не ўсталяваная. Наведайце www.yandex.ru, Загрузіце і "
 "ўсталюйце сэрвіс Яндекс.Дыск"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:681
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:683
 msgid "Yandex.Disk daemon failed to start due to some unrecognized error."
 msgstr "Запуск сэрвісу Яндекс. Дыск не атрымаўся з-за непапраўнай памылкі"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:757
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:759
 msgid "Yandex.Disk "
 msgstr "Яндекс.Дыск"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:787
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:789
 msgid "Yandex.Disk daemon has been started"
 msgstr "Сэрвіс Яндекс.Дыск запушчаны"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:789
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:791
 msgid "Synchronization started"
 msgstr "Запушчана сінхранізацыя"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:792
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:794
 msgid "Synchronization has been completed"
 msgstr "Сінхранізацыя завершана"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:795
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:797
 msgid "Synchronization has been paused"
 msgstr "Сінхранізацыя прыпыненая"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:797
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:799
 msgid "Yandex.Disk daemon has been stopped"
 msgstr "Сэрвіс Яндекс.Дыск спынены"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:799
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:801
 msgid "Synchronization ERROR"
 msgstr "Памылка сінхранізацыі"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:850
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:853
 msgid "Last synchronized items"
 msgstr "Апошнія сінхранізацыі"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:855
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:858
 msgid "Start Yandex.Disk daemon"
 msgstr "Запусціць сэрвіс Яндекс.Дыск"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:858
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:861
 msgid "Stop Yandex.Disk daemon"
 msgstr "Спыніць сэрвіс Яндекс.Дыск"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:861
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:864
 msgid "Open Yandex.Disk Folder"
 msgstr "Адкрыць каталог Яндекс.Дыск"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:863
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:867
 msgid "Open Yandex.Disk on the web"
 msgstr "Адкрыць Яндекс.Дыск ў інтэрнэце"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:864
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:868
 msgid "https://disk.yandex.com"
 msgstr "https://disk.yandex.ru"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:867
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:871
 msgid "Preferences"
 msgstr "Налады"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:870
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:874
 msgid "Help"
 msgstr "Дапамога"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:872
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:876
 msgid "Yandex.Disk daemon"
 msgstr "Сэрвіс Яндекс.Дыск"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:873
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:877
 msgid "https://yandex.com/support/disk/"
 msgstr "https://yandex.ru/support/disk/"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:875
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1516
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:879
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1536
 msgid "Yandex.Disk Indicator"
 msgstr "Індыкатар Яндекс.Дыск"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:877
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:881
 msgid ""
 "https://github.com/slytomcat/yandex-disk-indicator/wiki/Yandex-disk-indicator"
 msgstr ""
 "https://github.com/slytomcat/yandex-disk-indicator/wiki/%D0%98%D0%BD"
 "%D0%B4%D0%B8%D0%BA%D0%B0%D1%82%D0%BE%D1%80-Yandex-disk"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:881
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:885
 msgid "About"
 msgstr "Аб праграме"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:884
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:888
 msgid "Quit"
 msgstr "Выхад"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:889
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:893
 msgid "Synchronized"
 msgstr "Сінхранізавана"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:889
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:893
 msgid "Sync.: "
 msgstr "Сінхра .:"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:889
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:893
 msgid "Not started"
 msgstr "Ня запушчаны"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:890
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:894
 msgid "Paused"
 msgstr "Паўза"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:890
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:894
 msgid "Not connected"
 msgstr "Няма сувязі"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:890
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:894
 msgid "Error"
 msgstr "Памылка"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:895
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:900
 msgid "Status: "
 msgstr "Статус:"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:899
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:904
 msgid "Used: "
 msgstr "Занята:"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:900
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:905
 msgid "Free: "
 msgstr "Свабодна:"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:900
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:905
 msgid ", trash: "
 msgstr ", кошык:"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:933
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:936
 msgid "  Folder: "
 msgstr "Каталог:"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:946
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:948
 msgid "Yandex.Disk indicator"
 msgstr "Індыкатар Яндекс.Дыск"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:947
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:949
 msgid "Version "
 msgstr "Версыя"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:951
-msgid "Sly_tom_cat (slytomcat@mail.ru) "
-msgstr "Sly_tom_cat (slytomcat@mail.ru)"
-
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:952
-msgid "ya-setup utility author: Snow Dimon (snowdimon.ru)"
-msgstr "Аўтар ўтыліты налады ya-setup: Snow Dimon (snowdimon.ru)"
+msgid "Sly_tom_cat <slytomcat@mail.ru> "
+msgstr "Sly_tom_cat <slytomcat@mail.ru> "
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:953
 msgid ""
@@ -216,154 +212,163 @@ msgstr ""
 "Асаблівыя падзякі:"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:954
-msgid " - Christiaan Diedericks (www.thefanclub.co.za) - autor of Grive tools"
-msgstr "- Christiaan Diedericks (www.thefanclub.co.za) - аўтару Grive tools"
+msgid ""
+" - Snow Dimon https://habrahabr.ru/users/Snowdimon/ - autor of ya-setup "
+"utility"
+msgstr ""
+" - Snow Dimon https://habrahabr.ru/users/Snowdimon/ - автор на инструмента "
+"ya-setup"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:955
-msgid " - ryukusu_luminarius (my-faios@ya.ru) - icons designer"
-msgstr "- ryukusu_luminarius (my-faios@ya.ru) - дызайнеру іконак"
+msgid ""
+" - Christiaan Diedericks https://www.thefanclub.co.za/ - autor of Grive tools"
+msgstr "- Christiaan Diedericks <www.thefanclub.co.za> - аўтару Grive tools"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:956
-msgid " - metallcorn (metallcorn@jabber.ru) - icons designer"
-msgstr "- metallcorn (metallcorn@jabber.ru) - дызайнеру іконак"
+msgid " - ryukusu_luminarius <my-faios@ya.ru> - icons designer"
+msgstr "- ryukusu_luminarius <my-faios@ya.ru> - дызайнеру іконак"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:957
-msgid " - Chibiko (zenogears@jabber.ru) - deb package creation assistance"
-msgstr "- Chibiko (zenogears@jabber.ru) - за дапамогу ў стварэнні deb-пакета"
+msgid " - metallcorn <metallcorn@jabber.ru> - icons designer"
+msgstr "- metallcorn <metallcorn@jabber.ru> - дызайнеру іконак"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:958
-msgid " - RingOV (ringov@mail.ru) - localization assistance"
-msgstr "- RingOV (ringov@mail.ru) - дапамога ў лакалізацыі"
+msgid " - Chibiko <zenogears@jabber.ru> - deb package creation assistance"
+msgstr "- Chibiko <zenogears@jabber.ru> - за дапамогу ў стварэнні deb-пакета"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:959
-msgid " - GreekLUG team (https://launchpad.net/~greeklug) - Greek translation"
-msgstr ""
-"- GreekLUG team (https://launchpad.net/~greeklug) - Пераклад на Грэчаскую"
+msgid " - RingOV <ringov@mail.ru> - localization assistance"
+msgstr "- RingOV <ringov@mail.ru> - дапамога ў лакалізацыі"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:960
-msgid " - Peyu Yovev (spacy00001@gmail.com) - Bulgarian translation"
-msgstr "- Peyu Yovev (spacy00001@gmail.com) - пераклад на Балгарскую"
+msgid " - GreekLUG team https://launchpad.net/~greeklug - Greek translation"
+msgstr ""
+"- GreekLUG team https://launchpad.net/~greeklug - Пераклад на Грэчаскую"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:961
-msgid " - Eldar Fahreev (fahreeve@yandex.ru) - FM actions for Pantheon-files"
-msgstr ""
-"- Eldar Fahreev (fahreeve@yandex.ru) - файлавыя пашырэння для Pantheon-files"
+msgid " - Peyu Yovev <spacy00001@gmail.com> - Bulgarian translation"
+msgstr "- Peyu Yovev <spacy00001@gmail.com> - пераклад на Балгарскую"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:962
-msgid ""
-" - Ace Of Snakes (aceofsnakesmain@gmail.com) - optimization of FM actions "
-"for Dolphin"
+msgid " - Eldar Fahreev <fahreeve@yandex.ru> - FM actions for Pantheon-files"
 msgstr ""
-"- Ace Of Snakes (aceofsnakesmain@gmail.com) - аптымізацыя файлавых "
-"пашырэнняў для Dolphin"
+"- Eldar Fahreev <fahreeve@yandex.ru> - файлавыя пашырэння для Pantheon-files"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:963
 msgid ""
-" - Ivan Burmin (https://github.com/Zirrald) - ya-setup multilingual support"
+" - Ace Of Snakes <aceofsnakesmain@gmail.com> - optimization of FM actions "
+"for Dolphin"
 msgstr ""
-"- Ivan Burmin (https://github.com/Zirrald) - падтрымка шматмоўнасьці ў ya-"
-"setup"
+"- Ace Of Snakes <aceofsnakesmain@gmail.com> - аптымізацыя файлавых "
+"пашырэнняў для Dolphin"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:964
-msgid " - And to all other people who contributed to this project through"
-msgstr "- І ўсім астатнім людзям, хто дапамагаў праекту на"
+msgid ""
+" - Ivan Burmin https://github.com/Zirrald - ya-setup multilingual support"
+msgstr ""
+"- Ivan Burmin <https://github.com/Zirrald> - падтрымка шматмоўнасьці ў ya-"
+"setup"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:965
-msgid ""
-"   the Ubuntu.ru forum http://forum.ubuntu.ru/index.php?topic=241992 and"
-msgstr ""
-"Форуме супольнасці Ubuntu.ru http://forum.ubuntu.ru/index.php?topic=241992І"
+msgid "And to all other people who contributed to this project via"
+msgstr "І ўсім астатнім людзям, хто дапамагаў праекту на"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:966
-msgid "   via github.com https://github.com/slytomcat/yandex-disk-indicator"
-msgstr "праз github.com https://github.com/slytomcat/yandex-disk-indicator"
+msgid " - Ubuntu.ru forum http://forum.ubuntu.ru/index.php?topic=241992"
+msgstr ""
+" - Форуме супольнасці Ubuntu.ru http://forum.ubuntu.ru/index.php?"
+"topic=241992І"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:975
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:967
+msgid " - github.com https://github.com/slytomcat/yandex-disk-indicator"
+msgstr " - github.com https://github.com/slytomcat/yandex-disk-indicator"
+
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:976
 msgid "Yandex.Disk daemon output message"
 msgstr "статутныя паведамленні ад сэрвісу Яндекс.Дыск"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:978
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1023
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1062
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1081
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1273
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1283
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:979
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1025
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1071
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1094
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1286
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1296
 msgid "Close"
 msgstr "Зачыніць"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1015
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1016
 msgid "Folders that are excluded from synchronization"
 msgstr "Каталогі выключаныя з сінхранізацыі"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1019
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1021
 msgid "Add catalogue"
 msgstr "Дадаць каталог"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1021
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1023
 msgid "Remove selected"
 msgstr "Выдаліць выбраныя"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1030
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1032
 msgid "Path"
 msgstr "Шлях"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1060
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1069
 msgid "Select catalogue to add to list"
 msgstr "Вылучыце каталог для дадання ў спіс"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1063
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1072
 msgid "Select"
 msgstr "Выбраць"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1078
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1091
 msgid "Yandex.Disk-indicator and Yandex.Disks preferences"
 msgstr "Налады індыкатара і сэрвісаў Яндекс.Дыск"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1087
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1100
 msgid "Start Yandex.Disk indicator when you start your computer"
 msgstr "Запускаць індыкатар Яндекс.Дыск пры запуску кампутара"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1088
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1101
 msgid "Show on-screen notifications"
 msgstr "Паказваць інфармацыйныя паведамленні"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1089
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1102
 msgid "Prefer light icon theme"
 msgstr "Выбраць светлую тэму іконак"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1090
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1103
 msgid "Activate file manager extensions"
 msgstr "Актываваць пашырэння для файл-мэнэджэра"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1096
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1109
 msgid "Indicator settings"
 msgstr "Налады індыкатара"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1102
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1115
 #, python-format
 msgid "Start Yandex.Disk daemon %swhen indicator is starting"
 msgstr "Запускаць сэрвіс Яндекс.Дыск %s пры запуску індыкатара"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1104
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1117
 msgid "When daemon was not started before."
 msgstr "Калі дэман ня быў запушчаны раней."
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1109
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1122
 #, python-format
 msgid "Stop Yandex.Disk daemon %son closing of indicator"
 msgstr "Спыняць сэрвіс Яндекс.Дыск %s пры выхадзе з індыкатара"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1114
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1127
 #, python-format
 msgid "NOTE! You have to reload daemon %sto activate following settings"
 msgstr ""
 "УВАГА! Вам неабходна перазапусціць сэрвіс %s для прымянення гэтых настроек"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1120
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1133
 msgid "Read-Only: Do not upload locally changed files to Yandex.Disk"
 msgstr "Толькі чытанне: Ці не загружаць лакальна змененыя файлы на Яндекс.Дыск"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1121
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1134
 msgid ""
 "Locally changed files will be renamed if a newer version of this file appear "
 "in Yandex.Disk."
@@ -371,14 +376,14 @@ msgstr ""
 "Змененыя файлы будуць пераназваныя, калі больш новая версія з'явіцца на "
 "Яндекс.Дыске."
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1125
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1138
 msgid ""
 "Overwrite locally changed files by files from Yandex.Disk (in read-only mode)"
 msgstr ""
 "Сапраўды перапісаць лакальна змененыя файлы файламі з Яндекс.Дыска (у рэжыме "
 "толькі-чытанне)"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1127
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1140
 msgid ""
 "Locally changed files will be overwritten if a newer version of this file "
 "appear in Yandex.Disk."
@@ -386,77 +391,77 @@ msgstr ""
 "Змененыя файлы будуць перазапісаны, калі больш новая версія з'явіцца на "
 "Яндекс.Дыске."
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1136
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1149
 msgid "Excluded folders List"
 msgstr "Спіс каталогаў выключэнняў"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1137
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1150
 msgid "Folders in the list will not be synchronized."
 msgstr "Каталогі з гэтага спісу не будуць сінхранізаваныя."
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1141
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1154
 #, python-format
 msgid "Daemon %soptions"
 msgstr "Налады сэрвісу Яндекс.Дыск %s"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1173
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1186
 msgid "Auto-start ON"
 msgstr "Аўта-запуск уключаны"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1176
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1189
 msgid "Auto-start OFF"
 msgstr "Аўта-запуск выключаны"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1180
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1193
 msgid "ERROR in setting up of file manager extensions"
 msgstr "ПАМЫЛКА пры наладзе пашырэнняў для файл-мэнэджэра"
 
 # Name of file manager action
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1233
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1238
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1247
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1252
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1267
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1268
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1269
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1291
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1292
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1340
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1345
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1246
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1251
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1260
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1265
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1280
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1281
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1282
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1304
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1305
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1353
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1358
 msgid "Publish via Yandex.Disk"
 msgstr "Апублікаваць праз Яндекс.Дыск"
 
 # Name of file manager action
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1235
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1239
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1249
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1253
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1278
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1279
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1280
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1284
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1248
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1252
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1262
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1266
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1291
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1292
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1293
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1294
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1342
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1346
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1297
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1306
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1307
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1355
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1359
 msgid "Unpublish from Yandex.disk"
 msgstr "Прыбраць з публікацыі праз Яндекс.Дыск"
 
 # Mesage of file manager publish action
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1274
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1287
 #, python-format
 msgid "URL to file: %f was copied into clipboard."
 msgstr "Спасылка на файл: %f скапіраваная ў буфер абмену."
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1354
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1367
 msgid "Desktop indicator for yandex-disk daemon"
 msgstr "Індыкатар працоўнага стала для сэрвісу Яндекс.Дыск"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1355
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1368
 msgid "Options"
 msgstr "Опцыі"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1357
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1370
 msgid ""
 "Sets the logging level: 10 - to show all messages (DEBUG), 20 - to show all "
 "messages except debugging messages (INFO), 30 - to show all messages except "
@@ -469,7 +474,7 @@ msgstr ""
 "адладкавыя (папярэджанні), 40- Для паказу толькі паведамленняў пра памылкі, "
 "50 - для паказу толькі паведамленняў абк рытычных памылках. па змаўчанні: 30"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1364
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1377
 msgid ""
 "Path to configuration file of YandexDisk daemon. This daemon will be added "
 "to daemons list if it is not in the current configuration.Default: ''"
@@ -477,7 +482,7 @@ msgstr ""
 "Шлях да файла канфігурацыі сэрвісу yandex-disk. Гэты сэрвіс будзе дададзены "
 "да спісу сэрвісаў калі ён яшчэ не ў ім. Па змаўчанні: ''"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1369
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1382
 msgid ""
 "Path to configuration file of daemon that should be removed from daemos "
 "list. Default: ''"
@@ -485,19 +490,19 @@ msgstr ""
 "Шлях да файла канфігурацыі сэрвіса Яндекс.Дыск які павінен быць выдалены з "
 "спісу актыўных сервсиов. Па змаўчанні: ''"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1371
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1384
 msgid "Show this help message and exit"
 msgstr "Паказаць гэтую даведку і выйсці"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1373
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1386
 msgid "Print version and exit"
 msgstr "Надрукаваць версію і выйсці"
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1427
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1443
 msgid "The indicator instance is already running."
 msgstr "Індыкатар ўжо запушчаны."
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1502
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1522
 msgid ""
 "No daemons specified.\n"
 "Check correctness of -r and -c options."
@@ -505,24 +510,7 @@ msgstr ""
 "Не ўказана ніводнага дэмана.\n"
 "Праверце карэктнасць  -r і -c опцый."
 
-#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1513
+#: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:1533
 #, python-format
 msgid "#%d "
 msgstr "№%d "
-
-#~ msgid "https://github.com/slytomcat/yandex-disk-indicator/wiki"
-#~ msgstr "http://forum.ubuntu.ru/index.php?topic=241992"
-
-#~ msgid ""
-#~ " - Christiaan Diedericks (www.thefanclub.co.za) - autor of Grive "
-#~ "tools(used as example)"
-#~ msgstr ""
-#~ "- Christiaan Diedericks (www.thefanclub.co.za) - аўтару Grive "
-#~ "tools(выкарыстоўвалася як прыклад)"
-
-#~ msgid ""
-#~ "The indicator instance is already running.\n"
-#~ "(file %s is locked by another process)"
-#~ msgstr ""
-#~ "Індыкатар ўжо запушчаны.\n"
-#~ "(файл %s заблакаваны іншым працэсам)"

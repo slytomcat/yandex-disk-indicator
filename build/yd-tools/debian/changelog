@@ -1,6 +1,6 @@
-yd-tools (1.9.8) xenial; urgency=medium
+yd-tools (1.9.9) xenial; urgency=medium
   * Changes:
-    - check -c and -d values with expanded '~' to full path 
-    - clean build dir via git clean
+    - Scrollbar for exclude list is added
+    - Don't allow to add duplicates in exclude list dialog
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Sat, 04 Mar 2017 21:01:33 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Tue, 11 Apr 2017 22:17:44 +0300

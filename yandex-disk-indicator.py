@@ -6,18 +6,20 @@ appVer = '1.9.9'
 #
 COPYRIGHT = 'Copyright ' + u'\u00a9' + ' 2013-2016 Sly_tom_cat'
 #
-LICENSE = ('This program is free software: you can redistribute it and/or \n' +
-           'modify it under the terms of the GNU General Public License as \n' +
-           'published by the Free Software Foundation, either version 3 of \n' +
-           'the License, or (at your option) any later version.\n' +
-           '\n'+
-           'This program is distributed in the hope that it will be useful, \n' +
-           'but WITHOUT ANY WARRANTY; without even the implied warranty \n' +
-           'of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. \n' +
-           'See the GNU General Public License for more details.\n' +
-           '\n'+
-           'You should have received a copy of the GNU General Public License \n' +
-           'along with this program.  If not, see http://www.gnu.org/licenses' )
+LICENSE = """
+This program is free software: you can redistribute it and/or
+modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty
+of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see http://www.gnu.org/licenses
+"""
 
 from os import remove, makedirs, getpid, geteuid, getenv
 from pyinotify import ProcessEvent, WatchManager, Notifier, IN_MODIFY
@@ -947,22 +949,22 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
       aboutWindow.set_version(_('Version ') + appVer)
       aboutWindow.set_copyright(COPYRIGHT)
       aboutWindow.set_license(LICENSE)
-      aboutWindow.set_authors([_('Sly_tom_cat (slytomcat@mail.ru) '),
-        _('ya-setup utility author: Snow Dimon (snowdimon.ru)'),
+      aboutWindow.set_authors([_('Sly_tom_cat <slytomcat@mail.ru> '),
         _('\nSpecial thanks to:'),
-        _(' - Christiaan Diedericks (www.thefanclub.co.za) - autor of Grive tools'),
-        _(' - ryukusu_luminarius (my-faios@ya.ru) - icons designer'),
-        _(' - metallcorn (metallcorn@jabber.ru) - icons designer'),
-        _(' - Chibiko (zenogears@jabber.ru) - deb package creation assistance'),
-        _(' - RingOV (ringov@mail.ru) - localization assistance'),
-        _(' - GreekLUG team (https://launchpad.net/~greeklug) - Greek translation'),
-        _(' - Peyu Yovev (spacy00001@gmail.com) - Bulgarian translation'),
-        _(' - Eldar Fahreev (fahreeve@yandex.ru) - FM actions for Pantheon-files'),
-        _(' - Ace Of Snakes (aceofsnakesmain@gmail.com) - optimization of FM actions for Dolphin'),
-        _(' - Ivan Burmin (https://github.com/Zirrald) - ya-setup multilingual support'),
-        _(' - And to all other people who contributed to this project through'),
-        _('   the Ubuntu.ru forum http://forum.ubuntu.ru/index.php?topic=241992 and'),
-        _('   via github.com https://github.com/slytomcat/yandex-disk-indicator')])
+        _(' - Snow Dimon https://habrahabr.ru/users/Snowdimon/ - autor of ya-setup utility'),
+        _(' - Christiaan Diedericks https://www.thefanclub.co.za/ - autor of Grive tools'),
+        _(' - ryukusu_luminarius <my-faios@ya.ru> - icons designer'),
+        _(' - metallcorn <metallcorn@jabber.ru> - icons designer'),
+        _(' - Chibiko <zenogears@jabber.ru> - deb package creation assistance'),
+        _(' - RingOV <ringov@mail.ru> - localization assistance'),
+        _(' - GreekLUG team https://launchpad.net/~greeklug - Greek translation'),
+        _(' - Peyu Yovev <spacy00001@gmail.com> - Bulgarian translation'),
+        _(' - Eldar Fahreev <fahreeve@yandex.ru> - FM actions for Pantheon-files'),
+        _(' - Ace Of Snakes <aceofsnakesmain@gmail.com> - optimization of FM actions for Dolphin'),
+        _(' - Ivan Burmin https://github.com/Zirrald - ya-setup multilingual support'),
+        _('And to all other people who contributed to this project via'),
+        _(' - Ubuntu.ru forum http://forum.ubuntu.ru/index.php?topic=241992'),
+        _(' - github.com https://github.com/slytomcat/yandex-disk-indicator')])
       aboutWindow.run()
       aboutWindow.destroy()
       for i in indicators:
