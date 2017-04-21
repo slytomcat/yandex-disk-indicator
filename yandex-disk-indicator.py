@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 appName = 'yandex-disk-indicator'
-appVer = '1.9.9'
+appVer = '1.9.10'
 #
 COPYRIGHT = 'Copyright ' + u'\u00a9' + ' 2013-2016 Sly_tom_cat'
 #
@@ -982,7 +982,8 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
       # Set output buffer with daemon output in user language
       textBox.get_buffer().set_text(self.daemon.getOutput(True))
       textBox.set_editable(False)
-      statusWindow.get_content_area().add(textBox)        # Put it inside the dialogue content area
+      # Put it inside the dialogue content area
+      statusWindow.get_content_area().pack_start(textBox, True, True, 6)
       statusWindow.show_all();  statusWindow.run();   statusWindow.destroy()
       widget.set_sensitive(True)                          # Enable menu item
 

@@ -1,6 +1,5 @@
 yd-tools (@version) @serie; urgency=medium
   * Changes:
-    - Scrollbar for exclude list is added
-    - Don't allow to add duplicates in exclude list dialog
+    - Fixes for resize behaviour in dialogues
 
  -- Sly_tom_cat <slytomcat@mail.ru>  @date
