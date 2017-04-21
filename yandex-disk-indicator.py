@@ -965,6 +965,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
         _('And to all other people who contributed to this project via'),
         _(' - Ubuntu.ru forum http://forum.ubuntu.ru/index.php?topic=241992'),
         _(' - github.com https://github.com/slytomcat/yandex-disk-indicator')])
+      aboutWindow.set_resizable(False)
       aboutWindow.run()
       aboutWindow.destroy()
       for i in indicators:
@@ -1016,8 +1017,7 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
       Gtk.Dialog.__init__(self, title=_('Folders that are excluded from synchronization'),
                           parent=parent, flags=1)
       self.set_icon(logo)
-      self.set_border_width(6)
-      self.set_size_request(400,300)
+      self.set_size_request(400, 300)
       self.add_button(_('Add catalogue'),
                       Gtk.ResponseType.APPLY).connect("clicked", self.addFolder, self)
       self.add_button(_('Remove selected'),
@@ -1031,9 +1031,8 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
       view.append_column(Gtk.TreeViewColumn(" ", render, active=0))
       view.append_column(Gtk.TreeViewColumn(_('Path'), Gtk.CellRendererText(), text=1))
       scroll = Gtk.ScrolledWindow()
-      scroll.set_min_content_height(240)
       scroll.add_with_viewport(view)
-      self.get_content_area().add(scroll)
+      self.get_content_area().pack_start(scroll, True, True, 6)
       # Populate list with paths from "exclude-dirs" property of daemon configuration
       self.dirset = [val for val in CVal(self.dconfig.get('exclude-dirs', None))]
       for val in self.dirset:
@@ -1152,6 +1151,7 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
       framedBox.add(exListButton)
       # --- End of Daemon start options tab --- add it to notebook
       pref_notebook.append_page(optionsBox, Gtk.Label(_('Daemon %soptions') % i.ID))
+    self.set_resizable(False)
     self.show_all()
     self.run()
     if config.changed:
