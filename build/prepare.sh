@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # prepare changelog
-version=$(sed -n "/appVer = '.*'/p" ../yandex-disk-indicator.py | grep -o '[0-9]\.[0-9]\.[0-9]')
+version=$(sed -n "/appVer = '.*'/p" ../yandex-disk-indicator.py | grep -o '[0-9]\.[0-9]\.[0-9]*')
 serie='xenial'
 clear
 

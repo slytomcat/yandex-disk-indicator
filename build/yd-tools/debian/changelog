@@ -1,6 +1,5 @@
-yd-tools (1.9.9) xenial; urgency=medium
+yd-tools (1.9.10) xenial; urgency=medium
   * Changes:
-    - Scrollbar for exclude list is added
-    - Don't allow to add duplicates in exclude list dialog
+    - Fixes for resize behaviour in dialogues
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Tue, 11 Apr 2017 22:17:44 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Sun, 23 Apr 2017 13:33:26 +0300
