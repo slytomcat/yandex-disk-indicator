@@ -65,6 +65,9 @@ def makeDirs(dst):
   except:
     logger.error('Dirs creation Error: %s' % dst)
 
+def shortPath(path):
+  return (path[: 20] + '...' + path[-27:] if len(path) > 50 else path).replace('_', u'\u02CD')
+
 class CVal(object):             # Multivalue helper
   ''' Class to work with value that can be None, scalar item or list of items depending
       of number of elementary items added to it or it contain. '''
@@ -416,7 +419,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
 
   # Default daemon status values
   _dvals = {'status': 'none', 'progress': '', 'laststatus': 'none', 'total': '...',
-            'used': '...', 'free': '...', 'trash': '...', 'lastitems': []}
+            'used': '...', 'free': '...', 'trash': '...', 'error':'', 'path':'', 'lastitems': []}
 
   class UpdateEvent(object):            # Changes control class
 
@@ -623,7 +626,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     # Parse named status values
     for srch, key in (('Synchronization core status', 'status'), ('Sync progress', 'progress'),
                       ('Total', 'total'), ('Used', 'used'), ('Available', 'free'),
-                      ('Trash size', 'trash')):
+                      ('Trash size', 'trash'), ('Error', 'error'), ('Path', 'path')):
       val = res.get(srch, '')
       if key == 'status':                     # Convert status to internal representation
         # logger.debug('Raw status: \'%s\', previous status: %s'%(val, self.vals['status']))
@@ -898,7 +901,11 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
       # Update status data
       if update.stat or update.prog or update.init:
         self.status.set_label(_('Status: ') + self.YD_STATUS[vals['status']] +
-                              (vals['progress'] if vals['status'] == 'busy' else ''))
+                              (vals['progress'] if vals['status'] == 'busy'
+                               else
+                               ' '.join((':', vals['error'], shortPath(vals['path']))) if vals['status'] == 'error'
+                               else
+                               ''))
       # Update sizes data
       if update.size or update.init:
         self.used.set_label(_('Used: ') + vals['used'] + '/' + vals['total'])
@@ -910,9 +917,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
         for filePath in vals['lastitems']:            # Create new sub-menu items
           # Create menu label as file path (shorten it down to 50 symbols when path length > 50
           # symbols), with replaced underscore (to disable menu acceleration feature of GTK menu).
-          widget = Gtk.MenuItem.new_with_label(
-                       (filePath[: 20] + '...' + filePath[-27:] if len(filePath) > 50 else
-                        filePath).replace('_', u'\u02CD'))
+          widget = Gtk.MenuItem.new_with_label(shortPath(filePath))
           filePath = pathJoin(yddir, filePath)        # Make full path to file
           if pathExists(filePath):
             widget.set_sensitive(True)                # If it exists then it can be opened
