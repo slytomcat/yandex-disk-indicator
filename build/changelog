@@ -1,5 +1,6 @@
 yd-tools (@version) @serie; urgency=medium
   * Changes:
-    - Fixes for resize behaviour in dialogues
+    - Use yandex-disk absolute path received by which command (fix for issue #174)
+    - More informative error status (related to issue #173)
 
  -- Sly_tom_cat <slytomcat@mail.ru>  @date

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 appName = 'yandex-disk-indicator'
-appVer = '1.9.10'
+appVer = '1.9.11'
 #
 COPYRIGHT = 'Copyright ' + u'\u00a9' + ' 2013-2016 Sly_tom_cat'
 #
@@ -709,7 +709,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     err = ''
     while True:
       try:                                          # Try to start
-        msg = check_output(['yandex-disk', '-c', self.config.fileName, 'start'],
+        msg = check_output([self.YDC, '-c', self.config.fileName, 'start'],
                            universal_newlines=True)
         logger.info('Start success, message: %s' % msg)
         err = ''
@@ -738,7 +738,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
 
   def stop(self):                       # Execute 'yandex-disk stop'
     try:
-      msg = check_output(['yandex-disk', '-c', self.config.fileName, 'stop'],
+      msg = check_output([self.YDC, '-c', self.config.fileName, 'stop'],
                          universal_newlines=True)
     except:
       msg = ''
