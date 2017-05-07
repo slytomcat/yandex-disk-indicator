@@ -40,7 +40,7 @@ from argparse import ArgumentParser
 from gettext import translation
 from logging import basicConfig, getLogger
 from os.path import exists as pathExists, join as pathJoin, relpath as relativePath, expanduser
-from shutil import copy as fileCopy
+from shutil import copy as fileCopy, which
 from datetime import datetime
 from webbrowser import open_new as openNewBrowser
 from signal import signal, SIGTERM
@@ -520,7 +520,8 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     ID       - identity string '#<n> ' in multi-instance environment or
                '' in single instance environment'''
     self.ID = ID                                      # Remember daemon identity
-    if not pathExists('/usr/bin/yandex-disk'):
+    self.YDC = which('yandex-disk')
+    if not self.YDC:
       self._errorDialog('NOTINSTALLED')
       appExit('Daemon is not installed')
     # Try to read Yandex.Disk configuration file and make sure that it is correctly configured
@@ -588,7 +589,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     logger.debug('Update event: %s \nValues : %s' % (str(update), str(vals)))
 
   def getOutput(self, userLang=False):  # Get result of 'yandex-disk status'
-    cmd = ['yandex-disk', '-c', self.config.fileName, 'status']
+    cmd = [self.YDC, '-c', self.config.fileName, 'status']
     if not userLang:      # Change locale settings when it required
       cmd = ['env', '-i', "LANG='en_US.UTF8'", "TMPDIR=%s"%tmpDir] + cmd
     try:
