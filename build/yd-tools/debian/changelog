@@ -1,5 +1,6 @@
-yd-tools (1.9.10) xenial; urgency=medium
+yd-tools (1.9.11) xenial; urgency=medium
   * Changes:
-    - Fixes for resize behaviour in dialogues
+    - Use yandex-disk absolute path received by which command (fix for issue #174)
+    - More informative error status (related to issue #173)
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Sun, 23 Apr 2017 13:33:26 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Sun, 07 May 2017 13:45:39 +0300
