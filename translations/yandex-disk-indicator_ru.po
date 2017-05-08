@@ -278,7 +278,7 @@ msgstr " - Форум Ubuntu.ru http://forum.ubuntu.ru/index.php?topic=241992"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:967
 msgid " - github.com https://github.com/slytomcat/yandex-disk-indicator"
-msgstr " - github.com https://github.com/slytomcat/yandex-disk-indicator>"
+msgstr " - github.com https://github.com/slytomcat/yandex-disk-indicator"
 
 #: /home/stc/Yandex.Disk/YD-tools/yandex-disk-indicator.py:976
 msgid "Yandex.Disk daemon output message"
