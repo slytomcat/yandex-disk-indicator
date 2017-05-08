@@ -4,7 +4,7 @@
 appName = 'yandex-disk-indicator'
 appVer = '1.9.11'
 #
-COPYRIGHT = 'Copyright ' + u'\u00a9' + ' 2013-2016 Sly_tom_cat'
+COPYRIGHT = 'Copyright ' + '\u00a9' + ' 2013-2016 Sly_tom_cat'
 #
 LICENSE = """
 This program is free software: you can redistribute it and/or
@@ -66,7 +66,7 @@ def makeDirs(dst):
     logger.error('Dirs creation Error: %s' % dst)
 
 def shortPath(path):
-  return (path[: 20] + '...' + path[-27:] if len(path) > 50 else path).replace('_', u'\u02CD')
+  return (path[: 20] + '...' + path[-27:] if len(path) > 50 else path).replace('_', '\u02CD')
 
 class CVal(object):             # Multivalue helper
   ''' Class to work with value that can be None, scalar item or list of items depending
@@ -938,7 +938,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
         self.daemon_start.set_sensitive(not started)
         self.last.set_sensitive(started)
         if self.ID != '':                             # Set daemon identity row in multidaemon mode
-          folder = (yddir.replace('_', u'\u02CD') if yddir else '< NOT CONFIGURED >')
+          folder = (yddir.replace('_', '\u02CD') if yddir else '< NOT CONFIGURED >')
           self.yddir.set_label(self.ID + _('  Folder: ') + folder)
         if yddir != '':                               # Activate Open YDfolder if daemon configured
           self.open_folder.set_sensitive(True)
