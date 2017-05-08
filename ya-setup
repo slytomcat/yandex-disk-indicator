@@ -50,16 +50,23 @@ exit 1
 fi
 
 ###Folder
+action_pub='/usr/share/yd-tools/fm-actions/Nautilus_Nemo/publish_yd.desktop'
+action_unpub='/usr/share/yd-tools/fm-actions/Nautilus_Nemo/unpublish_yd.desktop'
+mkdir -p $HOME/.local/share/file-manager/actions
+cp -fr $action_pub $action_unpub $HOME/.local/share/file-manager/actions
 ans=$(zenity  --list --cancel-label="$_Exit" --ok-label="$_Next" --title "$_YD_setup_title" --text "$_Folder_body" --radiolist --hide-header --column "" --column "$_Options" TRUE "$_Default" FALSE "$_Existing")
 if [ $? -eq "0" ];then
 	if [ "$ans" = "$_Default" ]; then
 	mkdir /home/$USER/Yandex.Disk
 	echo "dir=\"/home/$USER/Yandex.Disk\"" >> $conf
-
+	echo "Folders=/home/$USER/Yandex.Disk" >> $HOME/.local/share/file-manager/actions/publish_yd.desktop
+	echo "Folders=/home/$USER/Yandex.Disk" >> $HOME/.local/share/file-manager/actions/unpublish_yd.desktop
 	else
 		if [ "$ans" = "$_Existing" ]; then
 		folder=`zenity --file-selection --directory --title="$_Select_folder"`
 		echo "dir=\"$folder\"" >> $conf
+		echo "Folders=$folder" >> $HOME/.local/share/file-manager/actions/publish_yd.desktop
+		echo "Folders=$folder" >> $HOME/.local/share/file-manager/actions/unpublish_yd.desktop
 		fi
 	fi
 else
