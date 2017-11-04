@@ -957,8 +957,8 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
       aboutWindow.set_license(LICENSE)
       aboutWindow.set_authors([_('Sly_tom_cat <slytomcat@mail.ru> '),
         _('\nSpecial thanks to:'),
-        _(' - Snow Dimon https://habrahabr.ru/users/Snowdimon/ - autor of ya-setup utility'),
-        _(' - Christiaan Diedericks https://www.thefanclub.co.za/ - autor of Grive tools'),
+        _(' - Snow Dimon https://habrahabr.ru/users/Snowdimon/ - author of ya-setup utility'),
+        _(' - Christiaan Diedericks https://www.thefanclub.co.za/ - author of Grive tools'),
         _(' - ryukusu_luminarius <my-faios@ya.ru> - icons designer'),
         _(' - metallcorn <metallcorn@jabber.ru> - icons designer'),
         _(' - Chibiko <zenogears@jabber.ru> - deb package creation assistance'),
