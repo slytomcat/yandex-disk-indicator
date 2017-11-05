@@ -38,7 +38,7 @@ NOTE: All action above can be done via running of build/install.sh script
 - indicator settings are stored in ~/.config/yd-tools/yandex-disk-indicator.conf (file is automatically created on the first start).
 
 
-build - everything that need to build the .deb package or source.changes file (only change key for signatures). Additional tools are required: devscripts, debhelper and dput (if you want to upload package, for example, to launcpad PPA).
+build - everything that need to build the .deb package or source.changes file (only change key for signatures). Additional tools are required: devscripts, debhelper and dput (if you want to upload package, for example, to launchpad PPA).
 - install.sh - script to install the indicator
 - prepare.sh - creates the package build/instalation image in build/yd-tools/
 - clean.sh - clean build directory
