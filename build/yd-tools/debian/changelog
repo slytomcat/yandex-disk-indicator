@@ -1,6 +1,5 @@
-yd-tools (1.9.11) xenial; urgency=medium
+yd-tools (1.9.12) xenial; urgency=medium
   * Changes:
-    - Use yandex-disk absolute path received by which command (fix for issue #174)
-    - More informative error status (related to issue #173)
+    - fixes mistypes
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Sun, 07 May 2017 13:45:39 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Tue, 07 Nov 2017 21:44:04 +0300
