@@ -1,6 +1,5 @@
 yd-tools (@version) @serie; urgency=medium
   * Changes:
-    - Use yandex-disk absolute path received by which command (fix for issue #174)
-    - More informative error status (related to issue #173)
+    - Change initialization behavior (fix for #181)
 
  -- Sly_tom_cat <slytomcat@mail.ru>  @date
