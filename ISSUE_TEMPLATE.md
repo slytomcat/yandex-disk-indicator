@@ -1,4 +1,4 @@
-Describe what happend with indicator
+Describe what happened with indicator
 
 Describe steps to recreate the issue
 
