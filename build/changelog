@@ -1,5 +1,5 @@
 yd-tools (@version) @serie; urgency=medium
   * Changes:
-    - fixes mistypes
+    - Change initialization behavior (fix for #181)
 
  -- Sly_tom_cat <slytomcat@mail.ru>  @date
