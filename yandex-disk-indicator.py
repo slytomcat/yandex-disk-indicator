@@ -912,7 +912,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
         self.used.set_label(_('Used: ') + vals['used'] + '/' + vals['total'])
         self.free.set_label(_('Free: ') + vals['free'] + _(', trash: ') + vals['trash'])
       # Update last synchronized sub-menu when daemon is running
-      if (update.last or update.init):                # Unnecessary: and vals['status'] != 'none':
+      if update.last or update.init:                  # Unnecessary: and vals['status'] != 'none':
         for widget in self.lastItems.get_children():  # Clear last synchronized sub-menu
           self.lastItems.remove(widget)
         for filePath in vals['lastitems']:            # Create new sub-menu items
@@ -929,7 +929,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
           widget.show()
         # Switch off last items menu sensitivity if no items in list
         self.last.set_sensitive(len(vals['lastitems']) != 0)
-        logger.debug("Sub-menu 'Last synchronized' has been updated")
+        logger.debug("Sub-menu 'Last synchronized' has been updated " + str(vals['lastitems']))
       # Update 'static' elements of menu
       if 'none' in (vals['status'], vals['laststatus']) or update.init:
         started = vals['status'] != 'none'
