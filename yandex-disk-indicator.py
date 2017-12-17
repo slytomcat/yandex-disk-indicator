@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 #
 appName = 'yandex-disk-indicator'
-appVer = '1.9.13'
+appVer = '1.9.14'
 #
-COPYRIGHT = 'Copyright ' + '\u00a9' + ' 2013-2016 Sly_tom_cat'
+COPYRIGHT = 'Copyright ' + '\u00a9' + ' 2013-2017 Sly_tom_cat'
 #
 LICENSE = """
 This program is free software: you can redistribute it and/or
@@ -94,20 +94,6 @@ class CVal(object):             # Multivalue helper
       self.val = [self.val, item]   # Convert scalar value to list of items.
     return self.val
 
-  def remove(self, item):
-    if isinstance(self.val, list):
-      self.val.remove(item)
-      if len(self.val) == 1:
-        self.val = self.val[0]
-    elif self.val is None:
-      raise ValueError
-    else:
-      if self.val == item:
-        self.val = None
-      else:
-        raise ValueError
-    return self.val
-
   def __iter__(self):             # cVal iterator object initialization
     if isinstance(self.val, list):  # Is CVal a list?
       self.index = -1
@@ -130,42 +116,6 @@ class CVal(object):             # Multivalue helper
     else:                             # CVal has scalar type.
       self.index = None               # Remember that there is no more iterations possible
       return self.val
-
-  def __str__(self):              # String representation of CVal
-    return str(self.val)
-
-  def __getitem__(self, index):   # Access to cVal items by index
-    if isinstance(self.val, list):
-      return self.val[index]          # It raises IndexError when index is out of range(len(cVal))
-    elif self.val is None:
-      raise IndexError                # None value cannot be received by any index
-    elif index in [0, -1]:            # cVal is scalar and index is 0 (first) or -1 (last)?
-      return self.val
-    else:
-      raise IndexError
-
-  def __setitem__(self, index, value):
-    if isinstance(self.val, list):
-      self.val[index] = value
-    elif self.val is None:
-      raise IndexError                # None value cannot be set by any index
-    elif index in [0, -1]:            # cVal is scalar and index is 0 (first) or -1 (last)?
-      self.val = value
-    else:
-      raise IndexError
-
-  def __len__(self):              # Length of cVal
-    if isinstance(self.val, list):
-      return len(self.val)
-    return 0 if self.val is None else 1
-
-  def __contains__(self, item):   # 'in' opertor function
-    if isinstance(self.val, list):
-      return item in self.val
-    elif self.val is None:
-      return item is None
-    else:
-      return self.val == item
 
   def __bool__(self):
     return self.val is not None
@@ -394,7 +344,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
   start    - Request to start daemon. Do nothing if it is alreday started
   stop     - Request to stop daemon. Do nothing if it is not started
   exit     - Handles 'Stop on exit' facility according to daemon configuration settings.
-  change   - Call back function for handling daemon status changes outside the class.
+  change   - Call-back function for handling daemon status changes outside the class.
              It have to be redefined by UI class.
              The parameters of the call - status values dictionary (see vars description below)
 
@@ -526,8 +476,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
                  'total': '...', 'used': '...', 'free': '...', 'trash': '...', 'szchg': True,
                  'error':'', 'path':'', 'lastitems': [], 'lastchg': True}
     # Check that daemon is running
-    out = self.getOutput()
-    if out != '':                                     # Is daemon running?
+    if self.getOutput() != '':                        # Is daemon running?
       self._iNtfyWatcher.start(self.config['dir'])    # Activate iNotify watcher
     else:                                             # Daemon is not running
       if self.config.get('startonstartofindicator', True):
@@ -744,19 +693,20 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
       self.updateIcon(vals['status'])     # Update icon
     # Create notifications for status change events
     if vals['statchg']:
-      if vals['laststatus'] == 'none':    # Daemon has been started
+      if vals['laststatus'] == 'none':       # Daemon has been started
         self.notify.send(_('Yandex.Disk daemon has been started'))
-      if vals['status'] == 'busy':        # Just entered into 'busy'
+      if vals['status'] == 'busy':           # Just entered into 'busy'
         self.notify.send(_('Synchronization started'))
-      elif vals['status'] == 'idle':      # Just entered into 'idle'
-        if vals['laststatus'] == 'busy':  # ...from 'busy' status
+      elif vals['status'] == 'idle':         # Just entered into 'idle'
+        if vals['laststatus'] == 'busy':     # ...from 'busy' status
           self.notify.send(_('Synchronization has been completed'))
-      elif vals['status'] == 'paused':    # Just entered into 'paused'
-        if vals['laststatus'] != 'none':  # ...not from 'none' status
+      elif vals['status'] == 'paused':       # Just entered into 'paused'
+        if vals['laststatus'] not in ['none', 'unknown']:  # ...not from 'none'/'unknown' status
           self.notify.send(_('Synchronization has been paused'))
-      elif vals['status'] == 'none':      # Just entered into 'none' from some another status
+      elif vals['status'] == 'none':         # Just entered into 'none' from some another status
+        if vals['laststatus'] != 'unknown':  # ... not from 'unknown'
           self.notify.send(_('Yandex.Disk daemon has been stopped'))
-      else:                               # status is 'error' or 'no-net'
+      else:                                  # status is 'error' or 'no-net'
         self.notify.send(_('Synchronization ERROR'))
 
   def setIconTheme(self, theme):    # Determine paths to icons according to current theme
@@ -810,6 +760,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
       self.free = Gtk.MenuItem();       self.free.set_sensitive(False)
       self.append(self.free)
       self.last = Gtk.MenuItem(_('Last synchronized items'))
+      self.last.set_sensitive(False)
       self.lastItems = Gtk.Menu()               # Sub-menu: list of last synchronized files/folders
       self.last.set_submenu(self.lastItems)     # Add submenu (empty at the start)
       self.append(self.last)
@@ -884,7 +835,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
           widget.show()
         # Switch off last items menu sensitivity if no items in list
         self.last.set_sensitive(len(vals['lastitems']) != 0)
-        logger.debug("Sub-menu 'Last synchronized' has been updated " + str(vals['lastitems']))
+        logger.debug("Sub-menu 'Last synchronized' has " + str(len(vals['lastitems'])) + " items")
       # Update 'static' elements of menu
       if 'none' in (vals['status'], vals['laststatus']) or vals['laststatus'] == 'unknown':
         started = vals['status'] != 'none'
@@ -934,6 +885,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
 
     def showOutput(self, widget):           # Display daemon output in dialogue window
       global logo
+      outText = self.daemon.getOutput(True)
       widget.set_sensitive(False)                         # Disable menu item
       statusWindow = Gtk.Dialog(_('Yandex.Disk daemon output message'))
       statusWindow.set_icon(logo)
@@ -941,7 +893,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
       statusWindow.add_button(_('Close'), Gtk.ResponseType.CLOSE)
       textBox = Gtk.TextView()                            # Create text-box to display daemon output
       # Set output buffer with daemon output in user language
-      textBox.get_buffer().set_text(self.daemon.getOutput(True))
+      textBox.get_buffer().set_text(outText)
       textBox.set_editable(False)
       # Put it inside the dialogue content area
       statusWindow.get_content_area().pack_start(textBox, True, True, 6)
