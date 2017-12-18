@@ -1,5 +1,7 @@
-yd-tools (1.9.12) xenial; urgency=medium
+yd-tools (1.9.14) xenial; urgency=medium
   * Changes:
-    - fixes mistypes
+    - Change initialization behavior (fix for #181)
+    - Code optimization and clearance
+    - Debug messages optimization
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Tue, 07 Nov 2017 21:44:04 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Sun, 17 Dec 2017 23:26:11 +0300

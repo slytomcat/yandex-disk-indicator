@@ -1,5 +1,7 @@
 yd-tools (@version) @serie; urgency=medium
   * Changes:
     - Change initialization behavior (fix for #181)
+    - Code optimization and clearance
+    - Debug messages optimization
 
  -- Sly_tom_cat <slytomcat@mail.ru>  @date
