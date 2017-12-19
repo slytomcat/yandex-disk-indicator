@@ -380,24 +380,23 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       self._watchMngr = WatchManager()   # Create watch manager
       # Create PyiNotifier
       self._iNotifier = Notifier(self._watchMngr, _EH(), timeout=0.5)
-      # Timer will call iNotifier handler every .7 seconds (not started initially)
-      self._timer = Timer(700, self._iNhandle, start=False)
+      # Timer will call iNotifier handler
+      def iNhandle():                    # iNotify working routine (called by timer)
+        while self._iNotifier.check_events():
+          self._iNotifier.read_events()
+          self._iNotifier.process_events()
+        return True
+      self._timer = Timer(700, iNhandle, start=False)  # not started initially
       self._status = False
 
-    def _iNhandle(self):                 # iNotify working routine (called by timer)
-      while self._iNotifier.check_events():
-        self._iNotifier.read_events()
-        self._iNotifier.process_events()
-      return True
-
     def start(self, path):               # Activate iNotify watching
-      # Prepare path
       self._path = pathJoin(path.replace('~', userHome), '.sync/cli.log')
-      if self._status or not pathExists(self._path):
+      if self._status:
         return
-      # Add watch
+      if not pathExists(self._path):
+        logger.info("iNotiy was not started: path '"+self._path+"' was not found.")
+        return
       self._watch = self._watchMngr.add_watch(self._path, IN_MODIFY, rec=False)
-      # Activate timer
       self._timer.start()
       self._status = True
 
@@ -406,7 +405,6 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
         return
       # Remove watch
       self._watchMngr.rm_watch(self._watch[self._path])
-      self._iNhandle()
       # Stop timer
       self._timer.stop()
       self._status = False
