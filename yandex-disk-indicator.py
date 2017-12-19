@@ -819,8 +819,10 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
       if vals['lastchg'] or vals['laststatus'] == 'unknown':
         # Switch off last items menu sensitivity if no items in list
         self.last.set_sensitive(len(vals['lastitems']) != 0)
-        for widget in self.lastItems.get_children():  # Clear last synchronized sub-menu
-          self.lastItems.remove(widget)
+        self.lastItems = Gtk.Menu()                  # New Sub-menu:
+        self.last.set_submenu(self.lastItems)
+        #for widget in self.lastItems.get_children():  # Clear last synchronized sub-menu
+        #  self.lastItems.remove(widget)
         for filePath in vals['lastitems']:            # Create new sub-menu items
           # Create menu label as file path (shorten it down to 50 symbols when path length > 50
           # symbols), with replaced underscore (to disable menu acceleration feature of GTK menu).
