@@ -831,12 +831,10 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
           else:
             widget.set_sensitive(False)               # Don't allow to open non-existing path
           self.lastItems.append(widget)
-          #widget.show()
-        self.lastItems.show_all()
         self.last.set_submenu(self.lastItems)
         # Switch off last items menu sensitivity if no items in list
         self.last.set_sensitive(len(vals['lastitems']) != 0)
-        self.last.show()
+        self.last.show_all()
         logger.debug("Sub-menu 'Last synchronized' has " + str(len(vals['lastitems'])) + " items")
       # Update 'static' elements of menu
       if 'none' in (vals['status'], vals['laststatus']) or vals['laststatus'] == 'unknown':
