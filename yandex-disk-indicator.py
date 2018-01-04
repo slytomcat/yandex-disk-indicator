@@ -22,7 +22,7 @@ along with this program.  If not, see http://www.gnu.org/licenses
 """
 
 from os import remove, makedirs, getpid, geteuid, getenv
-from pyinotify import ProcessEvent, WatchManager, Notifier, IN_MODIFY
+from pyinotify import ProcessEvent, WatchManager, Notifier, IN_MODIFY, IN_ACCESS
 from gi import require_version
 require_version('Gtk', '3.0')
 from gi.repository import Gtk
@@ -396,7 +396,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       if not pathExists(self._path):
         logger.info("iNotiy was not started: path '"+self._path+"' was not found.")
         return
-      self._watch = self._watchMngr.add_watch(self._path, IN_MODIFY, rec=False)
+      self._watch = self._watchMngr.add_watch(self._path, IN_MODIFY|IN_ACCESS, rec=False)
       self._timer.start()
       self._status = True
 
@@ -556,7 +556,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
         # Convert daemon raw status to internal representation
         val = ('none' if val == '' else
                # Ignore index status
-               self.vals['laststatus'] if val == 'index' else
+               'busy' if val == 'index' else
                # Rename long error status
                'no_net' if val == 'no internet access' else
                # pass 'busy', 'idle' and 'paused' statuses 'as is'
