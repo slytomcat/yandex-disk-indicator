@@ -1,7 +1,7 @@
 yd-tools (@version) @serie; urgency=medium
   * Changes:
-    - Change initialization behavior (fix for #181)
-    - Code optimization and clearance
-    - Debug messages optimization
+    - correct index status convertion on start-up
+    - Last sync.: single show_all() call instead of show() calls for each meny item
+    - Last sync.: new submenu instead of cleaning previous
 
  -- Sly_tom_cat <slytomcat@mail.ru>  @date

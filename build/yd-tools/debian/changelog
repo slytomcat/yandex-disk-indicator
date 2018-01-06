@@ -1,7 +1,7 @@
-yd-tools (1.9.14) xenial; urgency=medium
+yd-tools (1.9.15) xenial; urgency=medium
   * Changes:
-    - Change initialization behavior (fix for #181)
-    - Code optimization and clearance
-    - Debug messages optimization
+    - correct index status convertion on start-up
+    - Last sync.: single show_all() call instead of show() calls for each meny item
+    - Last sync.: new submenu instead of cleaning previous
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Sun, 17 Dec 2017 23:26:11 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Sat, 06 Jan 2018 13:43:36 +0300
