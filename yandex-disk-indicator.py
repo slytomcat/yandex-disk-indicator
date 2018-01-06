@@ -4,7 +4,7 @@
 appName = 'yandex-disk-indicator'
 appVer = '1.9.15'
 #
-COPYRIGHT = 'Copyright ' + '\u00a9' + ' 2013-2017 Sly_tom_cat'
+COPYRIGHT = 'Copyright ' + '\u00a9' + ' 2013-2018 Sly_tom_cat'
 #
 LICENSE = """
 This program is free software: you can redistribute it and/or
