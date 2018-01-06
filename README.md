@@ -12,9 +12,9 @@ Note that yandex-disk CLI utility have to be installed before the indicator. Vis
 
 Installation from Github: 
 
- 1. Download ZIP with project sources (either master branch or last releaze)
+ 1. Download ZIP with project sources (either master branch or last releaze: https://github.com/slytomcat/yandex-disk-indicator/releases/latest)
 
- 2. Run build/install.sh script with root privileges
+ 2. Change current directory to build/ and run install.sh script with root privileges
 
 Installation from Launchpad PPA: 
  - Visit PPA: https://launchpad.net/~slytomcat/+archive/ubuntu/ppa and follow the instructions.
