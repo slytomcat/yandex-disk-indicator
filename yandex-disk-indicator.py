@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 appName = 'yandex-disk-indicator'
-appVer = '1.9.14'
+appVer = '1.9.15'
 #
 COPYRIGHT = 'Copyright ' + '\u00a9' + ' 2013-2017 Sly_tom_cat'
 #
@@ -556,7 +556,8 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
         # Convert daemon raw status to internal representation
         val = ('none' if val == '' else
                # Ignore index status
-               'busy' if val == 'index' else
+               'busy' if val == 'index' and self.vals['laststatus'] == "unknown" else
+               self.vals['laststatus'] if val == 'index' and self.vals['laststatus'] != "unknown" else
                # Rename long error status
                'no_net' if val == 'no internet access' else
                # pass 'busy', 'idle' and 'paused' statuses 'as is'
