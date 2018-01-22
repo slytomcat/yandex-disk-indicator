@@ -581,6 +581,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     if self.vals['lastitems'] != buf:
       self.vals['lastitems'] = buf            # Store the new file list
       self.vals['lastchg'] = True             # Remember that it is changed
+    # return True when something changed, if nothing changed - return False
     return self.vals['statchg'] or self.vals['szchg'] or self.vals['lastchg']
 
   def _errorDialog(self, err):          # Show error messages according to the error
