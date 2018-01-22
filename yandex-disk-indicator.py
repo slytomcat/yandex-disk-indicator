@@ -302,23 +302,13 @@ class Timer(object):            # Timer for triggering a function periodically
 
 class Notification(object):     # On-screen notification
 
-  def __init__(self, title, mode):  # Initialize notification engine
+  def __init__(self, title):    # Initialize notification engine
     if not Notify.is_initted():
       Notify.init(appName)
     self.title = title
     self.note = None
-    self.switch(mode)
 
-  def send(self, message):          # Send notification
-    pass                            # This method is redefined by switch method
-
-  def switch(self, mode=True):      # Change show mode, by default switch it on
-    if mode:
-      self.send = self._message     # Redefine send as real notification routine
-    else:
-      self.send = lambda m: None    # Redefine send as fake routine
-
-  def _message(self, messg):        # Show on-screen notification message
+  def send(self, messg):
     global logo
     logger.debug('Message: %s | %s' % (self.title, messg))
     if self.note is not None:
@@ -372,7 +362,9 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     iNotify watcher object for monitor of changes daemon internal log for the fastest
     reaction on status change.
     '''
-    def __init__(self, handler, par=None):
+    def __init__(self, path, handler, par=None):
+      # Watched path
+      self.path = pathJoin(path.replace('~', userHome), '.sync/cli.log')
       # Initialize iNotify watcher
       class _EH(ProcessEvent):           # Event handler class for iNotifier
         def process_IN_MODIFY(self, event):
@@ -389,14 +381,13 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       self._timer = Timer(700, iNhandle, start=False)  # not started initially
       self._status = False
 
-    def start(self, path):               # Activate iNotify watching
-      self._path = pathJoin(path.replace('~', userHome), '.sync/cli.log')
+    def start(self):               # Activate iNotify watching
       if self._status:
         return
-      if not pathExists(self._path):
-        logger.info("iNotiy was not started: path '"+self._path+"' was not found.")
+      if not pathExists(self.path):
+        logger.info("iNotiy was not started: path '"+self.path+"' was not found.")
         return
-      self._watch = self._watchMngr.add_watch(self._path, IN_MODIFY|IN_ACCESS, rec=False)
+      self._watch = self._watchMngr.add_watch(self.path, IN_MODIFY|IN_ACCESS, rec=False)
       self._timer.start()
       self._status = True
 
@@ -404,7 +395,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       if not self._status:
         return
       # Remove watch
-      self._watchMngr.rm_watch(self._watch[self._path])
+      self._watchMngr.rm_watch(self._watch[self.path])
       # Stop timer
       self._timer.stop()
       self._status = False
@@ -468,14 +459,14 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     # Initialize watching staff
     self._wTimer = Timer(500, self._eventHandler, par=False, start=True)
     self._tCnt = 0
-    self._iNtfyWatcher = self._Watcher(self._eventHandler, par=True)
+    self._iNtfyWatcher = self._Watcher(self.config['dir'], self._eventHandler, par=True)
     # Set initial daemon status values
     self.vals = {'status': 'unknown', 'progress': '', 'laststatus': 'unknown', 'statchg': True,
                  'total': '...', 'used': '...', 'free': '...', 'trash': '...', 'szchg': True,
                  'error':'', 'path':'', 'lastitems': [], 'lastchg': True}
     # Check that daemon is running
     if self.getOutput() != '':                        # Is daemon running?
-      self._iNtfyWatcher.start(self.config['dir'])    # Activate iNotify watcher
+      self._iNtfyWatcher.start()        # Activate iNotify watcher
     else:                                             # Daemon is not running
       if self.config.get('startonstartofindicator', True):
         self.start()                    # Start daemon if it is required
@@ -637,7 +628,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     except CalledProcessError as e:
       logger.error('Daemon start failed:%s' % e.output)
       return
-    self._iNtfyWatcher.start(self.config['dir'])    # Activate iNotify watcher
+    self._iNtfyWatcher.start()    # Activate iNotify watcher
 
   def stop(self):                       # Execute 'yandex-disk stop'
     if self.getOutput() == "":
@@ -662,7 +653,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
   def __init__(self, path, ID):
     indicatorName = "yandex-disk-%s" % ID[1: -1]
     # Create indicator notification engine
-    self.notify = Notification(_('Yandex.Disk ') + ID, config['notifications'])
+    self.notify = Notification(_('Yandex.Disk ') + ID)
     # Setup icons theme
     self.setIconTheme(config['theme'])
     # Create timer object for icon animation support (don't start it here)
@@ -692,7 +683,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
       logger.info('Status: ' + vals['laststatus'] + ' -> ' + vals['status'])
       self.updateIcon(vals['status'])     # Update icon
     # Create notifications for status change events
-    if vals['statchg']:
+    if vals['statchg'] and config['notifications']:
       if vals['laststatus'] == 'none':       # Daemon has been started
         self.notify.send(_('Yandex.Disk daemon has been started'))
       if vals['status'] == 'busy':           # Just entered into 'busy'
@@ -836,7 +827,6 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
         self.last.set_submenu(self.lastItems)
         # Switch off last items menu sensitivity if no items in list
         self.last.set_sensitive(len(vals['lastitems']) != 0)
-        self.last.show_all()
         logger.debug("Sub-menu 'Last synchronized' has " + str(len(vals['lastitems'])) + " items")
       # Update 'static' elements of menu
       if 'none' in (vals['status'], vals['laststatus']) or vals['laststatus'] == 'unknown':
@@ -852,6 +842,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
           self.open_folder.set_sensitive(True)
         else:
           self.open_folder.set_sensitive(False)
+      self.show_all()                                 # Renew menu
 
     def openAbout(self, widget):            # Show About window
       global logo, indicators
@@ -1091,18 +1082,12 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
     if key == 'theme':
         for i in indicators:                    # Update all indicators' icons
           i.setIconTheme(toggleState)           # Update icon theme
-          i.updateIcon()                        # Update current icon
-    elif key == 'notifications':
-      notify.switch(toggleState)                # Update application notification engine
-      for i in indicators:                      # Update all notification engines
-        i.notify.switch(toggleState)
+          i.updateIcon(i.vals['status'])        # Update current icon
     elif key == 'autostart':
       if toggleState:
         copyFile(autoStartSrc, autoStartDst)
-        notify.send(_('Auto-start ON'))
       else:
         deleteFile(autoStartDst)
-        notify.send(_('Auto-start OFF'))
     elif key == 'fmextensions':
       if not button.get_inconsistent():         # It is a first call
         if not activateActions():               # When activation/deactivation is not success:
@@ -1447,9 +1432,6 @@ if __name__ == '__main__':
   for d in daemons:
     indicators.append(Indicator(d.replace('~', userHome),
                                 _('#%d ') % len(indicators) if len(daemons) > 1 else ''))
-
-  # Initianilze notification engine for application messages (it is used in Preferences dialogue)
-  notify = Notification(_('Yandex.Disk Indicator'), config['notifications'])
 
   # Register the SIGTERM handler for graceful exit when indicator is killed
   signal(SIGTERM, lambda _signo, _stack_frame: appExit())
