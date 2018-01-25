@@ -1,2 +1,3 @@
 man
 .stfolder
+__pycache__/*

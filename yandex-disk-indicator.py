@@ -495,7 +495,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     return True                               # True is required to continue activations by timer.
 
   def change(self, vals):          # Redefined update handler
-    logger.debug('Update event: %s \nValues : %s' % (str(update), str(vals)))
+    logger.debug('Update values : %s' % str(vals))
 
   def getOutput(self, userLang=False):  # Get result of 'yandex-disk status'
     cmd = [self.YDC, '-c', self.config.fileName, 'status']
@@ -678,27 +678,27 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
                                                          'last' if vals['lastchg'] else '']))
     # Update information in menu
     self.menu.update(vals, self.config['dir'])
-    # Handle daemon status change by icon change
-    if vals['statchg'] or vals['laststatus'] =='unknown':
+    # Handle daemon status change 
+    if vals['statatus'] != vals['laststatus'] or vals['laststatus'] =='unknown':
       logger.info('Status: ' + vals['laststatus'] + ' -> ' + vals['status'])
       self.updateIcon(vals['status'])     # Update icon
-    # Create notifications for status change events
-    if vals['statchg'] and config['notifications']:
-      if vals['laststatus'] == 'none':       # Daemon has been started
-        self.notify.send(_('Yandex.Disk daemon has been started'))
-      if vals['status'] == 'busy':           # Just entered into 'busy'
-        self.notify.send(_('Synchronization started'))
-      elif vals['status'] == 'idle':         # Just entered into 'idle'
-        if vals['laststatus'] == 'busy':     # ...from 'busy' status
-          self.notify.send(_('Synchronization has been completed'))
-      elif vals['status'] == 'paused':       # Just entered into 'paused'
-        if vals['laststatus'] not in ['none', 'unknown']:  # ...not from 'none'/'unknown' status
-          self.notify.send(_('Synchronization has been paused'))
-      elif vals['status'] == 'none':         # Just entered into 'none' from some another status
-        if vals['laststatus'] != 'unknown':  # ... not from 'unknown'
-          self.notify.send(_('Yandex.Disk daemon has been stopped'))
-      else:                                  # status is 'error' or 'no-net'
-        self.notify.send(_('Synchronization ERROR'))
+      # Create notifications for status change events
+      if config['notifications']:
+        if vals['laststatus'] == 'none':       # Daemon has been started
+          self.notify.send(_('Yandex.Disk daemon has been started'))
+        if vals['status'] == 'busy':           # Just entered into 'busy'
+          self.notify.send(_('Synchronization started'))
+        elif vals['status'] == 'idle':         # Just entered into 'idle'
+          if vals['laststatus'] == 'busy':     # ...from 'busy' status
+            self.notify.send(_('Synchronization has been completed'))
+        elif vals['status'] == 'paused':       # Just entered into 'paused'
+          if vals['laststatus'] not in ['none', 'unknown']:  # ...not from 'none'/'unknown' status
+            self.notify.send(_('Synchronization has been paused'))
+        elif vals['status'] == 'none':         # Just entered into 'none' from some another status
+          if vals['laststatus'] != 'unknown':  # ... not from 'unknown'
+            self.notify.send(_('Yandex.Disk daemon has been stopped'))
+        else:                                  # status is 'error' or 'no-net'
+          self.notify.send(_('Synchronization ERROR'))
 
   def setIconTheme(self, theme):    # Determine paths to icons according to current theme
     global installDir, configPath
