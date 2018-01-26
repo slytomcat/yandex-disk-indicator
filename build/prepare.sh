@@ -2,10 +2,10 @@
 
 # prepare changelog
 version=$(sed -n "/appVer = '.*'/p" ../yandex-disk-indicator.py | grep -o '[0-9]\.[0-9]\.[0-9]*')
-serie='xenial'
+series='xenial'
 clear
 
-sed "s/@serie/$serie/" changelog > yd-tools/debian/changelog
+sed "s/@series/$series/" changelog > yd-tools/debian/changelog
 sed -i "s/@version/$version/" yd-tools/debian/changelog
 sed -i "s/@date/$(date -R)/" yd-tools/debian/changelog
 cat yd-tools/debian/changelog 
