@@ -680,7 +680,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
     # Update information in menu
     self.menu.update(vals, self.config['dir'])
     # Handle daemon status change 
-    if vals['statatus'] != vals['laststatus'] or vals['laststatus'] =='unknown':
+    if vals['status'] != vals['laststatus'] or vals['laststatus'] =='unknown':
       logger.info('Status: ' + vals['laststatus'] + ' -> ' + vals['status'])
       self.updateIcon(vals['status'])     # Update icon
       # Create notifications for status change events
