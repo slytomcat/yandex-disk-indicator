@@ -1,7 +1,7 @@
-yd-tools (1.9.15) xenial; urgency=medium
+yd-tools (1.9.16) xenial; urgency=medium
   * Changes:
-    - correct index status convertion on start-up
-    - Last sync.: single show_all() call instead of show() calls for each meny item
-    - Last sync.: new submenu instead of cleaning previous
+    - Fix desktop notifications logic
+    - Notification and Watcher classes optimization
+    - auto-year in copyright string
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Sat, 06 Jan 2018 13:43:36 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Sat, 27 Jan 2018 02:05:40 +0300
