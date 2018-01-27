@@ -1,7 +1,7 @@
-yd-tools (1.9.16) xenial; urgency=medium
+yd-tools (1.9.16) artful; urgency=medium
   * Changes:
     - Fix desktop notifications logic
     - Notification and Watcher classes optimization
     - auto-year in copyright string
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Sat, 27 Jan 2018 02:05:40 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Sat, 27 Jan 2018 10:33:03 +0300
