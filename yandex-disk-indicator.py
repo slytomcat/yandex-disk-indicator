@@ -1085,7 +1085,7 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
         deleteFile(autoStartDst)
     elif key == 'fmextensions':
       if not button.get_inconsistent():         # It is a first call
-        if not activateActions():               # When activation/deactivation is not success:
+        if not activateActions(toggleState):               # When activation/deactivation is not success:
           notify.send(_('ERROR in setting up of file manager extensions'))
           toggleState = not toggleState         # revert settings back
           button.set_inconsistent(True)         # set inconsistent state to detect second call
@@ -1102,8 +1102,7 @@ def appExit(msg=None):          # Exit from application (it closes all indicator
     i.exit()
   sysExit(msg)
 
-def activateActions():          # Install/deinstall file extensions
-  activate = config["fmextensions"]
+def activateActions(activate):  # Install/deinstall file extensions
   result = False
   try:                  # Catch all exceptions during FM action activation/deactivation
 
