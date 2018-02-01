@@ -1,7 +1,6 @@
 yd-tools (@version) @series; urgency=medium
   * Changes:
-    - Fix desktop notifications logic
-    - Notification and Watcher classes optimization
-    - auto-year in copyright string
+    - Fix for #184
+    - Common start/stop daemon menu item
 
  -- Sly_tom_cat <slytomcat@mail.ru>  @date

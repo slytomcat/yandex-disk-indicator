@@ -1,7 +1,6 @@
-yd-tools (1.9.16) artful; urgency=medium
+yd-tools (1.9.17) xenial; urgency=medium
   * Changes:
-    - Fix desktop notifications logic
-    - Notification and Watcher classes optimization
-    - auto-year in copyright string
+    - Fix for #184
+    - Common start/stop daemon menu item
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Sat, 27 Jan 2018 10:33:03 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Thu, 01 Feb 2018 22:05:38 +0300
