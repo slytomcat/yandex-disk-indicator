@@ -313,8 +313,10 @@ class Notification(object):     # On-screen notification
     global logo
     logger.debug('Message: %s | %s' % (self.title, messg))
     if self.note is not None:
-      # if self.note.props.closed_reason = -1:
-      self.note.close()
+      try:
+        self.note.close()
+      except:
+        pass
       self.note = None
     try:                            # Create notification
       self.note = Notify.Notification.new(self.title, messg)
