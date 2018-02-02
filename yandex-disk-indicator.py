@@ -1397,7 +1397,7 @@ if __name__ == '__main__':
         logger.error('Can\'t activate indicator automatic start on system start-up')
 
     # Activate FM actions according to config (as it is first run)
-    activateActions()
+    activateActions(config['fmextensions'])
     # Default settings should be saved (later)
     config.changed = True
 
