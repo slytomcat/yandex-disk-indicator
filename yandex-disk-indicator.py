@@ -1088,7 +1088,6 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
     elif key == 'fmextensions':
       if not button.get_inconsistent():         # It is a first call
         if not activateActions(toggleState):               # When activation/deactivation is not success:
-          notify.send(_('ERROR in setting up of file manager extensions'))
           toggleState = not toggleState         # revert settings back
           button.set_inconsistent(True)         # set inconsistent state to detect second call
           button.set_active(toggleState)        # set check-button to reverted status
