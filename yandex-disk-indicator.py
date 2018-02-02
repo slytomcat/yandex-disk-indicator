@@ -1123,7 +1123,7 @@ def activateActions(activate):  # Install/deinstall file extensions
       pm = 'zypper info '
     elif call("hash emerge>/dev/null 2>&1", shell=True) == 0:
       logger.info("Emerge detected")
-      pm = 'witch '
+      pm = 'which '
     else:
       logger.info("Your package manager is not supported. Automatic installation of FM extensions is not possible.")
       return result
