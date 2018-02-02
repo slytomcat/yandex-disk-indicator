@@ -1,6 +1,5 @@
 yd-tools (@version) @series; urgency=medium
   * Changes:
-    - Fix for #184
-    - Common start/stop daemon menu item
+    - Fix for github issue #185
 
  -- Sly_tom_cat <slytomcat@mail.ru>  @date
