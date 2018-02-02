@@ -1,6 +1,6 @@
-yd-tools (1.9.17) xenial; urgency=medium
+yd-tools (1.9.18) xenial; urgency=medium
   * Changes:
-    - Fix for #184
-    - Common start/stop daemon menu item
+    - Fix for github issue #185
+    - Fix for github issue #186
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Thu, 01 Feb 2018 22:05:38 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Fri, 02 Feb 2018 23:13:47 +0300

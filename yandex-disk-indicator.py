@@ -1142,11 +1142,10 @@ def activateActions(activate):  # Install/deinstall file extensions
                  pathJoin(userHome, nautilusPath, _("Publish via Yandex.Disk")))
         copyFile(pathJoin(installDir, "fm-actions/Nautilus_Nemo/unpublish"),
                  pathJoin(userHome, nautilusPath, _("Unpublish from Yandex.disk")))
-        result = True
       else:             # Remove actions for Nautilus
         deleteFile(pathJoin(userHome, nautilusPath, _("Publish via Yandex.Disk")))
         deleteFile(pathJoin(userHome, nautilusPath, _("Unpublish from Yandex.disk")))
-        result = True
+      result = True
 
     # --- Actions for Nemo ---
     if call([pm + "nemo>/dev/null 2>&1"], shell=True) == 0:
@@ -1156,11 +1155,10 @@ def activateActions(activate):  # Install/deinstall file extensions
                  pathJoin(userHome, ".local/share/nemo/scripts", _("Publish via Yandex.Disk")))
         copyFile(pathJoin(installDir, "fm-actions/Nautilus_Nemo/unpublish"),
                  pathJoin(userHome, ".local/share/nemo/scripts", _("Unpublish from Yandex.disk")))
-        result = True
       else:             # Remove actions for Nemo
         deleteFile(pathJoin(userHome, ".gnome2/nemo-scripts", _("Publish via Yandex.Disk")))
         deleteFile(pathJoin(userHome, ".gnome2/nemo-scripts", _("Unpublish from Yandex.disk")))
-        result = True
+      result = True
 
     # --- Actions for Thunar ---
     if call([pm + "thunar>/dev/null 2>&1"], shell=True) == 0:
@@ -1214,10 +1212,9 @@ def activateActions(activate):  # Install/deinstall file extensions
         makeDirs(pathJoin(userHome, '.local/share/kservices5/ServiceMenus'))
         copyFile(pathJoin(installDir, "fm-actions/Dolphin/ydpublish.desktop"),
                  pathJoin(userHome, ".local/share/kservices5/ServiceMenus/ydpublish.desktop"))
-        result = True
       else:             # Remove actions for Dolphin
         deleteFile(pathJoin(userHome, ".local/share/kservices5/ServiceMenus/ydpublish.desktop"))
-        result = True
+      result = True
 
     # --- Actions for Pantheon-files ---
     if call([pm + "pantheon-files>/dev/null 2>&1"], shell=True) == 0:
@@ -1249,11 +1246,10 @@ def activateActions(activate):  # Install/deinstall file extensions
                  pathJoin(userHome, ".config/caja/scripts", _("Publish via Yandex.Disk")))
         copyFile(pathJoin(installDir, "fm-actions/Nautilus_Nemo/unpublish"),
                  pathJoin(userHome, ".config/caja/scripts", _("Unpublish from Yandex.disk")))
-        result = True
       else:             # Remove actions for Nemo
         deleteFile(pathJoin(userHome, ".config/caja/scripts", _("Publish via Yandex.Disk")))
         deleteFile(pathJoin(userHome, ".config/caja/scripts", _("Unpublish from Yandex.disk")))
-        result = True
+      result = True
 
   except Exception as e:
     logger.error("The following error occurred during the FM actions activation:\n %s" % str(e))
