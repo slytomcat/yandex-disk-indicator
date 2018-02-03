@@ -1108,7 +1108,7 @@ def activateActions(activate):  # Install/deinstall file extensions
   try:                  # Catch all exceptions during FM action activation/deactivation
 
     # --- Actions for Nautilus ---
-    if call(["command -v nautilus>/dev/null 2>&1"], shell=True) == 0:
+    if which("nautilus") is not None:
       logger.info("Nautilus installed")
       ver = check_output(["lsb_release -r | sed -n '1{s/[^0-9]//g;p;q}'"], shell=True)
       if ver != '' and int(ver) < 1210:
@@ -1128,7 +1128,7 @@ def activateActions(activate):  # Install/deinstall file extensions
       result = True
 
     # --- Actions for Nemo ---
-    if call(["command -v nemo>/dev/null 2>&1"], shell=True) == 0:
+    if which("nemo") is not None:
       logger.info("Nemo installed")
       if activate:      # Install actions for Nemo
         copyFile(pathJoin(installDir, "fm-actions/Nautilus_Nemo/publish"),
@@ -1141,7 +1141,7 @@ def activateActions(activate):  # Install/deinstall file extensions
       result = True
 
     # --- Actions for Thunar ---
-    if call(["command -v thunar>/dev/null 2>&1"], shell=True) == 0:
+    if which("thunar") is not None:
       logger.info("Thunar installed")
       ucaPath = pathJoin(userHome, ".config/Thunar/uca.xml")
       # Read uca.xml
@@ -1186,7 +1186,7 @@ def activateActions(activate):  # Install/deinstall file extensions
       result = True
 
     # --- Actions for Dolphin ---
-    if call(["command -v dolphin>/dev/null 2>&1"], shell=True) == 0:
+    if which("dolphin") is not None:
       logger.info("Dolphin installed")
       if activate:      # Install actions for Dolphin
         makeDirs(pathJoin(userHome, '.local/share/kservices5/ServiceMenus'))
@@ -1197,7 +1197,7 @@ def activateActions(activate):  # Install/deinstall file extensions
       result = True
 
     # --- Actions for Pantheon-files ---
-    if call(["command -v pantheon-files>/dev/null 2>&1"], shell=True) == 0:
+    if which("pantheon-files") is not None:
       logger.info("Pantheon-files installed")
       ctrs_path = "/usr/share/contractor/"
       if activate:      # Install actions for Pantheon-files
@@ -1219,7 +1219,7 @@ def activateActions(activate):  # Install/deinstall file extensions
           logger.error("Cannot disable actions for Pantheon-files")
 
     # --- Actions for Caja ---
-    if call(["command -v caja>/dev/null 2>&1"], shell=True) == 0:
+    if which("caja") is not None:
       logger.info("Caja installed")
       if activate:      # Install actions for Nemo
         copyFile(pathJoin(installDir, "fm-actions/Nautilus_Nemo/publish"),
