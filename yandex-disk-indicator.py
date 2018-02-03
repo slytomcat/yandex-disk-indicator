@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 appName = 'yandex-disk-indicator'
-appVer = '1.9.18'
+appVer = '1.9.18+'
 #
 from datetime import datetime
 COPYRIGHT = 'Copyright ' + '\u00a9' + ' 2013-' + str(datetime.today().year) + ' Sly_tom_cat'
@@ -977,13 +977,15 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
       rootDir = self.dconfig['dir']
       dialog.set_current_folder(rootDir)
       if dialog.run() == Gtk.ResponseType.ACCEPT:
-        path = relativePath(dialog.get_filename(), start=rootDir)
-        if path not in self.dirset:
-          self.exList.append([False, path])
-          self.dirset.append(path)
-          self.dconfig.changed = True
+        path = dialog.get_filename()
+        if path.startswith(rootDir):
+          path = relativePath(path, start=rootDir)
+          if path not in self.dirset:
+            self.exList.append([False, path])
+            self.dirset.append(path)
+            self.dconfig.changed = True
       dialog.destroy()
-      logger.debug(str(self.dirset))
+      #logger.debug(str(self.dirset))
 
   def __init__(self, widget):
     global config, indicators, logo
