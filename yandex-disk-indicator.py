@@ -474,6 +474,10 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       if self.config.get('startonstartofindicator', True):
         self.start()                    # Start daemon if it is required
 
+  def errorDialog(self, err):           # Show error messages according to the error
+    # it is virtual method 
+    return 0 
+
   def _eventHandler(self, iNtf):        # Daemon event handler
     '''
     Handle iNotify and and Timer based events.
@@ -577,10 +581,6 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       self.vals['lastchg'] = True             # Remember that it is changed
     # return True when something changed, if nothing changed - return False
     return self.vals['statchg'] or self.vals['szchg'] or self.vals['lastchg']
-
-  def errorDialog(self, err):           # Show error messages according to the error
-    # it is virtual method 
-    return 0 
 
   def start(self):                      # Execute 'yandex-disk start'
     '''
