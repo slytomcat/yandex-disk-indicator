@@ -578,43 +578,9 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     # return True when something changed, if nothing changed - return False
     return self.vals['statchg'] or self.vals['szchg'] or self.vals['lastchg']
 
-  def _errorDialog(self, err):          # Show error messages according to the error
-    global logo
-    logger.error('Daemon initialization failed: %s', err)
-    if err == 'NOCONFIG' or err == 'CANTSTART':
-      dialog = Gtk.MessageDialog(None, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK_CANCEL,
-                                 _('Yandex.Disk Indicator: daemon start failed'))
-      if err == 'NOCONFIG':
-        dialog.format_secondary_text(_('Yandex.Disk daemon failed to start because it is not' +
-         ' configured properly\n  To configure it up: press OK button.\n  Press Cancel to exit.'))
-      else:
-        dialog.format_secondary_text(_('Yandex.Disk daemon failed to start.' +
-         '\n  Press OK to continue without started daemon or Cancel to exit.'))
-    else:
-      dialog = Gtk.MessageDialog(None, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK,
-                                 _('Yandex.Disk Indicator: daemon start failed'))
-      if err == 'NONET':
-        dialog.format_secondary_text(_('Yandex.Disk daemon failed to start due to network' +
-          ' connection issue. \n  Check the Internet connection and try to start daemon again.'))
-      elif err == 'NOTINSTALLED':
-        dialog.format_secondary_text(_('Yandex.Disk utility is not installed.\n ' +
-          'Visit www.yandex.ru, download and install Yandex.Disk daemon.'))
-      else:
-        dialog.format_secondary_text(_('Yandex.Disk daemon failed to start due to some ' +
-                                       'unrecognized error.'))
-    dialog.set_default_size(400, 250)
-    dialog.set_icon(logo)
-    response = dialog.run()
-    dialog.destroy()
-    if err == 'NOCONFIG' and response == Gtk.ResponseType.OK:  # Launch Set-up utility
-      logger.debug('starting configuration utility: %s' % pathJoin(installDir, 'ya-setup'))
-      retCode = call([pathJoin(installDir, 'ya-setup'), self.config.fileName])
-    elif err == 'CANTSTART' and response == Gtk.ResponseType.OK:
-      retCode = 0
-    else:
-      retCode = 0 if err == 'NONET' else 1
-    dialog.destroy()
-    return retCode              # 0 when error is not critical or fixed (daemon has been configured)
+  def errorDialog(self, err):           # Show error messages according to the error
+    # it is virtual method 
+    return 0 
 
   def start(self):                      # Execute 'yandex-disk start'
     '''
@@ -651,10 +617,9 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       self.stop()
       logger.info('Demon %sstopped' % self.ID)
 
-class Indicator(YDDaemon):      # Yandex.Disk appIndicator
+class Indicator(YDDaemon):      # Yandex.Disk appIndicator GUI implementation
 
   def __init__(self, path, ID):
-    indicatorName = "yandex-disk-%s" % ID[1: -1]
     # Create indicator notification engine
     self.notify = Notification(_('Yandex.Disk ') + ID)
     # Setup icons theme
@@ -662,8 +627,10 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
     # Create timer object for icon animation support (don't start it here)
     self.timer = Timer(777, self._iconAnimation, start=False)
     # Create App Indicator
-    self.ind = appIndicator.Indicator.new(indicatorName, self.icon['paused'],
-                                          appIndicator.IndicatorCategory.APPLICATION_STATUS)
+    self.ind = appIndicator.Indicator.new(
+      "yandex-disk-%s" % ID[1: -1],
+      self.icon['paused'],
+      appIndicator.IndicatorCategory.APPLICATION_STATUS)
     self.ind.set_status(appIndicator.IndicatorStatus.ACTIVE)
     self.menu = self.Menu(self, ID)               # Create menu for daemon
     self.ind.set_menu(self.menu)                  # Attach menu to indicator
@@ -737,6 +704,44 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator
     # Calculate next icon number
     self._seqNum = self._seqNum % 5 + 1   # 5 icon numbers in loop (1-2-3-4-5-1-2-3...)
     return True                           # True required to continue triggering by timer
+
+  def errorDialog(self, err):       # Show error messages according to the error
+    global logo
+    logger.error('Daemon initialization failed: %s', err)
+    if err == 'NOCONFIG' or err == 'CANTSTART':
+      dialog = Gtk.MessageDialog(None, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK_CANCEL,
+                                 _('Yandex.Disk Indicator: daemon start failed'))
+      if err == 'NOCONFIG':
+        dialog.format_secondary_text(_('Yandex.Disk daemon failed to start because it is not' +
+         ' configured properly\n  To configure it up: press OK button.\n  Press Cancel to exit.'))
+      else:
+        dialog.format_secondary_text(_('Yandex.Disk daemon failed to start.' +
+         '\n  Press OK to continue without started daemon or Cancel to exit.'))
+    else:
+      dialog = Gtk.MessageDialog(None, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK,
+                                 _('Yandex.Disk Indicator: daemon start failed'))
+      if err == 'NONET':
+        dialog.format_secondary_text(_('Yandex.Disk daemon failed to start due to network' +
+          ' connection issue. \n  Check the Internet connection and try to start daemon again.'))
+      elif err == 'NOTINSTALLED':
+        dialog.format_secondary_text(_('Yandex.Disk utility is not installed.\n ' +
+          'Visit www.yandex.ru, download and install Yandex.Disk daemon.'))
+      else:
+        dialog.format_secondary_text(_('Yandex.Disk daemon failed to start due to some ' +
+                                       'unrecognized error.'))
+    dialog.set_default_size(400, 250)
+    dialog.set_icon(logo)
+    response = dialog.run()
+    dialog.destroy()
+    if err == 'NOCONFIG' and response == Gtk.ResponseType.OK:  # Launch Set-up utility
+      logger.debug('starting configuration utility: %s' % pathJoin(installDir, 'ya-setup'))
+      retCode = call([pathJoin(installDir, 'ya-setup'), self.config.fileName])
+    elif err == 'CANTSTART' and response == Gtk.ResponseType.OK:
+      retCode = 0
+    else:
+      retCode = 0 if err == 'NONET' else 1
+    dialog.destroy()
+    return retCode              # 0 when error is not critical or fixed (daemon has been configured)
 
   class Menu(Gtk.Menu):             # Indicator menu
 
