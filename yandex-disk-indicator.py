@@ -504,6 +504,9 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
   def change(self, vals):          # Redefined update handler
     logger.debug('Update values : %s' % str(vals))
 
+  def RequestOutput(self, callBack):
+    callBack(self.getOutput(True))
+
   def getOutput(self, userLang=False):  # Get result of 'yandex-disk status'
     cmd = [self.YDC, '-c', self.config.fileName, 'status']
     if not userLang:      # Change locale settings when it required
@@ -876,10 +879,14 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator GUI implementation
       for i in indicators:
         i.menu.about.set_sensitive(True)            # Enable menu item
 
-    def showOutput(self, widget):           # Display daemon output in dialogue window
-      global logo
-      outText = self.daemon.getOutput(True)
+    def showOutput(self, widget):           # Request for daemon output
       widget.set_sensitive(False)                         # Disable menu item
+      self.daemon.RequestOutput(lambda t: self.displayOutput(t, widget))
+      # Request 
+    
+    def displayOutput(self, outText, widget):
+      global logo
+      #outText = self.daemon.getOutput(True)
       statusWindow = Gtk.Dialog(_('Yandex.Disk daemon output message'))
       statusWindow.set_icon(logo)
       statusWindow.set_border_width(6)
