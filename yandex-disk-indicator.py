@@ -32,7 +32,7 @@ from gi.repository import AppIndicator3 as appIndicator
 require_version('Notify', '0.7')
 from gi.repository import Notify
 require_version('GLib', '2.0')
-from gi.repository.GLib import timeout_add, source_remove
+from gi.repository.GLib import timeout_add, source_remove, idle_add
 require_version('GdkPixbuf', '2.0')
 from gi.repository.GdkPixbuf import Pixbuf
 from subprocess import check_output, call, CalledProcessError
@@ -641,6 +641,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator GUI implementation
     super(Indicator, self).__init__(path, ID)
 
   def change(self, vals):       # Redefinition of daemon class call-back function
+    ### NOTE: it may be called from not main thread, so it just add action in main loop queue
     '''
     It handles daemon status changes by updating icon, creating messages and also update
     status information in menu (status, sizes and list of last synchronized items).
@@ -649,29 +650,31 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator GUI implementation
     logger.info(self.ID + 'Change event: %s' % ','.join(['stat' if vals['statchg'] else '',
                                                          'size' if vals['szchg'] else '',
                                                          'last' if vals['lastchg'] else '']))
-    # Update information in menu
-    self.menu.update(vals, self.config['dir'])
-    # Handle daemon status change 
-    if vals['status'] != vals['laststatus'] or vals['laststatus'] =='unknown':
-      logger.info('Status: ' + vals['laststatus'] + ' -> ' + vals['status'])
-      self.updateIcon(vals['status'])     # Update icon
-      # Create notifications for status change events
-      if config['notifications']:
-        if vals['laststatus'] == 'none':       # Daemon has been started
-          self.notify.send(_('Yandex.Disk daemon has been started'))
-        if vals['status'] == 'busy':           # Just entered into 'busy'
-          self.notify.send(_('Synchronization started'))
-        elif vals['status'] == 'idle':         # Just entered into 'idle'
-          if vals['laststatus'] == 'busy':     # ...from 'busy' status
-            self.notify.send(_('Synchronization has been completed'))
-        elif vals['status'] == 'paused':       # Just entered into 'paused'
-          if vals['laststatus'] not in ['none', 'unknown']:  # ...not from 'none'/'unknown' status
-            self.notify.send(_('Synchronization has been paused'))
-        elif vals['status'] == 'none':         # Just entered into 'none' from some another status
-          if vals['laststatus'] != 'unknown':  # ... not from 'unknown'
-            self.notify.send(_('Yandex.Disk daemon has been stopped'))
-        else:                                  # status is 'error' or 'no-net'
-          self.notify.send(_('Synchronization ERROR'))
+    def do_change(vals, path):
+      # Update information in menu
+      self.menu.update(vals, path)
+      # Handle daemon status change 
+      if vals['status'] != vals['laststatus'] or vals['laststatus'] =='unknown':
+        logger.info('Status: ' + vals['laststatus'] + ' -> ' + vals['status'])
+        self.updateIcon(vals['status'])     # Update icon
+        # Create notifications for status change events
+        if config['notifications']:
+          if vals['laststatus'] == 'none':       # Daemon has been started
+            self.notify.send(_('Yandex.Disk daemon has been started'))
+          if vals['status'] == 'busy':           # Just entered into 'busy'
+            self.notify.send(_('Synchronization started'))
+          elif vals['status'] == 'idle':         # Just entered into 'idle'
+            if vals['laststatus'] == 'busy':     # ...from 'busy' status
+              self.notify.send(_('Synchronization has been completed'))
+          elif vals['status'] == 'paused':       # Just entered into 'paused'
+            if vals['laststatus'] not in ['none', 'unknown']:  # ...not from 'none'/'unknown' status
+              self.notify.send(_('Synchronization has been paused'))
+          elif vals['status'] == 'none':         # Just entered into 'none' from some another status
+            if vals['laststatus'] != 'unknown':  # ... not from 'unknown'
+              self.notify.send(_('Yandex.Disk daemon has been stopped'))
+          else:                                  # status is 'error' or 'no-net'
+            self.notify.send(_('Synchronization ERROR'))
+    idle_add(do_change, vals, self.config['dir'])
 
   def setIconTheme(self, theme):    # Determine paths to icons according to current theme
     global installDir, configPath
@@ -885,20 +888,23 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator GUI implementation
       # Request 
     
     def displayOutput(self, outText, widget):
-      global logo
-      #outText = self.daemon.getOutput(True)
-      statusWindow = Gtk.Dialog(_('Yandex.Disk daemon output message'))
-      statusWindow.set_icon(logo)
-      statusWindow.set_border_width(6)
-      statusWindow.add_button(_('Close'), Gtk.ResponseType.CLOSE)
-      textBox = Gtk.TextView()                            # Create text-box to display daemon output
-      # Set output buffer with daemon output in user language
-      textBox.get_buffer().set_text(outText)
-      textBox.set_editable(False)
-      # Put it inside the dialogue content area
-      statusWindow.get_content_area().pack_start(textBox, True, True, 6)
-      statusWindow.show_all();  statusWindow.run();   statusWindow.destroy()
-      widget.set_sensitive(True)                          # Enable menu item
+      ### NOTE: it may be called from not main thread, so it just add action in main loop queue
+      def do_display(outText, widget):
+        global logo
+        #outText = self.daemon.getOutput(True)
+        statusWindow = Gtk.Dialog(_('Yandex.Disk daemon output message'))
+        statusWindow.set_icon(logo)
+        statusWindow.set_border_width(6)
+        statusWindow.add_button(_('Close'), Gtk.ResponseType.CLOSE)
+        textBox = Gtk.TextView()                            # Create text-box to display daemon output
+        # Set output buffer with daemon output in user language
+        textBox.get_buffer().set_text(outText)
+        textBox.set_editable(False)
+        # Put it inside the dialogue content area
+        statusWindow.get_content_area().pack_start(textBox, True, True, 6)
+        statusWindow.show_all();  statusWindow.run();   statusWindow.destroy()
+        widget.set_sensitive(True)                          # Enable menu item
+      idle_add(do_display, outText, widget)
 
     def openInBrowser(self, widget, url):   # Open URL
       openNewBrowser(url)
