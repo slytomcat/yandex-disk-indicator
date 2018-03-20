@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 appName = 'yandex-disk-indicator'
-appVer = '1.9.18+'
+appVer = '1.9.18+th'
 #
 from datetime import datetime
 COPYRIGHT = 'Copyright ' + '\u00a9' + ' 2013-' + str(datetime.today().year) + ' Sly_tom_cat'
@@ -287,7 +287,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
   Public methods:
   __init__ - Handles initialization of the object and as a part - auto-start daemon if it
              is required by configuration settings.
-  requestOutput - Provides daemon output (in user language) through the parameter of callback function
+  output   - Provides daemon output (in user language) through the parameter of callback function
   start    - Request to start daemon. Do nothing if it is alreday started
   stop     - Request to stop daemon. Do nothing if it is not started
   exit     - Handles 'Stop on exit' facility according to daemon configuration settings.
@@ -321,7 +321,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     '''
     def __init__(self, path, handler, par=None):
       # Watched path
-      self.path = pathJoin(path.replace('~', userHome), '.sync/cli.log')
+      self.path = path
       # Initialize iNotify watcher
       class _EH(ProcessEvent):           # Event handler class for iNotifier
         def process_IN_MODIFY(self, event):
@@ -409,7 +409,8 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
         else:
           sysExit('Daemon is not configured')
     # Initialize watching staff
-    self._iNtfyWatcher = self._Watcher(self.config['dir'], self._eventHandler, par=True)
+    self._iNtfyWatcher = self._Watcher(pathJoin(expanduser(self.config['dir']), '.sync/cli.log'), 
+                                        self._eventHandler, par=True)
     # Set initial daemon status values
     self.vals = {'status': 'unknown', 'progress': '', 'laststatus': 'unknown', 'statchg': True,
                  'total': '...', 'used': '...', 'free': '...', 'trash': '...', 'szchg': True,
@@ -464,7 +465,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
   def change(self, vals):                # Callback to handle updates
     logger.debug('Update values : %s' % str(vals))
 
-  def requestOutput(self, callBack):     # Callback to handle displying of daemon output 
+  def output(self, callBack):            # Output request handler 
     def do_output():
       callBack(self.getOutput(True))
     Thread(None, do_output).start()
@@ -547,7 +548,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     # return True when something changed, if nothing changed - return False
     return self.vals['statchg'] or self.vals['szchg'] or self.vals['lastchg']
 
-  def start(self):                       # Execute 'yandex-disk start' in separate thread
+  def start(self, wait=False):           # Execute 'yandex-disk start' in separate thread
     '''
     Execute 'yandex-disk start' and return '' if success or error message if not
     ... but sometime it starts successfully with error message
@@ -564,7 +565,10 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
         logger.error('Daemon start failed:%s' % e.output)
         return
       self._iNtfyWatcher.start()    # Activate iNotify watcher
-    Thread(None, do_start).start()
+    t = Thread(None, do_start)
+    t.start()
+    if wait:
+      t.join()
 
   def stop(self, wait=False):            # Execute 'yandex-disk stop' in separate thread
     def do_stop():
@@ -599,8 +603,14 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator GUI implementation
     self.notify = Notification(_('Yandex.Disk ') + ID)
     # Setup icons theme
     self.setIconTheme(config['theme'])
-    # Create timer object for icon animation support (don't start it here)
-    self.timer = self.Timer(777, self._iconAnimation, start=False)
+    # Create staff for icon animation support (don't start it here)
+    def iconAnimation():        # Changes busy icon by loop (triggered by self.timer)
+      # Set next animation icon
+      self.ind.set_icon(pathJoin(self.themePath, 'yd-busy' + str(self._seqNum) + '.png'))
+      # Calculate next icon number
+      self._seqNum = self._seqNum % 5 + 1   # 5 icon numbers in loop (1-2-3-4-5-1-2-3...)
+      return True                           # True required to continue triggering by timer
+    self.timer = self.Timer(777, iconAnimation, start=False)
     # Create App Indicator
     self.ind = appIndicator.Indicator.new(
       "yandex-disk-%s" % ID[1: -1],
@@ -675,13 +685,6 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator GUI implementation
       self.timer.start()                # Start animation timer
     elif self.timer.active:
       self.timer.stop()                 # Stop animation timer when status is not busy
-
-  def _iconAnimation(self):        # Changes busy icon by loop (triggered by self.timer)
-    # Set next animation icon
-    self.ind.set_icon(pathJoin(self.themePath, 'yd-busy' + str(self._seqNum) + '.png'))
-    # Calculate next icon number
-    self._seqNum = self._seqNum % 5 + 1   # 5 icon numbers in loop (1-2-3-4-5-1-2-3...)
-    return True                           # True required to continue triggering by timer
 
   def errorDialog(self, err):      # Show error messages according to the error
     global logo
@@ -903,7 +906,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator GUI implementation
           widget.set_sensitive(True)                          # Enable menu item
         idle_add(do_display, outText, widget)
       # Request the daemon to invoke the callback when it received the output from daemon
-      self.daemon.requestOutput(lambda t: displayOutput(t, widget))  
+      self.daemon.output(lambda t: displayOutput(t, widget))  
 
     def openInBrowser(self, widget, url):  # Open URL
       openNewBrowser(url)
@@ -1423,8 +1426,7 @@ if __name__ == '__main__':
   # Make indicator objects for each daemon in daemons list
   indicators = []
   for d in daemons:
-    indicators.append(Indicator(d.replace('~', userHome),
-                                _('#%d ') % len(indicators) if len(daemons) > 1 else ''))
+    indicators.append(Indicator(d, _('#%d ') % len(indicators) if len(daemons) > 1 else ''))
 
   # Register the SIGTERM handler for graceful exit when indicator is killed
   signal(SIGTERM, lambda _signo, _stack_frame: appExit())
