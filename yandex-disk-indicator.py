@@ -396,7 +396,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     self.YDC = which('yandex-disk')
     if not self.YDC:
       self._errorDialog('NOTINSTALLED')
-      appExit('Daemon is not installed')
+      sysExit('Daemon is not installed')
     # Try to read Yandex.Disk configuration file and make sure that it is correctly configured
     self.config = self._DConfig(cfgFile, load=False)
     while not (self.config.load() and
@@ -408,7 +408,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
           # Exit from loop in multi-instance configuration
           break
         else:
-          appExit('Daemon is not configured')
+          sysExit('Daemon is not configured')
     # Initialize watching staff
     self._iNtfyWatcher = self._Watcher(self.config['dir'], self._eventHandler, par=True)
     # Set initial daemon status values
@@ -1135,13 +1135,13 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
     elif key == 'read-only':
       ow.set_sensitive(toggleState)
 
-def appExit(msg=None):          # Exit from application (it closes all indicators)
+def appExit():          # Exit from application (it closes all indicators)
   global indicators
   logger.debug("Exit started")
   for i in indicators:
     i.exit()
   logger.debug(str(thList()))
-  sysExit(msg)
+  Gtk.main_quit()
 
 def activateActions(activate):  # Install/deinstall file extensions
   result = False
