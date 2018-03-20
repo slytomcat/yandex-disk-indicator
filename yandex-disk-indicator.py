@@ -446,8 +446,8 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       logger.debug(self.ID + 'Event raised by' + ('iNtfy ' if iNtf else 'Timer '))
       self.change(self.vals)                     # Raise outside update event
     # --- Handle timer delays ---
+    self._timer.cancel()                         # Cancel timer if it still active
     if iNtf:                                     # True means that it is called by iNonifier
-      self._timer.cancel()                       # Cancel timer if it still active
       self._timer = thTimer(2, self._eventHandler, (False,))   # Set timer interval to 2 sec.
       self._timer.start()
       self._tCnt = 0                             # Reset counter as it was triggered not by timer
@@ -567,7 +567,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       self._iNtfyWatcher.start()    # Activate iNotify watcher
     Thread(None, do_start).start()
 
-  def stop(self):                        # Execute 'yandex-disk stop' in separate thread
+  def stop(self, wait=False):            # Execute 'yandex-disk stop' in separate thread
     def do_stop():
       if self.getOutput() == "":
         logger.info('Daemon is already stopped')
@@ -578,15 +578,18 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
         logger.info('Start success, message: %s' % msg)
       except:
         logger.info('Start failed')
-    Thread(None, do_stop).start()
+    t = Thread(None, do_stop)
+    t.start()
+    if wait:
+      t.join()
 
   def exit(self):                        # Handle daemon/indicator closing
     logger.debug("Indicator %sexit started: " % self.ID)
     self._iNtfyWatcher.stop()  # stop iNotify Watcher thread
     self._timer.cancel()  # stop event timer if it is running
     # Stop yandex-disk daemon if it is required by its configuration
-    if self.vals['status'] != 'none' and self.config.get('stoponexitfromindicator', False):
-      self.stop()
+    if self.config.get('stoponexitfromindicator', False):
+      self.stop(wait=True)
       logger.info('Demon %sstopped' % self.ID)
     logger.debug('Indicator %sexited' % self.ID)
 
@@ -611,7 +614,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator GUI implementation
     super(Indicator, self).__init__(path, ID)
 
   def change(self, vals):          # Redefinition of daemon class call-back function
-    ### NOTE: it may be called from not main thread, so it just add action in main loop queue
+    ### NOTE: it is called not from main thread, so it have to add action in main loop queue
     '''
     It handles daemon status changes by updating icon, creating messages and also update
     status information in menu (status, sizes and list of last synchronized items).
@@ -723,42 +726,23 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator GUI implementation
     ''' Timer class methods:
           __init__ - initialize the timer object with specified interval and handler. Start it
                     if start value is not False. par - is parameter for handler call.
-          start    - Start timer. Optionally the new interval can be specified and if timer is
-                    already running then the interval is updated (timer restarted with new interval).
-          update   - Updates interval. If timer is running it is restarted with new interval. If it
-                    is not running - then new interval is just stored.
+          start    - Start timer or do nothing if it is already started.
           stop     - Stop running timer or do nothing if it is not running.
         Interface variables:
           active   - True when timer is currently running, otherwise - False
     '''
-    def __init__(self, interval, handler, par=None, start=True):
+    def __init__(self, interval, handler, start=True):
       self.interval = interval          # Timer interval (ms)
       self.handler = handler            # Handler function
-      self.par = par                    # Parameter of handler function
       self.active = False               # Current activity status
       if start:
         self.start()                    # Start timer if required
 
-    def start(self, interval=None):   # Start inactive timer or update if it is active
-      if interval is None:
-        interval = self.interval
+    def start(self):             # Start inactive timer or update if it is active
       if not self.active:
-        self.interval = interval
-        if self.par is None:
-          self.timer = timeout_add(interval, self.handler)
-        else:
-          self.timer = timeout_add(interval, self.handler, self.par)
+        self.timer = timeout_add(self.interval, self.handler)
         self.active = True
         # logger.debug('timer started %s %s' %(self.timer, interval))
-      else:
-        self.update(interval)
-
-    def update(self, interval):         # Update interval (restart active, not start if inactive)
-      if interval != self.interval:
-        self.interval = interval
-        if self.active:
-          self.stop()
-          self.start()
 
     def stop(self):                     # Stop active timer
       if self.active:
@@ -901,11 +885,11 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator GUI implementation
 
     def showOutput(self, widget):           # Request for daemon output
       widget.set_sensitive(False)                         # Disable menu item
+      # Request the daemon to invoke the callback when it receives the output from daemon
       self.daemon.RequestOutput(lambda t: self.displayOutput(t, widget))
-      # Request 
     
     def displayOutput(self, outText, widget):
-      ### NOTE: it may be called from not main thread, so it just add action in main loop queue
+      ### NOTE: it is called not from main thread, so it have to add action in main loop queue
       def do_display(outText, widget):
         global logo
         #outText = self.daemon.getOutput(True)
