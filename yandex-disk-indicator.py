@@ -46,7 +46,7 @@ from datetime import datetime
 from webbrowser import open_new as openNewBrowser
 from signal import signal, SIGTERM
 from sys import exit as sysExit
-from threading import Timer as thTimer, enumerate as thList, Lock
+from threading import Timer as thTimer, enumerate as thList, Lock, Thread
 
 
 #################### Common utility functions and classes ####################
@@ -470,7 +470,9 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     logger.debug('Update values : %s' % str(vals))
 
   def RequestOutput(self, callBack):
-    callBack(self.getOutput(True))
+    def do_output():
+      callBack(self.getOutput(True))
+    Thread(None, do_output).start()
 
   def getOutput(self, userLang=False):  # Get result of 'yandex-disk status'
     cmd = [self.YDC, '-c', self.config.fileName, 'status']
