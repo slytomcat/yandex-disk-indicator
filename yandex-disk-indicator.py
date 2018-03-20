@@ -23,7 +23,7 @@ along with this program.  If not, see http://www.gnu.org/licenses
 """
 
 from os import remove, makedirs, getpid, geteuid, getenv
-from pyinotify import ProcessEvent, WatchManager, Notifier, IN_MODIFY, IN_ACCESS
+from pyinotify import ProcessEvent, WatchManager, ThreadedNotifier, IN_MODIFY, IN_ACCESS
 from gi import require_version
 require_version('Gtk', '3.0')
 from gi.repository import Gtk
@@ -46,6 +46,8 @@ from datetime import datetime
 from webbrowser import open_new as openNewBrowser
 from signal import signal, SIGTERM
 from sys import exit as sysExit
+from threading import Timer as thTimer, enumerate as thList, Lock
+
 
 #################### Common utility functions and classes ####################
 def copyFile(src, dst):
@@ -254,53 +256,6 @@ class Config(dict):             # Configuration
     self.changed = False                  # Reset flag of change in not stored config
     return True
 
-class Timer(object):            # Timer for triggering a function periodically
-  ''' Timer class methods:
-        __init__ - initialize the timer object with specified interval and handler. Start it
-                   if start value is not False. par - is parameter for handler call.
-        start    - Start timer. Optionally the new interval can be specified and if timer is
-                   already running then the interval is updated (timer restarted with new interval).
-        update   - Updates interval. If timer is running it is restarted with new interval. If it
-                   is not running - then new interval is just stored.
-        stop     - Stop running timer or do nothing if it is not running.
-      Interface variables:
-        active   - True when timer is currently running, otherwise - False
-  '''
-  def __init__(self, interval, handler, par=None, start=True):
-    self.interval = interval          # Timer interval (ms)
-    self.handler = handler            # Handler function
-    self.par = par                    # Parameter of handler function
-    self.active = False               # Current activity status
-    if start:
-      self.start()                    # Start timer if required
-
-  def start(self, interval=None):   # Start inactive timer or update if it is active
-    if interval is None:
-      interval = self.interval
-    if not self.active:
-      self.interval = interval
-      if self.par is None:
-        self.timer = timeout_add(interval, self.handler)
-      else:
-        self.timer = timeout_add(interval, self.handler, self.par)
-      self.active = True
-      # logger.debug('timer started %s %s' %(self.timer, interval))
-    else:
-      self.update(interval)
-
-  def update(self, interval):         # Update interval (restart active, not start if inactive)
-    if interval != self.interval:
-      self.interval = interval
-      if self.active:
-        self.stop()
-        self.start()
-
-  def stop(self):                     # Stop active timer
-    if self.active:
-      # logger.debug('timer to stop %s' %(self.timer))
-      source_remove(self.timer)
-      self.active = False
-
 class Notification(object):     # On-screen notification
 
   def __init__(self, title):    # Initialize notification engine
@@ -374,14 +329,15 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
           handler(par)
       self._watchMngr = WatchManager()   # Create watch manager
       # Create PyiNotifier
-      self._iNotifier = Notifier(self._watchMngr, _EH(), timeout=0.5)
+      self._iNotifier = ThreadedNotifier(self._watchMngr, _EH(), timeout=0.5)
       # Timer will call iNotifier handler
-      def iNhandle():                    # iNotify working routine (called by timer)
-        while self._iNotifier.check_events():
-          self._iNotifier.read_events()
-          self._iNotifier.process_events()
-        return True
-      self._timer = Timer(700, iNhandle, start=False)  # not started initially
+      #def iNhandle():                    # iNotify working routine (called by timer)
+      #  while self._iNotifier.check_events():
+      #    self._iNotifier.read_events()
+      #    self._iNotifier.process_events()
+      #  return True
+      #self._timer = Timer(700, iNhandle, start=False)  # not started initially
+      self._iNotifier.start()
       self._status = False
 
     def start(self):               # Activate iNotify watching
@@ -391,7 +347,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
         logger.info("iNotiy was not started: path '"+self.path+"' was not found.")
         return
       self._watch = self._watchMngr.add_watch(self.path, IN_MODIFY|IN_ACCESS, rec=False)
-      self._timer.start()
+      #self._timer.start()
       self._status = True
 
     def stop(self):                      # Stop iNotify watching
@@ -400,7 +356,8 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       # Remove watch
       self._watchMngr.rm_watch(self._watch[self.path])
       # Stop timer
-      self._timer.stop()
+      #self._timer.stop()
+      self._iNotifier.stop()
       self._status = False
 
   class _DConfig(Config):               # Redefined class for daemon config
@@ -460,8 +417,10 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
         else:
           appExit('Daemon is not configured')
     # Initialize watching staff
-    self._wTimer = Timer(500, self._eventHandler, par=False, start=True)
+    self._timer = thTimer(0.3, self._eventHandler, (False,))
+    self._timer.start()
     self._tCnt = 0
+    self.lock = Lock()
     self._iNtfyWatcher = self._Watcher(self.config['dir'], self._eventHandler, par=True)
     # Set initial daemon status values
     self.vals = {'status': 'unknown', 'progress': '', 'laststatus': 'unknown', 'statchg': True,
@@ -485,21 +444,27 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     at least one of its status values.
     It can be called by timer (when iNtf=False) or by iNonifier (when iNtf=True)
     '''
-
+    self.lock.acquire()
     # Parse fresh daemon output. Parsing returns true when something changed
     if self._parseOutput(self.getOutput()):
       logger.debug(self.ID + 'Event raised by' + ('iNtfy ' if iNtf else 'Timer '))
-      self.change(self.vals)                  # Raise outside update event
+      self.change(self.vals)                     # Raise outside update event
     # --- Handle timer delays ---
-    if iNtf:                                  # True means that it is called by iNonifier
-      self._wTimer.update(2000)               # Set timer interval to 2 sec.
-      self._tCnt = 0                          # Reset counter as it was triggered not by timer
-    else:                                     # It called by timer
-      if self.vals['status'] != 'busy':       # In 'busy' keep update interval (2 sec.)
-        if self._tCnt < 9:                    # Increase interval up to 10 sec (2 + 8)
-          self._wTimer.update((2 + self._tCnt) * 1000)
-          self._tCnt += 1                     # Increase counter to increase delay next activation.
-    return True                               # True is required to continue activations by timer.
+    if iNtf:                                     # True means that it is called by iNonifier
+      self._timer.cancel()                       # cancel timer if it still active
+      self._timer = thTimer(2, self._eventHandler, (False,))   # Set timer interval to 2 sec.
+      self._timer.start()
+      self._tCnt = 0                             # Reset counter as it was triggered not by timer
+    else:                                        # It called by timer
+      if self.vals['status'] == 'busy':           # In 'busy' keep update interval (2 sec.)
+        self._timer = thTimer(2, self._eventHandler, (False,))
+        self._timer.start()
+      else:
+        if self._tCnt < 9:                       # Increase interval up to 10 sec (2 + 8)
+          self._timer = thTimer((2 + self._tCnt), self._eventHandler, (False,))
+          self._timer.start()
+          self._tCnt += 1                        # Increase counter to increase delay next activation.
+    self.lock.release()
 
   def change(self, vals):          # Redefined update handler
     logger.debug('Update values : %s' % str(vals))
@@ -614,11 +579,14 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       logger.info('Start failed')
 
   def exit(self):                       # Handle daemon/indicator closing
-    self._iNtfyWatcher.stop()
+    logger.debug("indicator exit started: " + self.ID)
+    self._iNtfyWatcher.stop()  # stop iNotify Watcher thread
+    self._timer.cancel()  # stop event timer if it is running
     # Stop yandex-disk daemon if it is required by its configuration
     if self.vals['status'] != 'none' and self.config.get('stoponexitfromindicator', False):
       self.stop()
       logger.info('Demon %sstopped' % self.ID)
+    logger.debug('Demon %sexited' % self.ID)
 
 class Indicator(YDDaemon):      # Yandex.Disk appIndicator GUI implementation
 
@@ -628,7 +596,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator GUI implementation
     # Setup icons theme
     self.setIconTheme(config['theme'])
     # Create timer object for icon animation support (don't start it here)
-    self.timer = Timer(777, self._iconAnimation, start=False)
+    self.timer = self.Timer(777, self._iconAnimation, start=False)
     # Create App Indicator
     self.ind = appIndicator.Indicator.new(
       "yandex-disk-%s" % ID[1: -1],
@@ -748,6 +716,53 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator GUI implementation
       retCode = 0 if err == 'NONET' else 1
     dialog.destroy()
     return retCode              # 0 when error is not critical or fixed (daemon has been configured)
+
+  class Timer(object):            # Timer for triggering a function periodically from main loop
+    ''' Timer class methods:
+          __init__ - initialize the timer object with specified interval and handler. Start it
+                    if start value is not False. par - is parameter for handler call.
+          start    - Start timer. Optionally the new interval can be specified and if timer is
+                    already running then the interval is updated (timer restarted with new interval).
+          update   - Updates interval. If timer is running it is restarted with new interval. If it
+                    is not running - then new interval is just stored.
+          stop     - Stop running timer or do nothing if it is not running.
+        Interface variables:
+          active   - True when timer is currently running, otherwise - False
+    '''
+    def __init__(self, interval, handler, par=None, start=True):
+      self.interval = interval          # Timer interval (ms)
+      self.handler = handler            # Handler function
+      self.par = par                    # Parameter of handler function
+      self.active = False               # Current activity status
+      if start:
+        self.start()                    # Start timer if required
+
+    def start(self, interval=None):   # Start inactive timer or update if it is active
+      if interval is None:
+        interval = self.interval
+      if not self.active:
+        self.interval = interval
+        if self.par is None:
+          self.timer = timeout_add(interval, self.handler)
+        else:
+          self.timer = timeout_add(interval, self.handler, self.par)
+        self.active = True
+        # logger.debug('timer started %s %s' %(self.timer, interval))
+      else:
+        self.update(interval)
+
+    def update(self, interval):         # Update interval (restart active, not start if inactive)
+      if interval != self.interval:
+        self.interval = interval
+        if self.active:
+          self.stop()
+          self.start()
+
+    def stop(self):                     # Stop active timer
+      if self.active:
+        # logger.debug('timer to stop %s' %(self.timer))
+        source_remove(self.timer)
+        self.active = False
 
   class Menu(Gtk.Menu):             # Indicator menu
 
@@ -926,6 +941,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator GUI implementation
           logger.error('Start of "%s" failed' % path)
 
     def close(self, widget):                # Quit from indicator
+      logger.debug("Exit requested")
       appExit()
 
 #### Application functions and classes
@@ -1119,8 +1135,11 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
 
 def appExit(msg=None):          # Exit from application (it closes all indicators)
   global indicators
+  logger.debug("Exit started")
   for i in indicators:
     i.exit()
+  for i in thList():
+    logger.debug(str(i))
   sysExit(msg)
 
 def activateActions(activate):  # Install/deinstall file extensions
