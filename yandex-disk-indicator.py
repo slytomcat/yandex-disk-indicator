@@ -287,8 +287,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
   Public methods:
   __init__ - Handles initialization of the object and as a part - auto-start daemon if it
              is required by configuration settings.
-  getOuput - Provides daemon output (in user language when optional parameter userLang is
-             True)
+  requestOutput - Provides daemon output (in user language) through the parameter of callback function
   start    - Request to start daemon. Do nothing if it is alreday started
   stop     - Request to stop daemon. Do nothing if it is not started
   exit     - Handles 'Stop on exit' facility according to daemon configuration settings.
@@ -448,24 +447,24 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     # --- Handle timer delays ---
     self._timer.cancel()                         # Cancel timer if it still active
     if iNtf:                                     # True means that it is called by iNonifier
-      self._timer = thTimer(2, self._eventHandler, (False,))   # Set timer interval to 2 sec.
-      self._timer.start()
       self._tCnt = 0                             # Reset counter as it was triggered not by timer
+      self._timer = thTimer(2, self._eventHandler, (False,))
+      self._timer.start()                        # Set timer interval to 2 sec.
     else:                                        # It called by timer
-      if self.vals['status'] == 'busy':           # In 'busy' keep update interval (2 sec.)
+      if self.vals['status'] == 'busy':          # In 'busy' keep update interval (2 sec.)
         self._timer = thTimer(2, self._eventHandler, (False,))
         self._timer.start()
       else:
         if self._tCnt < 9:                       # Increase interval up to 10 sec (2 + 8)
           self._timer = thTimer((2 + self._tCnt), self._eventHandler, (False,))
           self._timer.start()
-          self._tCnt += 1                        # Increase counter to increase delay next activation.
+          self._tCnt += 1                        # Increase counter to increase delay of next activation.
     self.lock.release()
 
   def change(self, vals):                # Callback to handle updates
     logger.debug('Update values : %s' % str(vals))
 
-  def RequestOutput(self, callBack):     # Callback to handle displying of daemon output 
+  def requestOutput(self, callBack):     # Callback to handle displying of daemon output 
     def do_output():
       callBack(self.getOutput(True))
     Thread(None, do_output).start()
@@ -560,7 +559,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
         return
       try:                                          # Try to start
         msg = check_output([self.YDC, '-c', self.config.fileName, 'start'], universal_newlines=True)
-        logger.info('Start success, message: %s' % msg)
+        logger.info('Daemon started, message: %s' % msg)
       except CalledProcessError as e:
         logger.error('Daemon start failed:%s' % e.output)
         return
@@ -575,9 +574,9 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       try:
         msg = check_output([self.YDC, '-c', self.config.fileName, 'stop'],
                           universal_newlines=True)
-        logger.info('Start success, message: %s' % msg)
+        logger.info('Daemon stopped, message: %s' % msg)
       except:
-        logger.info('Start failed')
+        logger.info('Stop failed')
     t = Thread(None, do_stop)
     t.start()
     if wait:
@@ -753,11 +752,11 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator GUI implementation
   class Menu(Gtk.Menu):            # Indicator menu
 
     def __init__(self, daemon, ID):
-      self.daemon = daemon                      # Store reference to daemon object for future usage
+      self.daemon = daemon                       # Store reference to daemon object for future usage
       self.folder = ''
-      Gtk.Menu.__init__(self)                   # Create menu
+      Gtk.Menu.__init__(self)                    # Create menu
       self.ID = ID
-      if self.ID != '':                         # Add addition field in multidaemon mode
+      if self.ID != '':                          # Add addition field in multidaemon mode
         self.yddir = Gtk.MenuItem('');  self.yddir.set_sensitive(False);   self.append(self.yddir)
       self.status = Gtk.MenuItem();     self.status.connect("activate", self.showOutput)
       self.append(self.status)
@@ -767,11 +766,11 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator GUI implementation
       self.append(self.free)
       self.last = Gtk.MenuItem(_('Last synchronized items'))
       self.last.set_sensitive(False)
-      self.lastItems = Gtk.Menu()               # Sub-menu: list of last synchronized files/folders
-      self.last.set_submenu(self.lastItems)     # Add submenu (empty at the start)
+      self.lastItems = Gtk.Menu()                # Sub-menu: list of last synchronized files/folders
+      self.last.set_submenu(self.lastItems)      # Add submenu (empty at the start)
       self.append(self.last)
-      self.append(Gtk.SeparatorMenuItem.new())  # -----separator--------
-      self.daemon_ss = Gtk.MenuItem('')         # Start/Stop daemon: Label is depends on current daemon status
+      self.append(Gtk.SeparatorMenuItem.new())   # -----separator--------
+      self.daemon_ss = Gtk.MenuItem('')          # Start/Stop daemon: Label is depends on current daemon status
       self.daemon_ss.connect("activate", self.startStopDaemon)
       self.append(self.daemon_ss)
       self.open_folder = Gtk.MenuItem(_('Open Yandex.Disk Folder'))
@@ -780,7 +779,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator GUI implementation
       open_web = Gtk.MenuItem(_('Open Yandex.Disk on the web'))
       open_web.connect("activate", self.openInBrowser, _('https://disk.yandex.com'))
       self.append(open_web)
-      self.append(Gtk.SeparatorMenuItem.new())  # -----separator--------
+      self.append(Gtk.SeparatorMenuItem.new())   # -----separator--------
       self.preferences = Gtk.MenuItem(_('Preferences'))
       self.preferences.connect("activate", Preferences)
       self.append(self.preferences)
@@ -797,7 +796,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator GUI implementation
       self.append(open_help)
       self.about = Gtk.MenuItem(_('About'));    self.about.connect("activate", self.openAbout)
       self.append(self.about)
-      self.append(Gtk.SeparatorMenuItem.new())  # -----separator--------
+      self.append(Gtk.SeparatorMenuItem.new())   # -----separator--------
       close = Gtk.MenuItem(_('Quit'))
       close.connect("activate", self.close)
       self.append(close)
@@ -806,7 +805,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator GUI implementation
       self.YD_STATUS = {'idle': _('Synchronized'), 'busy': _('Sync.: '), 'none': _('Not started'),
                         'paused': _('Paused'), 'no_net': _('Not connected'), 'error': _('Error')}
 
-    def update(self, vals, yddir):  # Update information in menu
+    def update(self, vals, yddir):         # Update information in menu
       self.folder = yddir
       # Update status data
       if vals['statchg'] or vals['laststatus'] == 'unknown':
@@ -851,7 +850,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator GUI implementation
         self.open_folder.set_sensitive(yddir != '') # Activate Open YDfolder if daemon configured
       self.show_all()                                 # Renew menu
 
-    def openAbout(self, widget):            # Show About window
+    def openAbout(self, widget):           # Show About window
       global logo, indicators
       for i in indicators:
         i.menu.about.set_sensitive(False)           # Disable menu item
@@ -883,34 +882,33 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator GUI implementation
       for i in indicators:
         i.menu.about.set_sensitive(True)            # Enable menu item
 
-    def showOutput(self, widget):           # Request for daemon output
+    def showOutput(self, widget):          # Request for daemon output
       widget.set_sensitive(False)                         # Disable menu item
-      # Request the daemon to invoke the callback when it receives the output from daemon
-      self.daemon.RequestOutput(lambda t: self.displayOutput(t, widget))
-    
-    def displayOutput(self, outText, widget):
-      ### NOTE: it is called not from main thread, so it have to add action in main loop queue
-      def do_display(outText, widget):
-        global logo
-        #outText = self.daemon.getOutput(True)
-        statusWindow = Gtk.Dialog(_('Yandex.Disk daemon output message'))
-        statusWindow.set_icon(logo)
-        statusWindow.set_border_width(6)
-        statusWindow.add_button(_('Close'), Gtk.ResponseType.CLOSE)
-        textBox = Gtk.TextView()                            # Create text-box to display daemon output
-        # Set output buffer with daemon output in user language
-        textBox.get_buffer().set_text(outText)
-        textBox.set_editable(False)
-        # Put it inside the dialogue content area
-        statusWindow.get_content_area().pack_start(textBox, True, True, 6)
-        statusWindow.show_all();  statusWindow.run();   statusWindow.destroy()
-        widget.set_sensitive(True)                          # Enable menu item
-      idle_add(do_display, outText, widget)
+      def displayOutput(outText, widget):   # CB to display window
+        ### NOTE: it is called not from main thread, so it have to add action in main loop queue
+        def do_display(outText, widget):
+          global logo
+          #outText = self.daemon.getOutput(True)
+          statusWindow = Gtk.Dialog(_('Yandex.Disk daemon output message'))
+          statusWindow.set_icon(logo)
+          statusWindow.set_border_width(6)
+          statusWindow.add_button(_('Close'), Gtk.ResponseType.CLOSE)
+          textBox = Gtk.TextView()                            # Create text-box to display daemon output
+          # Set output buffer with daemon output in user language
+          textBox.get_buffer().set_text(outText)
+          textBox.set_editable(False)
+          # Put it inside the dialogue content area
+          statusWindow.get_content_area().pack_start(textBox, True, True, 6)
+          statusWindow.show_all();  statusWindow.run();   statusWindow.destroy()
+          widget.set_sensitive(True)                          # Enable menu item
+        idle_add(do_display, outText, widget)
+      # Request the daemon to invoke the callback when it received the output from daemon
+      self.daemon.requestOutput(lambda t: displayOutput(t, widget))  
 
-    def openInBrowser(self, widget, url):   # Open URL
+    def openInBrowser(self, widget, url):  # Open URL
       openNewBrowser(url)
 
-    def startStopDaemon(self, widget):      # Start/Stop daemon
+    def startStopDaemon(self, widget):     # Start/Stop daemon
       action = widget.get_label()[:1]
       # zero-space UTF symbols are used to detect requered action without need to compare translated strings
       if action == '\u200B':    # Start
@@ -918,7 +916,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator GUI implementation
       elif action == '\u2060':  # Stop
         self.daemon.stop()
 
-    def openPath(self, widget, path):       # Open path
+    def openPath(self, widget, path):      # Open path
       logger.info('Opening %s' % path)
       if pathExists(path):
         try:
@@ -926,7 +924,7 @@ class Indicator(YDDaemon):      # Yandex.Disk appIndicator GUI implementation
         except:
           logger.error('Start of "%s" failed' % path)
 
-    def close(self, widget):                # Quit from indicator
+    def close(self, widget):               # Quit from indicator
       logger.debug("Exit requested")
       appExit()
 
@@ -1124,8 +1122,8 @@ def appExit():          # Exit from application (it closes all indicators)
   logger.debug("Exit started")
   for i in indicators:
     i.exit()
-  logger.debug(str(thList()))
   Gtk.main_quit()
+  logger.debug(str(thList()))
 
 def activateActions(activate):  # Install/deinstall file extensions
   result = False
