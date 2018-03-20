@@ -558,27 +558,31 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     ... but sometime it starts successfully with error message
     Additionally it starts iNotify monitoring in case of success start
     '''
-    if self.getOutput() != "":
-      logger.info('Daemon is already started')
-      return
-    try:                                          # Try to start
-      msg = check_output([self.YDC, '-c', self.config.fileName, 'start'], universal_newlines=True)
-      logger.info('Start success, message: %s' % msg)
-    except CalledProcessError as e:
-      logger.error('Daemon start failed:%s' % e.output)
-      return
-    self._iNtfyWatcher.start()    # Activate iNotify watcher
+    def do_start():
+      if self.getOutput() != "":
+        logger.info('Daemon is already started')
+        return
+      try:                                          # Try to start
+        msg = check_output([self.YDC, '-c', self.config.fileName, 'start'], universal_newlines=True)
+        logger.info('Start success, message: %s' % msg)
+      except CalledProcessError as e:
+        logger.error('Daemon start failed:%s' % e.output)
+        return
+      self._iNtfyWatcher.start()    # Activate iNotify watcher
+    Thread(None, do_start).start()
 
   def stop(self):                       # Execute 'yandex-disk stop'
-    if self.getOutput() == "":
-      logger.info('Daemon is already stopped')
-      return
-    try:
-      msg = check_output([self.YDC, '-c', self.config.fileName, 'stop'],
-                         universal_newlines=True)
-      logger.info('Start success, message: %s' % msg)
-    except:
-      logger.info('Start failed')
+    def do_stop():
+      if self.getOutput() == "":
+        logger.info('Daemon is already stopped')
+        return
+      try:
+        msg = check_output([self.YDC, '-c', self.config.fileName, 'stop'],
+                          universal_newlines=True)
+        logger.info('Start success, message: %s' % msg)
+      except:
+        logger.info('Start failed')
+    Thread(None, do_stop).start()
 
   def exit(self):                       # Handle daemon/indicator closing
     logger.debug("indicator exit started: " + self.ID)
@@ -1140,8 +1144,7 @@ def appExit(msg=None):          # Exit from application (it closes all indicator
   logger.debug("Exit started")
   for i in indicators:
     i.exit()
-  for i in thList():
-    logger.debug(str(i))
+  logger.debug(str(thList()))
   sysExit(msg)
 
 def activateActions(activate):  # Install/deinstall file extensions
