@@ -407,8 +407,8 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     # Try to read Yandex.Disk configuration file and make sure that it is correctly configured
     self.config = self.__DConfig(cfgFile, load=False)
     while not (self.config.load() and
-               pathExists(self.config.get('dir', '')) and
-               pathExists(self.config.get('auth', ''))):
+               pathExists(expanduser(self.config.get('dir', ''))) and
+               pathExists(expanduser(self.config.get('auth', '')))):
       if self.errorDialog(cfgFile) != 0:
         if ID != '':
           self.config['dir'] = ''
@@ -556,7 +556,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
         return
       try:                        # Try to start
         msg = check_output([self.__YDC, '-c', self.config.fileName, 'start'], universal_newlines=True)
-        logger.info('Start success, message: %s' % msg)
+        logger.info('Daemon started, message: %s' % msg)
       except CalledProcessError as e:
         logger.error('Daemon start failed:%s' % e.output)
         return
@@ -574,9 +574,9 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       try:
         msg = check_output([self.__YDC, '-c', self.config.fileName, 'stop'],
                           universal_newlines=True)
-        logger.info('Start success, message: %s' % msg)
+        logger.info('Daemon stopped, message: %s' % msg)
       except:
-        logger.info('Start failed')
+        logger.info('Daemon stop failed')
     t = Thread(target=do_stop)
     t.start()
     if wait:
@@ -1080,7 +1080,7 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
     if key == 'theme':
         for i in indicators:                    # Update all indicators' icons
           i.setIconTheme(toggleState)           # Update icon theme
-          i.updateIcon(i.vals['status'])        # Update current icon
+          i.updateIcon(i.currentStatus)         # Update current icon
     elif key == 'autostart':
       if toggleState:
         copyFile(autoStartSrc, autoStartDst)
@@ -1106,6 +1106,7 @@ def appExit():          # Exit from application (it closes all indicators)
   Gtk.main_quit()
 
 def activateActions(activate):  # Install/deinstall file extensions
+  userHome = getenv("HOME")
   result = False
   try:                  # Catch all exceptions during FM action activation/deactivation
 
@@ -1237,7 +1238,7 @@ def activateActions(activate):  # Install/deinstall file extensions
     logger.error("The following error occurred during the FM actions activation:\n %s" % str(e))
   return result
 
-def argParse():                 # Parse command line arguments
+def argParse(ver):              # Parse command line arguments
   parser = ArgumentParser(description=_('Desktop indicator for yandex-disk daemon'), add_help=False)
   group = parser.add_argument_group(_('Options'))
   group.add_argument('-l', '--log', type=int, choices=range(10, 60, 10), dest='level', default=30,
@@ -1256,7 +1257,7 @@ def argParse():                 # Parse command line arguments
             help=_('Path to configuration file of daemon that should be removed' +
                    ' from daemos list. Default: \'\''))
   group.add_argument('-h', '--help', action='help', help=_('Show this help message and exit'))
-  group.add_argument('-v', '--version', action='version', version='%(prog)s v.' + appVer,
+  group.add_argument('-v', '--version', action='version', version='%(prog)s v.' + ver,
             help=_('Print version and exit'))
   return parser.parse_args()
 
@@ -1286,16 +1287,12 @@ if __name__ == '__main__':
   # See appVer in the beginnig of the code
   appHomeName = 'yd-tools'
   # Check for already running instance of the indicator application
-  userHome = getenv("HOME")
   installDir = pathJoin('/usr/share', appHomeName)
   logo = Pixbuf.new_from_file(pathJoin(installDir, 'icons/yd-128.png'))
-  configPath = pathJoin(userHome, '.config', appHomeName)
-  tmpDir = getenv("TMPDIR")
-  if tmpDir is None:
-    tmpDir = '/tmp'
+  configPath = pathJoin(getenv("HOME"), '.config', appHomeName)
   # Define .desktop files locations for indicator auto-start facility
   autoStartSrc = '/usr/share/applications/Yandex.Disk-indicator.desktop'
-  autoStartDst = pathJoin(userHome, '.config/autostart/Yandex.Disk-indicator.desktop')
+  autoStartDst = expanduser('~/.config/autostart/Yandex.Disk-indicator.desktop')
 
   # Initialize logging
   basicConfig(format='%(asctime)-15s %(levelname)-8s %(message)s')
@@ -1306,7 +1303,7 @@ if __name__ == '__main__':
   translation(appName, '/usr/share/locale', fallback=True).install()
 
   # Get command line arguments or their default values
-  args = argParse()
+  args = argParse(appVer)
 
   # Change the process name
   setProcName(appHomeName)
@@ -1367,7 +1364,7 @@ if __name__ == '__main__':
     # Activate indicator automatic start on system start-up
     if not pathExists(autoStartDst):
       try:
-        makeDirs(pathJoin(userHome, '.config/autostart'))
+        makeDirs(expanduser('~/.config/autostart'))
         copyFile(autoStartSrc, autoStartDst)
         config['autostart'] = True
       except:
@@ -1406,7 +1403,7 @@ if __name__ == '__main__':
     indicators.append(Indicator(d, _('#%d ') % len(indicators) if len(daemons) > 1 else ''))
 
   # Register the SIGTERM handler for graceful exit when indicator is killed
-  signal(SIGTERM, lambda _signo, _stack_frame: appExit())
+  signal(SIGTERM, lambda _1, _2: appExit())
 
   # Start GTK Main loop
   Gtk.main()
