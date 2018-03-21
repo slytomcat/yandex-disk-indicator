@@ -445,7 +445,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       else:                                  # It called by timer
         delay = 2 + self.__tCnt              # Increase interval up to 10 sec (2 + 8)
         self.__tCnt += 1                     # Increase counter to increase delay next activation.
-      if self.__tCnt < 9:                  
+      if self.__tCnt < 9:                    # Don't start timer after 10 seconds delay
         self.__timer = thTimer(delay, eventHandler, (False,))
         self.__timer.start()
       # Leave the critical section
@@ -572,8 +572,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
         logger.info('Daemon is not started')
         return
       try:
-        msg = check_output([self.__YDC, '-c', self.config.fileName, 'stop'],
-                          universal_newlines=True)
+        msg = check_output([self.__YDC, '-c', self.config.fileName, 'stop'], universal_newlines=True)
         logger.info('Daemon stopped, message: %s' % msg)
       except:
         logger.info('Daemon stop failed')
