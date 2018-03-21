@@ -1,6 +1,5 @@
-yd-tools (1.9.18) xenial; urgency=medium
+yd-tools (1.10.0) xenial; urgency=medium
   * Changes:
-    - Fix for github issue #185
-    - Fix for github issue #186
+    - Multi-threading (enhancement #188)
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Fri, 02 Feb 2018 23:13:47 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Wed, 21 Mar 2018 23:15:17 +0300
