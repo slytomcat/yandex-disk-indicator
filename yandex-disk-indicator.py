@@ -1088,8 +1088,8 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
         deleteFile(autoStartDst)
     elif key == 'fmextensions':
       if not button.get_inconsistent():         # It is a first call
-        if not activateActions(toggleState):               # When activation/deactivation is not success:
-          toggleState = not toggleState         # revert settings back
+        if not activateActions(toggleState, installDir):            
+          toggleState = not toggleState         # When activation/deactivation is not success: revert settings back
           button.set_inconsistent(True)         # set inconsistent state to detect second call
           button.set_active(toggleState)        # set check-button to reverted status
           # set_active will raise again the 'toggled' event
@@ -1105,7 +1105,7 @@ def appExit():          # Exit from application (it closes all indicators)
     i.exit()
   Gtk.main_quit()
 
-def activateActions(activate):  # Install/deinstall file extensions
+def activateActions(activate, installDir):  # Install/deinstall file extensions
   userHome = getenv("HOME")
   result = False
   try:                  # Catch all exceptions during FM action activation/deactivation
@@ -1371,7 +1371,7 @@ if __name__ == '__main__':
         logger.error('Can\'t activate indicator automatic start on system start-up')
 
     # Activate FM actions according to config (as it is first run)
-    activateActions(config['fmextensions'])
+    activateActions(config['fmextensions'], installDir)
     # Default settings should be saved (later)
     config.changed = True
 
