@@ -1286,7 +1286,6 @@ if __name__ == '__main__':
   appName = 'yandex-disk-indicator'
   # See appVer in the beginnig of the code
   appHomeName = 'yd-tools'
-  # Check for already running instance of the indicator application
   installDir = pathJoin('/usr/share', appHomeName)
   logo = Pixbuf.new_from_file(pathJoin(installDir, 'icons/yd-128.png'))
   configPath = pathJoin(getenv("HOME"), '.config', appHomeName)
