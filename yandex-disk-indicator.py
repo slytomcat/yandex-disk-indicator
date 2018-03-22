@@ -337,7 +337,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
           handler(par)
       self.watchMngr = WatchManager()    # Create watch manager
       # Create PyiNotifier
-      self.iNotifier = ThreadedNotifier(self.watchMngr, EH(), timeout=0.5)
+      self.iNotifier = ThreadedNotifier(self.watchMngr, EH(), timeout=500)
       self.iNotifier.start()
       self.status = False
 
