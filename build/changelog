@@ -1,5 +1,5 @@
 yd-tools (@version) @series; urgency=medium
   * Changes:
-    - Multi-threading (enhancement #188)
+    - fix for #191
 
  -- Sly_tom_cat <slytomcat@mail.ru>  @date
