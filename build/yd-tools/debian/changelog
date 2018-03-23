@@ -1,5 +1,5 @@
-yd-tools (1.10.0) xenial; urgency=medium
+yd-tools (1.10.1) xenial; urgency=medium
   * Changes:
-    - Multi-threading (enhancement #188)
+    - fix for #191
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Wed, 21 Mar 2018 23:15:17 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Thu, 22 Mar 2018 21:10:56 +0300
