@@ -409,7 +409,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     while not (self.config.load() and
                pathExists(expanduser(self.config.get('dir', ''))) and
                pathExists(expanduser(self.config.get('auth', '')))):
-      if self.errorDialog(cfgFile) != 0:
+      if self.error(cfgFile) != 0:
         if ID != '':
           self.config['dir'] = ''
           break   # Exit from loop in multi-instance configuration
