@@ -1,5 +1,6 @@
-yd-tools (1.10.1) xenial; urgency=medium
+yd-tools (1.10.2) xenial; urgency=medium
   * Changes:
-    - fix for #191
+    - fix for #192
+    - super() correction
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Thu, 22 Mar 2018 21:10:56 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Fri, 23 Mar 2018 21:18:50 +0300

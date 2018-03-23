@@ -1,5 +1,6 @@
 yd-tools (@version) @series; urgency=medium
   * Changes:
     - fix for #192
+    - super() correction
 
  -- Sly_tom_cat <slytomcat@mail.ru>  @date
