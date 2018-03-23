@@ -673,7 +673,7 @@ class Indicator(YDDaemon):            # Yandex.Disk appIndicator
     self.menu = self.Menu(self, ID)               # Create menu for daemon
     self.ind.set_menu(self.menu)                  # Attach menu to indicator
     # Initialize Yandex.Disk daemon connection object
-    super(Indicator, self).__init__(path, ID)
+    super().__init__(path, ID)
 
   def setIconTheme(self, theme):      # Determine paths to icons according to current theme
     global installDir, configPath
@@ -708,7 +708,7 @@ class Indicator(YDDaemon):            # Yandex.Disk appIndicator
     def __init__(self, daemon, ID):
       self.daemon = daemon                      # Store reference to daemon object for future usage
       self.folder = ''
-      Gtk.Menu.__init__(self)                   # Create menu
+      super().__init__()                        # Initialize menu
       self.ID = ID
       if self.ID != '':                         # Add addition field in multidaemon mode
         self.yddir = Gtk.MenuItem('');  self.yddir.set_sensitive(False);   self.append(self.yddir)
