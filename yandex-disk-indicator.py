@@ -23,7 +23,6 @@ along with this program.  If not, see http://www.gnu.org/licenses
 """
 
 from os import remove, makedirs, getpid, geteuid, getenv
-from pyinotify import ProcessEvent, WatchManager, ThreadedNotifier, IN_MODIFY, IN_ACCESS
 from gi import require_version
 require_version('Gtk', '3.0')
 from gi.repository import Gtk
@@ -41,6 +40,7 @@ from argparse import ArgumentParser
 from gettext import translation
 from logging import basicConfig, getLogger
 from os.path import exists as pathExists, join as pathJoin, relpath as relativePath, expanduser
+from os import stat
 from shutil import copy as fileCopy, which
 from datetime import datetime
 from webbrowser import open_new as openNewBrowser
@@ -324,41 +324,36 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
 
   #################### Private classes ####################
   class __Watcher(object):                 # File changes watcher implementation
-
-    '''
-    iNotify watcher object for monitor of changes daemon internal log for the fastest
-    reaction on status change.
-    '''
     def __init__(self, path, handler, *args, **kwargs):
-      # Watched path
       self.path = path
-      # Initialize iNotify watcher
-      class EH(ProcessEvent):            # Event handler class for iNotifier
-        def process_IN_MODIFY(self, event):
-          handler(*args, **kwargs)
-      self.watchMngr = WatchManager()    # Create watch manager
-      # Create PyiNotifier
-      self.iNotifier = ThreadedNotifier(self.watchMngr, EH(), timeout=500)
-      self.iNotifier.start()
+      self.handler = handler
+      self.args = args
+      self.kwargs = kwargs
+      # Don't start timer initially
       self.status = False
 
-    def start(self):               # Activate iNotify watching
+    def start(self):                    # Activate iNotify watching
       if self.status:
         return
       if not pathExists(self.path):
-        logger.info("iNotiy was not started: path '"+self.path+"' was not found.")
+        logger.info("Watcher was not started: path '"+self.path+"' was not found.")
         return
-      self.watch = self.watchMngr.add_watch(self.path, IN_MODIFY|IN_ACCESS, rec=False)
+      self.mark = stat(self.path).st_ctime_ns
+      def wHandler():
+        st = stat(self.path).st_ctime_ns
+        if st != self.mark:
+          self.mark = st
+          self.handler(*self.args, **self.kwargs)
+        self.timer = thTimer(0.5, wHandler)
+        self.timer.start()
+      self.timer = thTimer(0.5, wHandler)
+      self.timer.start()
       self.status = True
-
-    def stop(self):                # Stop iNotify watching
+    
+    def stop(self):
       if not self.status:
         return
-      # Remove watch
-      self.watchMngr.rm_watch(self.watch[self.path])
-      # Stop timer
-      self.iNotifier.stop()
-      self.status = False
+      self.timer.cancel()
 
   class __DConfig(Config):                 # Redefined class for daemon config
 
