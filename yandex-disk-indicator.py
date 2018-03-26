@@ -324,17 +324,18 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
 
   #################### Private classes ####################
   class __Watcher(object):                 # File changes watcher implementation
+
     '''
     iNotify watcher object for monitor of changes daemon internal log for the fastest
     reaction on status change.
     '''
-    def __init__(self, path, handler, par=None):
+    def __init__(self, path, handler, *args, **kwargs):
       # Watched path
       self.path = path
       # Initialize iNotify watcher
       class EH(ProcessEvent):            # Event handler class for iNotifier
         def process_IN_MODIFY(self, event):
-          handler(par)
+          handler(*args, **kwargs)
       self.watchMngr = WatchManager()    # Create watch manager
       # Create PyiNotifier
       self.iNotifier = ThreadedNotifier(self.watchMngr, EH(), timeout=500)
@@ -452,8 +453,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       self.__lock.release()
     
     # Initialize watcher staff
-    self.__watcher = self.__Watcher(pathJoin(expanduser(self.config['dir']), '.sync/cli.log'), 
-                               eventHandler, par=True)
+    self.__watcher = self.__Watcher(pathJoin(expanduser(self.config['dir']), '.sync/cli.log'), eventHandler, (True,))
     # Initialize timer staff
     self.__timer = thTimer(0.3, eventHandler, (False,))
     self.__timer.start()
