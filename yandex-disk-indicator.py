@@ -571,10 +571,10 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
         logger.info('Daemon stopped, message: %s' % msg)
       except:
         logger.info('Daemon stop failed')
-    t = Thread(target=do_stop)
-    t.start()
     if wait:
-      t.join()
+      do_stop()
+    else:
+      Thread(target=do_stop).start()
 
   def exit(self):                          # Handle daemon/indicator closing
     logger.debug("Indicator %sexit started: " % self.ID)
