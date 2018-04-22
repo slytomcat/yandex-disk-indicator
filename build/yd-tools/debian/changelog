@@ -1,6 +1,6 @@
-yd-tools (1.10.2) xenial; urgency=medium
+yd-tools (1.10.3) xenial; urgency=medium
   * Changes:
-    - fix for #192
-    - super() correction
+    - file watcher simplified (-iNotify +stat+timer)
+    - multiselection in FileChooserDialog (while adding exluded folders)
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Fri, 23 Mar 2018 21:18:50 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Sun, 22 Apr 2018 12:24:47 +0300
