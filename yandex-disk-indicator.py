@@ -561,10 +561,10 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
         logger.error('Daemon start failed:%s' % e.output)
         return
       self.__watcher.start()      # Activate file watcher
-    t = Thread(target=do_start)
-    t.start()
     if wait:
-      t.join()
+      do_start()
+    else:
+      Thread(target=do_start).start()
 
   def stop(self, wait=False):              # Execute 'yandex-disk stop' in separate thread
     def do_stop():
@@ -576,10 +576,10 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
         logger.info('Daemon stopped, message: %s' % msg)
       except:
         logger.info('Daemon stop failed')
-    t = Thread(target=do_stop)
-    t.start()
     if wait:
-      t.join()
+      do_stop()
+    else:
+      Thread(target=do_stop).start()
 
   def exit(self):                          # Handle daemon/indicator closing
     logger.debug("Indicator %sexit started: " % self.ID)
@@ -972,16 +972,17 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
                                      (_('Close'), Gtk.ResponseType.CANCEL,
                                       _('Select'), Gtk.ResponseType.ACCEPT))
       dialog.set_default_response(Gtk.ResponseType.CANCEL)
+      dialog.set_select_multiple(True)
       rootDir = self.dconfig['dir']
       dialog.set_current_folder(rootDir)
       if dialog.run() == Gtk.ResponseType.ACCEPT:
-        path = dialog.get_filename()
-        if path.startswith(rootDir):
-          path = relativePath(path, start=rootDir)
-          if path not in self.dirset:
-            self.exList.append([False, path])
-            self.dirset.append(path)
-            self.dconfig.changed = True
+        for path in dialog.get_filenames():
+          if path.startswith(rootDir):
+            path = relativePath(path, start=rootDir)
+            if path not in self.dirset:
+              self.exList.append([False, path])
+              self.dirset.append(path)
+              self.dconfig.changed = True
       dialog.destroy()
       #logger.debug(str(self.dirset))
 
