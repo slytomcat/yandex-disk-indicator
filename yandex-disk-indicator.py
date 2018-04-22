@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 appName = 'yandex-disk-indicator'
-appVer = '1.10.2'
+appVer = '1.10.3'
 #
 from datetime import datetime
 COPYRIGHT = 'Copyright ' + '\u00a9' + ' 2013-' + str(datetime.today().year) + ' Sly_tom_cat'

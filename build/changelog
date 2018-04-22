@@ -1,6 +1,6 @@
 yd-tools (@version) @series; urgency=medium
   * Changes:
-    - fix for #192
-    - super() correction
+    - file watcher simplified (-iNotify +stat+timer)
+    - multiselection in FileChooserDialog (while adding exluded folders)
 
  -- Sly_tom_cat <slytomcat@mail.ru>  @date
