@@ -1,6 +1,5 @@
 yd-tools (@version) @series; urgency=medium
   * Changes:
-    - file watcher simplified (-iNotify +stat+timer)
-    - multiselection in FileChooserDialog (while adding exluded folders)
+    - Fix for github issue #196
 
  -- Sly_tom_cat <slytomcat@mail.ru>  @date

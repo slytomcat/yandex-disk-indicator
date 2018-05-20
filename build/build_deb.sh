@@ -1,5 +1,9 @@
 #!/bin/bash
+
 ./prepare.sh
+
+./cl_create.sh
+
 cd yd-tools*/
 debuild --no-tgz-check -k0x25DAD03F -pgpg2
 cd ..

@@ -2,4 +2,4 @@
 
 cp -r yd-tools/usr/* /usr/
 
-./clean.sh
+rm -r /usr
