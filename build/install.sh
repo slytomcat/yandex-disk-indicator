@@ -2,4 +2,4 @@
 
 cp -r yd-tools/usr/* /usr/
 
-rm -r /usr
+rm -r yd-tools/usr
