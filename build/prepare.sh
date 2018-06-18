@@ -1,63 +1,58 @@
 #!/bin/bash
+#TARGET="yd-tools/usr" or "/usr"
 
-# prepare buld directory
-cd yd-tools/
-mkdir -p usr/bin
-mkdir -p usr/share/applications
-mkdir -p usr/share/locale/ru/LC_MESSAGES
-mkdir -p usr/share/locale/el/LC_MESSAGES
-mkdir -p usr/share/locale/bg/LC_MESSAGES
-mkdir -p usr/share/locale/be/LC_MESSAGES
-mkdir -p usr/share/yd-tools/fm-actions/Dolphin
-mkdir -p usr/share/yd-tools/fm-actions/Nautilus_Nemo
-mkdir -p usr/share/yd-tools/fm-actions/pantheon-files
-mkdir -p usr/share/yd-tools/icons/dark
-mkdir -p usr/share/yd-tools/icons/light
-mkdir -p usr/share/yd-tools/translations
-cp ../../yandex-disk-indicator.py usr/bin/yandex-disk-indicator
-cp ../../ya-setup usr/share/yd-tools/
-cp ../../translations/yandex-disk-indicator_ru.mo usr/share/locale/ru/LC_MESSAGES/yandex-disk-indicator.mo
-cp ../../translations/yandex-disk-indicator_el.mo usr/share/locale/el/LC_MESSAGES/yandex-disk-indicator.mo
-cp ../../translations/yandex-disk-indicator_bg.mo usr/share/locale/bg/LC_MESSAGES/yandex-disk-indicator.mo
-cp ../../translations/yandex-disk-indicator_be.mo usr/share/locale/be/LC_MESSAGES/yandex-disk-indicator.mo
-cp ../../translations/*.lang usr/share/yd-tools/translations/
-cp ../../Yandex.Disk-indicator.desktop usr/share/applications/
-cp ../../icons/readme usr/share/yd-tools/icons/
-cp ../../icons/yd-128.png usr/share/yd-tools/icons/
-cp ../../icons/yd-128_g.png usr/share/yd-tools/icons/
-cp ../../icons/dark/yd-busy1.png usr/share/yd-tools/icons/dark/
-cp ../../icons/dark/yd-busy2.png usr/share/yd-tools/icons/dark/
-cp ../../icons/dark/yd-busy3.png usr/share/yd-tools/icons/dark/
-cp ../../icons/dark/yd-busy4.png usr/share/yd-tools/icons/dark/
-cp ../../icons/dark/yd-busy5.png usr/share/yd-tools/icons/dark/
-cp ../../icons/dark/yd-ind-error.png usr/share/yd-tools/icons/dark/
-cp ../../icons/dark/yd-ind-idle.png usr/share/yd-tools/icons/dark/
-cp ../../icons/dark/yd-ind-pause.png usr/share/yd-tools/icons/dark/
-cp ../../icons/light/yd-busy1.png usr/share/yd-tools/icons/light/
-cp ../../icons/light/yd-busy2.png usr/share/yd-tools/icons/light/
-cp ../../icons/light/yd-busy3.png usr/share/yd-tools/icons/light/
-cp ../../icons/light/yd-busy4.png usr/share/yd-tools/icons/light/
-cp ../../icons/light/yd-busy5.png usr/share/yd-tools/icons/light/
-cp ../../icons/light/yd-ind-error.png usr/share/yd-tools/icons/light/
-cp ../../icons/light/yd-ind-idle.png usr/share/yd-tools/icons/light/
-cp ../../icons/light/yd-ind-pause.png usr/share/yd-tools/icons/light/
-cp ../../fm-actions/Nautilus_Nemo/publish usr/share/yd-tools/fm-actions/Nautilus_Nemo/
-cp ../../fm-actions/Nautilus_Nemo/unpublish usr/share/yd-tools/fm-actions/Nautilus_Nemo/
-cp ../../fm-actions/Dolphin/ydpublish.desktop usr/share/yd-tools/fm-actions/Dolphin/
-cp ../../fm-actions/pantheon-files/publish.sh usr/share/yd-tools/fm-actions/pantheon-files/
-cp ../../fm-actions/pantheon-files/unpublish.sh usr/share/yd-tools/fm-actions/pantheon-files/
-cp ../../fm-actions/pantheon-files/yandex-disk-indicator-publish.contract usr/share/yd-tools/fm-actions/pantheon-files/
-cp ../../fm-actions/pantheon-files/yandex-disk-indicator-unpublish.contract usr/share/yd-tools/fm-actions/pantheon-files/
+# prepare target directory
+mkdir -p $TARGET/bin
+mkdir -p $TARGET/share/applications
+mkdir -p $TARGET/share/locale/ru/LC_MESSAGES
+mkdir -p $TARGET/share/locale/el/LC_MESSAGES
+mkdir -p $TARGET/share/locale/bg/LC_MESSAGES
+mkdir -p $TARGET/share/locale/be/LC_MESSAGES
+mkdir -p $TARGET/share/yd-tools/fm-actions/Dolphin
+mkdir -p $TARGET/share/yd-tools/fm-actions/Nautilus_Nemo
+mkdir -p $TARGET/share/yd-tools/fm-actions/pantheon-files
+mkdir -p $TARGET/share/yd-tools/icons/dark
+mkdir -p $TARGET/share/yd-tools/icons/light
+mkdir -p $TARGET/share/yd-tools/translations
+cp ../yandex-disk-indicator.py $TARGET/bin/yandex-disk-indicator
+cp ../ya-setup $TARGET/share/yd-tools/
+cp ../translations/yandex-disk-indicator_ru.mo $TARGET/share/locale/ru/LC_MESSAGES/yandex-disk-indicator.mo
+cp ../translations/yandex-disk-indicator_el.mo $TARGET/share/locale/el/LC_MESSAGES/yandex-disk-indicator.mo
+cp ../translations/yandex-disk-indicator_bg.mo $TARGET/share/locale/bg/LC_MESSAGES/yandex-disk-indicator.mo
+cp ../translations/yandex-disk-indicator_be.mo $TARGET/share/locale/be/LC_MESSAGES/yandex-disk-indicator.mo
+cp ../translations/*.lang $TARGET/share/yd-tools/translations/
+cp ../Yandex.Disk-indicator.desktop $TARGET/share/applications/
+cp ../icons/readme $TARGET/share/yd-tools/icons/
+cp ../icons/yd-128.png $TARGET/share/yd-tools/icons/
+cp ../icons/yd-128_g.png $TARGET/share/yd-tools/icons/
+cp ../icons/dark/yd-busy1.png $TARGET/share/yd-tools/icons/dark/
+cp ../icons/dark/yd-busy2.png $TARGET/share/yd-tools/icons/dark/
+cp ../icons/dark/yd-busy3.png $TARGET/share/yd-tools/icons/dark/
+cp ../icons/dark/yd-busy4.png $TARGET/share/yd-tools/icons/dark/
+cp ../icons/dark/yd-busy5.png $TARGET/share/yd-tools/icons/dark/
+cp ../icons/dark/yd-ind-error.png $TARGET/share/yd-tools/icons/dark/
+cp ../icons/dark/yd-ind-idle.png $TARGET/share/yd-tools/icons/dark/
+cp ../icons/dark/yd-ind-pause.png $TARGET/share/yd-tools/icons/dark/
+cp ../icons/light/yd-busy1.png $TARGET/share/yd-tools/icons/light/
+cp ../icons/light/yd-busy2.png $TARGET/share/yd-tools/icons/light/
+cp ../icons/light/yd-busy3.png $TARGET/share/yd-tools/icons/light/
+cp ../icons/light/yd-busy4.png $TARGET/share/yd-tools/icons/light/
+cp ../icons/light/yd-busy5.png $TARGET/share/yd-tools/icons/light/
+cp ../icons/light/yd-ind-error.png $TARGET/share/yd-tools/icons/light/
+cp ../icons/light/yd-ind-idle.png $TARGET/share/yd-tools/icons/light/
+cp ../icons/light/yd-ind-pause.png $TARGET/share/yd-tools/icons/light/
+cp ../fm-actions/Nautilus_Nemo/publish $TARGET/share/yd-tools/fm-actions/Nautilus_Nemo/
+cp ../fm-actions/Nautilus_Nemo/unpublish $TARGET/share/yd-tools/fm-actions/Nautilus_Nemo/
+cp ../fm-actions/Dolphin/ydpublish.desktop $TARGET/share/yd-tools/fm-actions/Dolphin/
+cp ../fm-actions/pantheon-files/publish.sh $TARGET/share/yd-tools/fm-actions/pantheon-files/
+cp ../fm-actions/pantheon-files/unpublish.sh $TARGET/share/yd-tools/fm-actions/pantheon-files/
+cp ../fm-actions/pantheon-files/yandex-disk-indicator-publish.contract $TARGET/share/yd-tools/fm-actions/pantheon-files/
+cp ../fm-actions/pantheon-files/yandex-disk-indicator-unpublish.contract $TARGET/share/yd-tools/fm-actions/pantheon-files/
 
-chmod -R u+rw *
-chmod -R go-w *
-chmod a+x debian/rules
-chmod a+x debian/pre*
-chmod a+x debian/post*
-chmod a+x usr/share/yd-tools/*
-chmod a+x usr/share/yd-tools/fm-actions/Nautilus_Nemo/*
-chmod a+x usr/share/yd-tools/fm-actions/pantheon-files/*.sh
-chmod a+x usr/bin/*
-chmod a+x usr/share/applications/*
-cd ..
-chmod a+x *.sh
+chmod -R u+rw $TARGET/*
+chmod -R go-w $TARGET/*
+chmod a+x $TARGET/share/yd-tools/*
+chmod a+x $TARGET/share/yd-tools/fm-actions/Nautilus_Nemo/*
+chmod a+x $TARGET/share/yd-tools/fm-actions/pantheon-files/*.sh
+chmod a+x $TARGET/bin/*
+chmod a+x $TARGET/share/applications/*

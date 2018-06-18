@@ -1,5 +1,6 @@
 #!/bin/bash
 
+export TARGET="yd-tools/usr"
 ./prepare.sh
 
 ./cl_create.sh
