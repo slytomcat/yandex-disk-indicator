@@ -49,10 +49,8 @@ cp ../fm-actions/pantheon-files/unpublish.sh $TARGET/share/yd-tools/fm-actions/p
 cp ../fm-actions/pantheon-files/yandex-disk-indicator-publish.contract $TARGET/share/yd-tools/fm-actions/pantheon-files/
 cp ../fm-actions/pantheon-files/yandex-disk-indicator-unpublish.contract $TARGET/share/yd-tools/fm-actions/pantheon-files/
 
-chmod -R u+rw $TARGET/*
-chmod -R go-w $TARGET/*
 chmod a+x $TARGET/share/yd-tools/*
 chmod a+x $TARGET/share/yd-tools/fm-actions/Nautilus_Nemo/*
 chmod a+x $TARGET/share/yd-tools/fm-actions/pantheon-files/*.sh
-chmod a+x $TARGET/bin/*
-chmod a+x $TARGET/share/applications/*
+chmod a+x $TARGET/bin/yandex-disk-indicator
+chmod a+x $TARGET/share/applications/Yandex.Disk-indicator.desktop
