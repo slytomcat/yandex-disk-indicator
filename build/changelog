@@ -1,5 +1,5 @@
 yd-tools (@version) @series; urgency=medium
   * Changes:
-    - Fix for github issue #196
+    - Change installation/building scripts
 
  -- Sly_tom_cat <slytomcat@mail.ru>  @date
