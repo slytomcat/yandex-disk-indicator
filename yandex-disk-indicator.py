@@ -781,6 +781,7 @@ class Indicator(YDDaemon):            # Yandex.Disk appIndicator
       if vals['lastchg'] or vals['laststatus'] == 'unknown':
         # Update last synchronized sub-menu
         self.lastItems = Gtk.Menu()                   # Create new Sub-menu:
+        self.lastItems.show()
         for filePath in vals['lastitems']:            # Create new sub-menu items
           # Create menu label as file path (shorten it down to 50 symbols when path length > 50
           # symbols), with replaced underscore (to disable menu acceleration feature of GTK menu).
