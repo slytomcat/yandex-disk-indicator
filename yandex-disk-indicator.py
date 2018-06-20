@@ -780,6 +780,7 @@ class Indicator(YDDaemon):            # Yandex.Disk appIndicator
       # Update last synchronized sub-menu on first run or when last data has changed
       if vals['lastchg'] or vals['laststatus'] == 'unknown':
         # Update last synchronized sub-menu
+        self.lastItems.destroy()
         self.lastItems = Gtk.Menu()                   # Create new Sub-menu:
         self.lastItems.show()
         for filePath in vals['lastitems']:            # Create new sub-menu items
