@@ -31,7 +31,7 @@ from gi.repository import AppIndicator3 as appIndicator
 require_version('Notify', '0.7')
 from gi.repository import Notify
 require_version('GLib', '2.0')
-from gi.repository.GLib import timeout_add, source_remove, idle_add
+from gi.repository.GLib import timeout_add, source_remove, idle_add, unix_signal_add, PRIORITY_HIGH
 require_version('GdkPixbuf', '2.0')
 from gi.repository.GdkPixbuf import Pixbuf
 from subprocess import check_output, call, CalledProcessError
@@ -44,7 +44,7 @@ from os import stat
 from shutil import copy as fileCopy, which
 from datetime import datetime
 from webbrowser import open_new as openNewBrowser
-from signal import signal, SIGTERM
+from signal import signal, SIGTERM, SIGINT
 from sys import exit as sysExit
 from threading import Timer as thTimer, Lock, Thread
 
@@ -1100,7 +1100,7 @@ def appExit():          # Exit from application (it closes all indicators)
   for i in indicators:
     i.exit()
   Gtk.main_quit()
-
+  
 def activateActions(activate, installDir):  # Install/deinstall file extensions
   userHome = getenv("HOME")
   result = False
@@ -1397,8 +1397,9 @@ if __name__ == '__main__':
   for d in daemons:
     indicators.append(Indicator(d, _('#%d ') % len(indicators) if len(daemons) > 1 else ''))
 
-  # Register the SIGTERM handler for graceful exit when indicator is killed
-  signal(SIGTERM, lambda _1, _2: appExit())
+  # Register the SIGINT/SIGTERM handler for graceful exit when indicator is killed
+  unix_signal_add(PRIORITY_HIGH, SIGINT, appExit)
+  unix_signal_add(PRIORITY_HIGH, SIGTERM, appExit)
 
   # Start GTK Main loop
   Gtk.main()
