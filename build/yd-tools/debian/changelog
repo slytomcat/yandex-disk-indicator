@@ -1,5 +1,5 @@
-yd-tools (1.10.4) xenial; urgency=medium
+yd-tools (1.10.5) xenial; urgency=medium
   * Changes:
-    - Fix for github issue #196
+    - Fix for #199
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Mon, 18 Jun 2018 14:23:24 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Tue, 16 Oct 2018 00:21:03 +0300
