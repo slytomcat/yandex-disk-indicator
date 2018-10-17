@@ -1,5 +1,5 @@
 yd-tools (@version) @series; urgency=medium
   * Changes:
-    - Change installation/building scripts
+    - Fix for #199
 
  -- Sly_tom_cat <slytomcat@mail.ru>  @date
