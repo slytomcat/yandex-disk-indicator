@@ -462,7 +462,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
   def __getOutput(self, userLang=False):   # Get result of 'yandex-disk status'
     cmd = [self.__YDC, '-c', self.config.fileName, 'status']
     if not userLang:      # Change locale settings when it required
-      cmd = ['env', '-i', 'LANG=''en_US.UTF8''', "TMPDIR=%s"%self.tmpDir] + cmd
+      cmd = ['env', '-i', "TMPDIR=%s"%self.tmpDir] + cmd
     #logger.debug('cmd = %s' % str(cmd))
     try:
       output = check_output(cmd, universal_newlines=True)
