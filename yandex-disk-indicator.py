@@ -468,7 +468,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       output = check_output(cmd, universal_newlines=True)
     except:
       output = ''         # daemon is not running or bad
-    #logger.debug('output = %s' % output)
+      logger.debug('status output = %s' % output)
     return output
 
   def __parseOutput(self, out):            # Parse the daemon output
