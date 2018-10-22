@@ -8,16 +8,7 @@ Desktop panel indicator for YandexDisk CLI client for Linux
 
 INSTALLATION:
 
-Note that yandex-disk CLI utility have to be installed before the indicator. Visit https://yandex.com/support/disk/cli-clients.xml#cli-install for instructions.
-
-Installation from Github: 
-
- 1. Download ZIP with project sources (either master branch or last releaze: https://github.com/slytomcat/yandex-disk-indicator/releases/latest)
-
- 2. Change current directory to build/ and run install.sh script with root privileges
-
-Installation from Launchpad PPA: 
- - Visit PPA: https://launchpad.net/~slytomcat/+archive/ubuntu/ppa and follow the instructions.
+See installation instruction in [Wiki](https://github.com/slytomcat/yandex-disk-indicator/wiki)
 
 INTERFACE LANGUAGES
 
