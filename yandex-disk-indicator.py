@@ -468,7 +468,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       output = check_output(cmd, universal_newlines=True)
     except:
       output = ''         # daemon is not running or bad
-    #logger.debug('output = %s' % output)
+      logger.debug('Status output = %s' % output)
     return output
 
   def __parseOutput(self, out):            # Parse the daemon output
@@ -655,7 +655,7 @@ class Indicator(YDDaemon):            # Yandex.Disk appIndicator
     # Create staff for icon animation support (don't start it here)
     def iconAnimation():          # Changes busy icon by loop (triggered by self.timer)
       # Set next animation icon
-      self.ind.set_icon(pathJoin(self.themePath, 'yd-busy' + str(self._seqNum) + '.png'))
+      self.ind.set_icon_full(pathJoin(self.themePath, 'yd-busy' + str(self._seqNum) + '.png', ''))
       # Calculate next icon number
       self._seqNum = self._seqNum % 5 + 1   # 5 icon numbers in loop (1-2-3-4-5-1-2-3...)
       return True                           # True required to continue triggering by timer
@@ -691,7 +691,7 @@ class Indicator(YDDaemon):            # Yandex.Disk appIndicator
 
   def updateIcon(self, status):       # Change indicator icon according to just changed daemon status
     # Set icon according to the current status
-    self.ind.set_icon(self.icon[status])
+    self.ind.set_icon_full(self.icon[status], '')
     # Handle animation
     if status == 'busy':        # Just entered into 'busy' status
       self._seqNum = 2          # Next busy icon number for animation
@@ -707,47 +707,47 @@ class Indicator(YDDaemon):            # Yandex.Disk appIndicator
       super().__init__()                        # Initialize menu
       self.ID = ID
       if self.ID != '':                         # Add addition field in multidaemon mode
-        self.yddir = Gtk.MenuItem('');  self.yddir.set_sensitive(False);   self.append(self.yddir)
-      self.status = Gtk.MenuItem();     self.status.connect("activate", self.showOutput)
+        self.yddir = Gtk.MenuItem(label='');  self.yddir.set_sensitive(False);   self.append(self.yddir)
+      self.status = Gtk.MenuItem(label='');   self.status.connect("activate", self.showOutput)
       self.append(self.status)
-      self.used = Gtk.MenuItem();       self.used.set_sensitive(False)
+      self.used = Gtk.MenuItem(label='');     self.used.set_sensitive(False)
       self.append(self.used)
-      self.free = Gtk.MenuItem();       self.free.set_sensitive(False)
+      self.free = Gtk.MenuItem(label='');     self.free.set_sensitive(False)
       self.append(self.free)
-      self.last = Gtk.MenuItem(_('Last synchronized items'))
+      self.last = Gtk.MenuItem(label=_('Last synchronized items'))
       self.last.set_sensitive(False)
       self.lastItems = Gtk.Menu()               # Sub-menu: list of last synchronized files/folders
       self.last.set_submenu(self.lastItems)     # Add submenu (empty at the start)
       self.append(self.last)
       self.append(Gtk.SeparatorMenuItem.new())  # -----separator--------
-      self.daemon_ss = Gtk.MenuItem('')         # Start/Stop daemon: Label is depends on current daemon status
+      self.daemon_ss = Gtk.MenuItem(label='')         # Start/Stop daemon: Label is depends on current daemon status
       self.daemon_ss.connect("activate", self.startStopDaemon)
       self.append(self.daemon_ss)
-      self.open_folder = Gtk.MenuItem(_('Open Yandex.Disk Folder'))
+      self.open_folder = Gtk.MenuItem(label=_('Open Yandex.Disk Folder'))
       self.open_folder.connect("activate", lambda w: self.openPath(w, self.folder))
       self.append(self.open_folder)
-      open_web = Gtk.MenuItem(_('Open Yandex.Disk on the web'))
+      open_web = Gtk.MenuItem(label=_('Open Yandex.Disk on the web'))
       open_web.connect("activate", self.openInBrowser, _('https://disk.yandex.com'))
       self.append(open_web)
       self.append(Gtk.SeparatorMenuItem.new())  # -----separator--------
-      self.preferences = Gtk.MenuItem(_('Preferences'))
+      self.preferences = Gtk.MenuItem(label=_('Preferences'))
       self.preferences.connect("activate", Preferences)
       self.append(self.preferences)
-      open_help = Gtk.MenuItem(_('Help'))
+      open_help = Gtk.MenuItem(label=_('Help'))
       m_help = Gtk.Menu()
-      help1 = Gtk.MenuItem(_('Yandex.Disk daemon'))
+      help1 = Gtk.MenuItem(label=_('Yandex.Disk daemon'))
       help1.connect("activate", self.openInBrowser, _('https://yandex.com/support/disk/'))
       m_help.append(help1)
-      help2 = Gtk.MenuItem(_('Yandex.Disk Indicator'))
+      help2 = Gtk.MenuItem(label=_('Yandex.Disk Indicator'))
       help2.connect("activate", self.openInBrowser,
                 _('https://github.com/slytomcat/yandex-disk-indicator/wiki/Yandex-disk-indicator'))
       m_help.append(help2)
       open_help.set_submenu(m_help)
       self.append(open_help)
-      self.about = Gtk.MenuItem(_('About'));    self.about.connect("activate", self.openAbout)
+      self.about = Gtk.MenuItem(label=_('About'));    self.about.connect("activate", self.openAbout)
       self.append(self.about)
       self.append(Gtk.SeparatorMenuItem.new())  # -----separator--------
-      close = Gtk.MenuItem(_('Quit'))
+      close = Gtk.MenuItem(label=_('Quit'))
       close.connect("activate", self.close)
       self.append(close)
       self.show_all()
@@ -1101,7 +1101,7 @@ def appExit():          # Exit from application (it closes all indicators)
   for i in indicators:
     i.exit()
   Gtk.main_quit()
-
+  
 def activateActions(activate, installDir):  # Install/deinstall file extensions
   userHome = getenv("HOME")
   result = False
