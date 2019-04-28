@@ -2,5 +2,6 @@ yd-tools (@version) @series; urgency=medium
   * Changes:
     - Removed GTK Deprecated methods fix for #204
     - publish correct version
+    - fix error in line 658
 
  -- Sly_tom_cat <slytomcat@mail.ru>  @date
