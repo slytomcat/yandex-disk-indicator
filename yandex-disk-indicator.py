@@ -655,7 +655,7 @@ class Indicator(YDDaemon):            # Yandex.Disk appIndicator
     # Create staff for icon animation support (don't start it here)
     def iconAnimation():          # Changes busy icon by loop (triggered by self.timer)
       # Set next animation icon
-      self.ind.set_icon_full(pathJoin(self.themePath, 'yd-busy' + str(self._seqNum) + '.png', ''))
+      self.ind.set_icon_full(pathJoin(self.themePath, 'yd-busy' + str(self._seqNum) + '.png'), '')
       # Calculate next icon number
       self._seqNum = self._seqNum % 5 + 1   # 5 icon numbers in loop (1-2-3-4-5-1-2-3...)
       return True                           # True required to continue triggering by timer
