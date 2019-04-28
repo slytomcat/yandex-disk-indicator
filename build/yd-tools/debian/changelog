@@ -1,5 +1,6 @@
-yd-tools (1.10.5) xenial; urgency=medium
+yd-tools (1.10.8) xenial; urgency=medium
   * Changes:
-    - Fix for #199
+    - Removed GTK Deprecated methods fix for #204
+    - publish correct version
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Tue, 16 Oct 2018 00:21:03 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Sun, 28 Apr 2019 03:16:14 +0300
