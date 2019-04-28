@@ -3,9 +3,9 @@
 # prepare changelog
 version=$(sed -n "/appVer = '.*'/p" ../yandex-disk-indicator.py | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+')
 #series='artful'
-#series='bionic'
+series='bionic'
 #series='trusty'
-series='xenial'
+#series='xenial'
 #series='zesty'
 
 clear
