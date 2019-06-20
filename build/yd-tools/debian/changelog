@@ -1,7 +1,5 @@
-yd-tools (1.10.9) bionic; urgency=medium
+yd-tools (1.11.0) bionic; urgency=medium
   * Changes:
-    - Removed GTK Deprecated methods fix for #204
-    - publish correct version
-    - fix error in line 658
+    - Detailed error description for daemon config problems, #209 helper
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Sun, 28 Apr 2019 03:57:56 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Fri, 21 Jun 2019 01:36:09 +0300
