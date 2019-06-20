@@ -315,8 +315,8 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
   #################### Virtual methods ##################
   # they have to be implemented in GUI part of code
   
-  def error(self, err):                    # Error handler
-    logger.debug(err)
+  def error(self, errStr, cfg):                    # Error handler
+    logger.debug(errStr)
     return 0 
 
   def change(self, vals):                  # Update handler
@@ -402,12 +402,31 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
             'Visit www.yandex.ru, download and install Yandex.Disk daemon.'))
     # Try to read Yandex.Disk configuration file and make sure that it is correctly configured
     self.config = self.__DConfig(cfgFile, load=False)
-    while not (self.config.load() and
-               pathExists(expanduser(self.config.get('dir', ''))) and
-               pathExists(expanduser(self.config.get('auth', '')))):
-      if self.error(cfgFile) != 0:
+    while True:
+      # Check the daemon configuration and prepare error message according the detected problem
+      if not self.config.load():
+        errorStr = "Error: the file %s is missing or has wrong structre" % cfgFile
+      else:
+        d = self.config.get('dir', "")
+        a = self.config.get('auth', "")
+        if not d or not a:
+          errorStr = ("Error: " + ("option 'dir'" if not d else "") + (" and " if not d and not a else "") + 
+            ("option 'auth'" if not a else "") + (" are " if not a and not d else " is ") + 
+            "missing in the daemon configuration file %s" % cfgFile )
+        else:
+          dp = expanduser(d)
+          dne = not pathExists(dp) 
+          ap = expanduser(a)
+          ane = not pathExists(ap)
+          if ane or dne:
+            errorStr = ("Error: " + ("path %s" % dp if dne else "") + (" and " if dne and ane else "") + 
+              ("path %s" % ap if ane else "") + (" are " if ane and dne else " is ") + "not exist" )
+          else:
+            break # no config problems was found, go on
+      # some configuration problem was found and errorStr contains the detailed description of the problem
+      if self.error(errorStr, cfgFile) != 0:
         if ID != '':
-          self.config['dir'] = ''
+          self.config['dir'] = ""
           break   # Exit from loop in multi-instance configuration
         else:
           sysExit('Daemon is not configured')
@@ -468,7 +487,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       output = check_output(cmd, universal_newlines=True)
     except:
       output = ''         # daemon is not running or bad
-      logger.debug('Status output = %s' % output)
+      # logger.debug('Status output = %s' % output)
     return output
 
   def __parseOutput(self, out):            # Parse the daemon output
@@ -591,11 +610,12 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
 class Indicator(YDDaemon):            # Yandex.Disk appIndicator
 
   ####### YDDaemon virtual classes/methods implementations
-  def error(self, configPath):        # Show error messages implementation
+  def error(self, errStr, configPath):        # Show error messages implementation
       dialog = Gtk.MessageDialog(None, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK_CANCEL,
                                   _('Yandex.Disk Indicator: daemon start failed'))
       dialog.format_secondary_text(_('Yandex.Disk daemon failed to start because it is not' +
-          ' configured properly\n  To configure it up: press OK button.\n  Press Cancel to exit.'))
+          ' configured properly\n\n'+ errStr + '\n\n' +
+          '  To configure it up: press OK button.\n  Press Cancel to exit.'))
       dialog.set_default_size(400, 250)
       dialog.set_icon(logo)
       response = dialog.run()
