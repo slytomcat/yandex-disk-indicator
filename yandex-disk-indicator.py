@@ -42,11 +42,11 @@ from logging import basicConfig, getLogger
 from os.path import exists as pathExists, join as pathJoin, relpath as relativePath, expanduser
 from os import stat
 from shutil import copy as fileCopy, which
-from datetime import datetime
 from webbrowser import open_new as openNewBrowser
-from signal import signal, SIGTERM, SIGINT
+from signal import SIGTERM, SIGINT
 from sys import exit as sysExit
 from threading import Timer as thTimer, Lock, Thread
+from tempfile import gettempdir
 
 
 #################### Common utility functions and classes ####################
@@ -54,24 +54,24 @@ def copyFile(src, dst):
   try:
     fileCopy(src, dst)
   except:
-    logger.error("File Copy Error: from %s to %s" % (src, dst))
+    logger.error("File Copy Error: from %s to %s", src, dst)
 
 def deleteFile(dst):
   try:
     remove(dst)
   except:
-    logger.error('File Deletion Error: %s' % dst)
+    logger.error('File Deletion Error: %s', dst)
 
 def makeDirs(dst):
   try:
     makedirs(dst, exist_ok=True)
   except:
-    logger.error('Dirs creation Error: %s' % dst)
+    logger.error('Dirs creation Error: %s', dst)
 
 def shortPath(path):
   return (path[: 20] + '...' + path[-27:] if len(path) > 50 else path).replace('_', '\u02CD')
 
-class CVal(object):             # Multivalue helper
+class CVal:                     # Multivalue helper
   ''' Class to work with value that can be None, scalar item or list of items depending
       of number of elementary items added to it or it contain. '''
 
@@ -113,9 +113,8 @@ class CVal(object):             # Multivalue helper
     if self.index >= 0:               # Is CVal a list?
       if self.index < len(self.val):  # Is there a next element in list?
         return self.val[self.index]
-      else:                           # There is no more elements in list.
-        self.index = None
-        raise StopIteration           # Stop iterations
+      self.index = None               # There is no more elements in list.
+      raise StopIteration             # Stop iterations
     else:                             # CVal has scalar type.
       self.index = None               # Remember that there is no more iterations possible
       return self.val
@@ -126,8 +125,10 @@ class CVal(object):             # Multivalue helper
 class Config(dict):             # Configuration
 
   def __init__(self, fileName, load=True,
-               bools=[['true', 'yes', 'y'], ['false', 'no', 'n']],
-               boolval=['yes', 'no'], usequotes=True, delimiter='='):
+               bools=None, boolval=None,
+               usequotes=True, delimiter='='):
+    bools = [['true', 'yes', 'y'], ['false', 'no', 'n']] if  bools is None else bools
+    boolval=['yes', 'no'] if boolval is None else boolval
     super().__init__()
     self.fileName = fileName
     self.bools = bools             # Values to detect boolean in self.load
@@ -162,16 +163,15 @@ class Config(dict):             # Configuration
       st = st[end:].lstrip()                      # Remove value and following spaces from string
       if st == '':
         return v.get()                            # EOF normaly reached (after last value in string)
-      else:                                       # String still contain something
-        if st.startswith(','):                    # String is continued with comma?
-          st = st[1:].lstrip()                    # Remove comma and following spaces
-          if st != '':                            # String is continued after comma?
-            continue                              # Continue to search values
-          # else:                                 # Error: No value after comma
-        # else:                                   # Error: Next symbol is not comma
-        return None                               # Error
+      if st.startswith(','):                      # String is continued with comma?
+        st = st[1:].lstrip()                      # Remove comma and following spaces
+        if st != '':                              # String is continued after comma?
+          continue                                # Continue to search values
+        # else:                                   # Error: No value after comma
+      # else:                                     # Error: Next symbol is not comma
+      return None                                 # Error
 
-  def load(self, bools=[['true', 'yes', 'y'], ['false', 'no', 'n']], delimiter='='):
+  def load(self):
     """
     Reads config file to dictionary.
     Config file should contain key=value rows.
@@ -180,8 +180,6 @@ class Config(dict):             # Configuration
     When value is a single item then it creates key:value item in dictionary
     When value is a list of items it creates key:[value, value,...] dictionary's item.
     """
-    self.bools = bools
-    self.delimiter = delimiter
     try:                              # Read configuration file into list of tuples ignoring blank
                                       # lines, lines without delimiter, and lines with comments.
       with open(self.fileName) as cf:
@@ -189,29 +187,29 @@ class Config(dict):             # Configuration
                for l in cf if l and self.delimiter in l and l.lstrip()[0] != '#']
       self.readSuccess = True
     except:
-      logger.error('Config file read error: %s' % self.fileName)
+      logger.error('Config file read error: %s', self.fileName)
       self.readSuccess = False
       return False
     for kv, vv in res:                # Parse each line
       # Check key
       key = reFindall(r'^"([^"]+)"$|^([\w-]+)$', kv)
       if key == []:
-        logger.warning('Wrong key in line \'%s %s %s\'' % (kv, self.delimiter, vv))
+        logger.warning('Wrong key in line \'%s %s %s\'', kv, self.delimiter, vv)
       else:                           # Key is OK
         key = key[0][0] + key[0][1]   # Join two possible keys variants (with and without quotes)
         if vv.strip() == '':
-          logger.warning('No value specified in line \'%s %s %s\'' % (kv, self.delimiter, vv))
+          logger.warning('No value specified in line \'%s %s %s\'', kv, self.delimiter, vv)
         else:                         # Value is not empty
           value = self.getValue(vv)   # Parse values
           if value is None:
-            logger.warning('Wrong value(s) in line \'%s %s %s\'' % (kv, self.delimiter, vv))
+            logger.warning('Wrong value(s) in line \'%s %s %s\'', kv, self.delimiter, vv)
           else:                       # Value is OK
             if key in self.keys():    # Check double values
               logger.warning(('Double values for one key:\n%s = %s\nand\n%s = %s\n' +
-                              'Last one is stored.') % (key, self[key], key, value))
+                              'Last one is stored.'), key, self[key], key, value)
             self[key] = value         # Store last value
-            logger.debug('Config value read as: %s = %s' % (key, str(value)))
-    logger.info('Config read: %s' % self.fileName)
+            logger.debug('Config value read as: %s = %s', key, str(value))
+    logger.info('Config read: %s', self.fileName)
     return True
 
   def encode(self, val):                # Convert value to string before save it
@@ -221,25 +219,22 @@ class Config(dict):             # Configuration
       val = '"' + val + '"'         # Put value within quotes
     return val
 
-  def save(self, boolval=['yes', 'no'], usequotes=True, delimiter='='):
-    self.usequotes = usequotes
-    self.boolval = boolval
-    self.delimiter = delimiter
+  def save(self):
     try:                                  # Read the file in buffer
       with open(self.fileName, 'rt') as cf:
         buf = cf.read()
     except:
-      logger.warning('Config file access error, a new file (%s) will be created' % self.fileName)
+      logger.warning('Config file access error, a new file (%s) will be created', self.fileName)
       buf = ''
     buf = reSub(r'[\n]*$', '\n', buf)     # Remove all ending blank lines except the one.
     for key, value in self.items():
       if value is None:
         res = ''                          # Remove 'key=value' from file if value is None
-        logger.debug('Config value \'%s\' will be removed' % key)
+        logger.debug('Config value \'%s\' will be removed', key)
       else:                               # Make a line with value
         res = self.delimiter.join([key,
-                                   ', '.join([self.encode(val) for val in CVal(value)])]) + '\n'
-        logger.debug('Config value to save: %s' % res[:-1])
+                                   ', '.join(self.encode(val) for val in CVal(value))]) + '\n'
+        logger.debug('Config value to save: %s', res[:-1])
       # Find line with key in file the buffer
       sRe = reSearch(r'^[ \t]*["]?%s["]?[ \t]*%s.+\n' % (key, self.delimiter), buf, flags=reM)
       if sRe is not None:                 # Value has been found
@@ -250,13 +245,13 @@ class Config(dict):             # Configuration
       with open(self.fileName, 'wt') as cf:
         cf.write(buf)                     # Write updated buffer to file
     except:
-      logger.error('Config file write error: %s' % self.fileName)
+      logger.error('Config file write error: %s', self.fileName)
       return False
-    logger.info('Config written: %s' % self.fileName)
+    logger.info('Config written: %s', self.fileName)
     self.changed = False                  # Reset flag of change in not stored config
     return True
 
-class Notification(object):     # On-screen notification
+class Notification:             # On-screen notification
 
   def __init__(self, title):    # Initialize notification engine
     if not Notify.is_initted():
@@ -265,8 +260,8 @@ class Notification(object):     # On-screen notification
     self.note = None
 
   def send(self, messg):
-    global logo
-    logger.debug('Message: %s | %s' % (self.title, messg))
+    # global logo
+    logger.debug('Message: %s | %s', self.title, messg)
     if self.note is not None:
       try:
         self.note.close()
@@ -281,7 +276,7 @@ class Notification(object):     # On-screen notification
       logger.error('Message engine failure')
 
 #################### Main daemon class ####################
-class YDDaemon(object):         # Yandex.Disk daemon interface
+class YDDaemon:                 # Yandex.Disk daemon interface
   '''
   This is the fully automated class that serves as daemon interface.
   Public methods:
@@ -315,15 +310,14 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
   #################### Virtual methods ##################
   # they have to be implemented in GUI part of code
   
-  def error(self, errStr, cfg):                    # Error handler
-    logger.debug(errStr)
+  def error(self, errStr, cfgPath):                    # Error handler
     return 0 
 
   def change(self, vals):                  # Update handler
-    logger.debug('Update event: %s \nValues : %s' % (str(update), str(vals)))
+    logger.debug('Update event: %s', str(vals))
 
   #################### Private classes ####################
-  class __Watcher(object):                 # File changes watcher implementation
+  class __Watcher:                         # File changes watcher implementation
     def __init__(self, path, handler, *args, **kwargs):
       self.path = path
       self.handler = handler
@@ -336,7 +330,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       if self.status:
         return
       if not pathExists(self.path):
-        logger.info("Watcher was not started: path '"+self.path+"' was not found.")
+        logger.info("Watcher was not started: path '%s' was not found.", self.path)
         return
       self.mark = stat(self.path).st_ctime_ns
       def wHandler():
@@ -368,7 +362,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       fileConfig['stoponexitfromindicator'] = self.get('stoponexitfromindicator', False)
       exList = self.get('exclude-dirs', None)
       fileConfig['exclude-dirs'] = (None if exList is None else
-                                    ', '.join([v for v in CVal(exList)]))
+                                    ', '.join(v for v in CVal(exList)))
       # Store changed values
       fileConfig.save()
       self.changed = False
@@ -386,8 +380,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
           # When the value specified without quotes it will be already list value [dir, dir, dir].
           self['exclude-dirs'] = self.getValue(exDirs)
         return True
-      else:
-        return False
+      return False
 
   #################### Private methods ####################
   def __init__(self, cfgFile, ID):         # Check that daemon installed and configured and initialize object
@@ -430,9 +423,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
           break   # Exit from loop in multi-instance configuration
         else:
           sysExit('Daemon is not configured')
-    self.tmpDir = getenv("TMPDIR")
-    if self.tmpDir is None:
-        self.tmpDir = '/tmp'
+    self.tmpDir = gettempdir()
     # Set initial daemon status values
     self.__v = {'status': 'unknown', 'progress': '', 'laststatus': 'unknown', 'statchg': True,
                 'total': '...', 'used': '...', 'free': '...', 'trash': '...', 'szchg': True,
@@ -450,7 +441,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       self.__lock.acquire()
       # Parse fresh daemon output. Parsing returns true when something changed
       if self.__parseOutput(self.__getOutput()):
-        logger.debug(self.ID + 'Event raised by' + (' Watcher' if watch else ' Timer'))
+        logger.debug('%sEvent raised by %s', self.ID, (' Watcher' if watch else ' Timer'))
         self.change(self.__v)                # Call the callback of update event handler 
       # --- Handle timer delays ---
       self.__timer.cancel()                  # Cancel timer if it still active
@@ -482,12 +473,12 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
     cmd = [self.__YDC, '-c', self.config.fileName, 'status']
     if not userLang:      # Change locale settings when it required
       cmd = ['env', '-i', "TMPDIR=%s"%self.tmpDir] + cmd
-    #logger.debug('cmd = %s' % str(cmd))
+    #logger.debug('cmd = %s', str(cmd))
     try:
       output = check_output(cmd, universal_newlines=True)
     except:
       output = ''         # daemon is not running or bad
-      # logger.debug('Status output = %s' % output)
+      # logger.debug('Status output = %s', output)
     return output
 
   def __parseOutput(self, out):            # Parse the daemon output
@@ -514,14 +505,14 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       files = ''
     output = output[0].splitlines()
     # Make a dictionary from named values (use only lines containing ':')
-    res = dict([reFindall(r'\s*(.+):\s*(.*)', l)[0] for l in output if ':' in l])
+    res = dict(reFindall(r'\s*(.+):\s*(.*)', l)[0] for l in output if ':' in l)
     # Parse named status values
     for srch, key in (('Synchronization core status', 'status'), ('Sync progress', 'progress'),
                       ('Total', 'total'), ('Used', 'used'), ('Available', 'free'),
                       ('Trash size', 'trash'), ('Error', 'error'), ('Path', 'path')):
       val = res.get(srch, '')
       if key == 'status':                     # Convert status to internal representation
-        # logger.debug('Raw status: \'%s\', previous status: %s'%(val, self.__v['status']))
+        # logger.debug('Raw status: \'%s\', previous status: %s', val, self.__v['status'])
         # Store previous status
         self.__v['laststatus'] = self.__v['status']
         # Convert daemon raw status to internal representation
@@ -571,9 +562,9 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
         return
       try:                        # Try to start
         msg = check_output([self.__YDC, '-c', self.config.fileName, 'start'], universal_newlines=True)
-        logger.info('Daemon started, message: %s' % msg)
+        logger.info('Daemon started, message: %s', msg)
       except CalledProcessError as e:
-        logger.error('Daemon start failed:%s' % e.output)
+        logger.error('Daemon start failed: %s', e.output)
         return
       self.__watcher.start()      # Activate file watcher
     if wait:
@@ -588,7 +579,7 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
         return
       try:
         msg = check_output([self.__YDC, '-c', self.config.fileName, 'stop'], universal_newlines=True)
-        logger.info('Daemon stopped, message: %s' % msg)
+        logger.info('Daemon stopped, message: %s', msg)
       except:
         logger.info('Daemon stop failed')
     if wait:
@@ -597,20 +588,20 @@ class YDDaemon(object):         # Yandex.Disk daemon interface
       Thread(target=do_stop).start()
 
   def exit(self):                          # Handle daemon/indicator closing
-    logger.debug("Indicator %sexit started: " % self.ID)
+    logger.debug("Indicator %sexit started: ", self.ID)
     self.__watcher.stop()
     self.__timer.cancel()  # stop event timer if it is running
     # Stop yandex-disk daemon if it is required by its configuration
     if self.config.get('stoponexitfromindicator', False):
       self.stop(wait=True)
-      logger.info('Demon %sstopped' % self.ID)
-    logger.debug('Indicator %sexited' % self.ID)
+      logger.info('Demon %sstopped', self.ID)
+    logger.debug('Indicator %sexited', self.ID)
 
 #################### Indicatior class ####################
 class Indicator(YDDaemon):            # Yandex.Disk appIndicator
 
   ####### YDDaemon virtual classes/methods implementations
-  def error(self, errStr, configPath):        # Show error messages implementation
+  def error(self, errStr, cfPath):        # Show error messages implementation
       dialog = Gtk.MessageDialog(None, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK_CANCEL,
                                   _('Yandex.Disk Indicator: daemon start failed'))
       dialog.format_secondary_text(_('Yandex.Disk daemon failed to start because it is not' +
@@ -622,7 +613,7 @@ class Indicator(YDDaemon):            # Yandex.Disk appIndicator
       dialog.destroy()
       if response == Gtk.ResponseType.OK:  # Launch Set-up utility
         logger.debug('starting configuration utility')
-        retCode = call([pathJoin(installDir, 'ya-setup'), configPath])
+        retCode = call([pathJoin(installDir, 'ya-setup'), cfgPath])
       else:
         retCode = 1
       dialog.destroy()
@@ -635,7 +626,7 @@ class Indicator(YDDaemon):            # Yandex.Disk appIndicator
     status information in menu (status, sizes and list of last synchronized items).
     It is called when daemon detects any change of its status.
     '''
-    logger.info(self.ID + 'Change event: %s' % ','.join(['stat' if vals['statchg'] else '',
+    logger.info('%sChange event: %s', self.ID, ','.join(['stat' if vals['statchg'] else '',
                                                          'size' if vals['szchg'] else '',
                                                          'last' if vals['lastchg'] else '']))
     def do_change(vals, path):
@@ -643,7 +634,7 @@ class Indicator(YDDaemon):            # Yandex.Disk appIndicator
       self.menu.update(vals, path)
       # Handle daemon status change by icon change
       if vals['status'] != vals['laststatus']:
-        logger.info('Status: ' + vals['laststatus'] + ' -> ' + vals['status'])
+        logger.info('Status: %s ->  %s', vals['laststatus'], vals['status'])
         self.updateIcon(vals['status'])          # Update icon
         # Create notifications for status change events
         if config['notifications']:
@@ -692,7 +683,7 @@ class Indicator(YDDaemon):            # Yandex.Disk appIndicator
     super().__init__(path, ID)
 
   def setIconTheme(self, theme):      # Determine paths to icons according to current theme
-    global installDir, configPath
+    # global installDir, configPath
     theme = 'light' if theme else 'dark'
     # Determine theme from application configuration settings
     defaultPath = pathJoin(installDir, 'icons', theme)
@@ -816,13 +807,13 @@ class Indicator(YDDaemon):            # Yandex.Disk appIndicator
           self.lastItems.append(widget)
         self.last.set_submenu(self.lastItems)
         # Switch off last items menu sensitivity if no items in list
-        self.last.set_sensitive(len(vals['lastitems']) != 0)
-        logger.debug("Sub-menu 'Last synchronized' has " + str(len(vals['lastitems'])) + " items")
+        self.last.set_sensitive(vals['lastitems'])
+        logger.debug("Sub-menu 'Last synchronized' has %s items", str(len(vals['lastitems'])))
         
       self.show_all()                                 # Renew menu
 
     def openAbout(self, widget):            # Show About window
-      global logo, indicators
+      # global logo, indicators
       for i in indicators:
         i.menu.about.set_sensitive(False)           # Disable menu item
       aboutWindow = Gtk.AboutDialog()
@@ -858,7 +849,7 @@ class Indicator(YDDaemon):            # Yandex.Disk appIndicator
       def displayOutput(outText, widget):
         ### NOTE: it is called not from main thread, so it have to add action in main loop queue
         def do_display(outText, widget):
-          global logo
+          # global logo
           #outText = self.daemon.getOutput(True)
           statusWindow = Gtk.Dialog(_('Yandex.Disk daemon output message'))
           statusWindow.set_icon(logo)
@@ -887,17 +878,17 @@ class Indicator(YDDaemon):            # Yandex.Disk appIndicator
         self.daemon.stop()
 
     def openPath(self, widget, path):       # Open path
-      logger.info('Opening %s' % path)
+      logger.info("Opening '%s'", path)
       if pathExists(path):
         try:
           call(['xdg-open', path])
         except:
-          logger.error('Start of "%s" failed' % path)
+          logger.error("Start of '%s' failed", path)
 
     def close(self, widget):                # Quit from indicator
       appExit()
 
-  class Timer(object):                # Timer implementation
+  class Timer:                        # Timer implementation
     ''' Timer class methods:
           __init__ - initialize the timer object with specified interval and handler. Start it
                     if start value is not False. 
@@ -917,11 +908,11 @@ class Indicator(YDDaemon):            # Yandex.Disk appIndicator
       if not self.active:
         self.timer = timeout_add(self.interval, self.handler)
         self.active = True
-        # logger.debug('timer started %s %s' %(self.timer, interval))
+        # logger.debug('timer started %s %s', self.timer, interval)
 
     def stop(self):                     # Stop active timer
       if self.active:
-        # logger.debug('timer to stop %s' %(self.timer))
+        # logger.debug('timer to stop %s', self.timer)
         source_remove(self.timer)
         self.active = False
 
@@ -956,7 +947,7 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
       self.dirset = [val for val in CVal(self.dconfig.get('exclude-dirs', None))]
       for val in self.dirset:
         self.exList.append([False, val])
-      logger.debug(str(self.dirset))
+      #logger.debug(str(self.dirset))
       self.show_all()
 
 
@@ -966,7 +957,7 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
         for i in self.dirset:
           eList.add(i)
         self.dconfig['exclude-dirs'] = eList.get()          # Save collected value
-      logger.debug(str(self.dirset))
+      #logger.debug(str(self.dirset))
       self.destroy()                                        # Close dialogue
 
     def lineToggled(self, widget, path):  # Line click handler, it switch row selection
@@ -981,7 +972,7 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
           self.dconfig.changed = True
         else:
           listIiter = self.exList.iter_next(listIiter)
-      logger.debug(str(self.dirset))
+      #logger.debug(str(self.dirset))
 
     def addFolder(self, widget, parent):  # Add new path to list via FileChooserDialog
       dialog = Gtk.FileChooserDialog(_('Select catalogue to add to list'), parent,
@@ -1004,7 +995,7 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
       #logger.debug(str(self.dirset))
 
   def __init__(self, widget):
-    global config, indicators, logo
+    # global config, indicators, logo
     # Preferences Window routine
     for i in indicators:
       i.menu.preferences.set_sensitive(False)   # Disable menu items to avoid multi-dialogs creation
@@ -1086,7 +1077,7 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
 
   def onButtonToggled(self, widget, button, key, dconfig=None, ow=None):  # Handle clicks
     toggleState = button.get_active()
-    logger.debug('Togged: %s  val: %s' % (key, str(toggleState)))
+    logger.debug('Togged: %s  val: %s', key, str(toggleState))
     # Update configurations
     if key in ['read-only', 'overwrite', 'startonstartofindicator', 'stoponexitfromindicator']:
       dconfig[key] = toggleState                # Update daemon config
@@ -1105,7 +1096,7 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
         deleteFile(autoStartDst)
     elif key == 'fmextensions':
       if not button.get_inconsistent():         # It is a first call
-        if not activateActions(toggleState, installDir):            
+        if not activateActions(toggleState):            
           toggleState = not toggleState         # When activation/deactivation is not success: revert settings back
           button.set_inconsistent(True)         # set inconsistent state to detect second call
           button.set_active(toggleState)        # set check-button to reverted status
@@ -1116,13 +1107,14 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
       ow.set_sensitive(toggleState)
 
 def appExit():          # Exit from application (it closes all indicators)
-  global indicators
+  # global indicators
   logger.debug("Exit started")
   for i in indicators:
     i.exit()
   Gtk.main_quit()
   
-def activateActions(activate, installDir):  # Install/deinstall file extensions
+def activateActions(activate):  # Install/deinstall file extensions
+  # global installDir
   userHome = getenv("HOME")
   result = False
   try:                  # Catch all exceptions during FM action activation/deactivation
@@ -1168,7 +1160,7 @@ def activateActions(activate, installDir):  # Install/deinstall file extensions
       with open(ucaPath) as ucaf:
         [(ust, actions, uen)] = reFindall(r'(^.*<actions>)(.*)(<\/actions>)', ucaf.read(), reS)
       acts = reFindall(r'(<action>.*?<\/action>)', actions, reS)
-      nActs = dict((reFindall(r'<name>(.+?)<\/name>', u, reS)[0], u) for u in acts)
+      nActs = {reFindall(r'<name>(.+?)<\/name>', u, reS)[0]: u for u in acts}
 
       if activate:      # Install actions for Thunar
         if _("Publish via Yandex.Disk") not in nActs.keys():
@@ -1316,7 +1308,7 @@ if __name__ == '__main__':
 
   # Setup localization
   # Load translation object (or NullTranslations) and define _() function.
-  translation(appName, '/usr/share/locale', fallback=True).install()
+  _ = translation(appName, '/usr/share/locale', fallback=True).gettext
 
   # Get command line arguments or their default values
   args = argParse(appVer)
@@ -1333,8 +1325,8 @@ if __name__ == '__main__':
   logger.setLevel(args.level)
 
   # Report app version and logging level
-  logger.info('%s v.%s' % (appName, appVer))
-  logger.debug('Logging level: ' + str(args.level))
+  logger.info('%s v.%s', appName, appVer)
+  logger.debug('Logging level: %s', str(args.level))
 
   # Application configuration
   '''
@@ -1387,7 +1379,7 @@ if __name__ == '__main__':
         logger.error('Can\'t activate indicator automatic start on system start-up')
 
     # Activate FM actions according to config (as it is first run)
-    activateActions(config['fmextensions'], installDir)
+    activateActions(config['fmextensions'])
     # Default settings should be saved (later)
     config.changed = True
 
@@ -1415,8 +1407,8 @@ if __name__ == '__main__':
 
   # Make indicator objects for each daemon in daemons list
   indicators = []
-  for d in daemons:
-    indicators.append(Indicator(d, _('#%d ') % len(indicators) if len(daemons) > 1 else ''))
+  for dm in daemons:
+    indicators.append(Indicator(dm, _('#%d ') % len(indicators) if len(daemons) > 1 else ''))
 
   # Register the SIGINT/SIGTERM handler for graceful exit when indicator is killed
   unix_signal_add(PRIORITY_HIGH, SIGINT, appExit)
