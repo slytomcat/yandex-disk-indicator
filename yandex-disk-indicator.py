@@ -1311,6 +1311,7 @@ def checkAutoStart(path):
   return False
 
 def setProcName(newname):
+  """ Sets the executable name """
   from ctypes import cdll, byref, create_string_buffer
   libc = cdll.LoadLibrary('libc.so.6')
   buff = create_string_buffer(len(newname) + 1)
