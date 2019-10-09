@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-appName = 'yandex-disk-indicator'
-appVer = '1.11.0'
+APPNAME = 'yandex-disk-indicator'
+APPVER = '1.11.0'
 #
 from datetime import datetime
 COPYRIGHT = 'Copyright ' + '\u00a9' + ' 2013-' + str(datetime.today().year) + ' Sly_tom_cat'
@@ -51,24 +51,28 @@ from tempfile import gettempdir
 
 #################### Common utility functions and classes ####################
 def copyFile(src, dst):
+  '''File copy functiion'''
   try:
     fileCopy(src, dst)
   except:
-    logger.error("File Copy Error: from %s to %s", src, dst)
+    LOGGER.error("File Copy Error: from %s to %s", src, dst)
 
 def deleteFile(dst):
+  '''Delete file function'''
   try:
     remove(dst)
   except:
-    logger.error('File Deletion Error: %s', dst)
+    LOGGER.error('File Deletion Error: %s', dst)
 
 def makeDirs(dst):
+  '''Create all child directories up to specified'''
   try:
     makedirs(dst, exist_ok=True)
   except:
-    logger.error('Dirs creation Error: %s', dst)
+    LOGGER.error('Dirs creation Error: %s', dst)
 
 def shortPath(path):
+  '''Make short path to display it'''
   return (path[: 20] + '...' + path[-27:] if len(path) > 50 else path).replace('_', '\u02CD')
 
 class CVal:                     # Multivalue helper
@@ -79,16 +83,19 @@ class CVal:                     # Multivalue helper
     self.set(initialValue)   # store initial value
     self.index = None
 
-  def get(self):                  # It just returns the current value of cVal
+  def get(self):                  
+    # Just returns the current value of cVal
     return self.val
 
-  def set(self, value):           # Set internal value
+  def set(self, value):           
+    """ Set internal value """
     self.val = value
     if isinstance(self.val, list) and len(self.val) == 1:
       self.val = self.val[0]
     return self.val
 
-  def add(self, item):            # Add item
+  def add(self, item):            
+    """ Add item """
     if isinstance(self.val, list):  # Is it third, fourth ... value?
       self.val.append(item)         # Just append new item to list
     elif self.val is None:          # Is it first item?
@@ -97,7 +104,8 @@ class CVal:                     # Multivalue helper
       self.val = [self.val, item]   # Convert scalar value to list of items.
     return self.val
 
-  def __iter__(self):             # cVal iterator object initialization
+  def __iter__(self):             
+    """ cVal iterator object initialization """
     if isinstance(self.val, list):  # Is CVal a list?
       self.index = -1
     elif self.val is None:          # Is CVal not defined?
@@ -106,7 +114,8 @@ class CVal:                     # Multivalue helper
       self.index = -2
     return self
 
-  def __next__(self):             # cVal iterator support
+  def __next__(self):             
+    """ cVal iterator support """
     if self.index is None:            # Is CVal not defined?
       raise StopIteration             # Stop iterations
     self.index += 1
@@ -120,9 +129,11 @@ class CVal:                     # Multivalue helper
       return self.val
 
   def __bool__(self):
+    """ returns False for empty cVal oterways returns True """ 
     return self.val is not None
 
-class Config(dict):             # Configuration
+class Config(dict):             
+  """ Configuration is a class to represent stored on disk configuration values """
 
   def __init__(self, fileName, load=True,
                bools=None, boolval=None,
@@ -187,28 +198,28 @@ class Config(dict):             # Configuration
                for l in cf if l and self.delimiter in l and l.lstrip()[0] != '#']
       self.readSuccess = True
     except:
-      logger.error('Config file read error: %s', self.fileName)
+      LOGGER.error('Config file read error: %s', self.fileName)
       self.readSuccess = False
       return False
     for kv, vv in res:                # Parse each line
       # Check key
       key = reFindall(r'^"([^"]+)"$|^([\w-]+)$', kv)
       if key == []:
-        logger.warning('Wrong key in line \'%s %s %s\'', kv, self.delimiter, vv)
+        LOGGER.warning('Wrong key in line \'%s %s %s\'', kv, self.delimiter, vv)
       else:                           # Key is OK
         key = key[0][0] + key[0][1]   # Join two possible keys variants (with and without quotes)
         if vv.strip() == '':
-          logger.warning('No value specified in line \'%s %s %s\'', kv, self.delimiter, vv)
+          LOGGER.warning('No value specified in line \'%s %s %s\'', kv, self.delimiter, vv)
         else:                         # Value is not empty
           value = self.getValue(vv)   # Parse values
           if value is None:
-            logger.warning('Wrong value(s) in line \'%s %s %s\'', kv, self.delimiter, vv)
+            LOGGER.warning('Wrong value(s) in line \'%s %s %s\'', kv, self.delimiter, vv)
           else:                       # Value is OK
             if key in self.keys():    # Check double values
-              logger.warning('Double values for one key:\n%s = %s\nand\n%s = %s\nLast one is stored.', key, self[key], key, value)
+              LOGGER.warning('Double values for one key:\n%s = %s\nand\n%s = %s\nLast one is stored.', key, self[key], key, value)
             self[key] = value         # Store last value
-            logger.debug('Config value read as: %s = %s', key, str(value))
-    logger.info('Config read: %s', self.fileName)
+            LOGGER.debug('Config value read as: %s = %s', key, str(value))
+    LOGGER.info('Config read: %s', self.fileName)
     return True
 
   def encode(self, val):                # Convert value to string before save it
@@ -219,21 +230,22 @@ class Config(dict):             # Configuration
     return val
 
   def save(self):
+    """ save in-memory configuration to file on disk """
     try:                                  # Read the file in buffer
       with open(self.fileName, 'rt') as cf:
         buf = cf.read()
     except:
-      logger.warning('Config file access error, a new file (%s) will be created', self.fileName)
+      LOGGER.warning('Config file access error, a new file (%s) will be created', self.fileName)
       buf = ''
     buf = reSub(r'[\n]*$', '\n', buf)     # Remove all ending blank lines except the one.
     for key, value in self.items():
       if value is None:
         res = ''                          # Remove 'key=value' from file if value is None
-        logger.debug('Config value \'%s\' will be removed', key)
+        LOGGER.debug('Config value \'%s\' will be removed', key)
       else:                               # Make a line with value
         res = self.delimiter.join([key,
                                    ', '.join(self.encode(val) for val in CVal(value))]) + '\n'
-        logger.debug('Config value to save: %s', res[:-1])
+        LOGGER.debug('Config value to save: %s', res[:-1])
       # Find line with key in file the buffer
       sRe = reSearch(r'^[ \t]*["]?%s["]?[ \t]*%s.+\n' % (key, self.delimiter), buf, flags=reM)
       if sRe is not None:                 # Value has been found
@@ -244,23 +256,25 @@ class Config(dict):             # Configuration
       with open(self.fileName, 'wt') as cf:
         cf.write(buf)                     # Write updated buffer to file
     except:
-      logger.error('Config file write error: %s', self.fileName)
+      LOGGER.error('Config file write error: %s', self.fileName)
       return False
-    logger.info('Config written: %s', self.fileName)
+    LOGGER.info('Config written: %s', self.fileName)
     self.changed = False                  # Reset flag of change in not stored config
     return True
 
-class Notification:             # On-screen notification
+class Notification:             
+  """ On-screen notification """
 
-  def __init__(self, title):    # Initialize notification engine
+  def __init__(self, title):    
+    """ Initialize notification engine """
     if not Notify.is_initted():
-      Notify.init(appName)
+      Notify.init(APPNAME)
     self.title = title
     self.note = None
 
   def send(self, messg):
-    # global logo
-    logger.debug('Message: %s | %s', self.title, messg)
+    # global APPLOGO
+    LOGGER.debug('Message: %s | %s', self.title, messg)
     if self.note is not None:
       try:
         self.note.close()
@@ -269,10 +283,10 @@ class Notification:             # On-screen notification
       self.note = None
     try:                            # Create notification
       self.note = Notify.Notification.new(self.title, messg)
-      self.note.set_image_from_pixbuf(logo)
+      self.note.set_image_from_pixbuf(APPLOGO)
       self.note.show()              # Display new notification
     except:
-      logger.error('Message engine failure')
+      LOGGER.error('Message engine failure')
 
 #################### Main daemon class ####################
 class YDDaemon:                 # Yandex.Disk daemon interface
@@ -309,14 +323,18 @@ class YDDaemon:                 # Yandex.Disk daemon interface
   #################### Virtual methods ##################
   # they have to be implemented in GUI part of code
   
-  def error(self, errStr, cfgPath):                    # Error handler
+  def error(self, errStr, cfgPath):                    
+    """ Error handler """
+    LOGGER.debug('%sError %s , path %s', self.ID, errStr, cfgPath)
     return 0 
 
-  def change(self, vals):                  # Update handler
-    logger.debug('Update event: %s', str(vals))
+  def change(self, vals):                  
+    """ Updates handler """
+    LOGGER.debug('%sUpdate event: %s',  self.ID, str(vals))
 
   #################### Private classes ####################
-  class __Watcher:                         # File changes watcher implementation
+  class __Watcher:                         
+    """ File changes watcher implementation """
     def __init__(self, path, handler, *args, **kwargs):
       self.path = path
       self.handler = handler
@@ -329,7 +347,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
       if self.status:
         return
       if not pathExists(self.path):
-        logger.info("Watcher was not started: path '%s' was not found.", self.path)
+        LOGGER.info("Watcher was not started: path '%s' was not found.", self.path)
         return
       self.mark = stat(self.path).st_ctime_ns
       def wHandler():
@@ -440,7 +458,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
       self.__lock.acquire()
       # Parse fresh daemon output. Parsing returns true when something changed
       if self.__parseOutput(self.__getOutput()):
-        logger.debug('%sEvent raised by %s', self.ID, (' Watcher' if watch else ' Timer'))
+        LOGGER.debug('%sEvent raised by %s', self.ID, (' Watcher' if watch else ' Timer'))
         self.change(self.__v)                # Call the callback of update event handler 
       # --- Handle timer delays ---
       self.__timer.cancel()                  # Cancel timer if it still active
@@ -472,12 +490,12 @@ class YDDaemon:                 # Yandex.Disk daemon interface
     cmd = [self.__YDC, '-c', self.config.fileName, 'status']
     if not userLang:      # Change locale settings when it required
       cmd = ['env', '-i', "TMPDIR=%s"%self.tmpDir] + cmd
-    #logger.debug('cmd = %s', str(cmd))
+    #LOGGER.debug('cmd = %s', str(cmd))
     try:
       output = check_output(cmd, universal_newlines=True)
     except:
       output = ''         # daemon is not running or bad
-      # logger.debug('Status output = %s', output)
+      # LOGGER.debug('Status output = %s', output)
     return output
 
   def __parseOutput(self, out):            # Parse the daemon output
@@ -511,7 +529,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
                       ('Trash size', 'trash'), ('Error', 'error'), ('Path', 'path')):
       val = res.get(srch, '')
       if key == 'status':                     # Convert status to internal representation
-        # logger.debug('Raw status: \'%s\', previous status: %s', val, self.__v['status'])
+        # LOGGER.debug('Raw status: \'%s\', previous status: %s', val, self.__v['status'])
         # Store previous status
         self.__v['laststatus'] = self.__v['status']
         # Convert daemon raw status to internal representation
@@ -556,14 +574,14 @@ class YDDaemon:                 # Yandex.Disk daemon interface
     '''
     def do_start():
       if self.__getOutput() != "":
-        logger.info('Daemon is already started')
+        LOGGER.info('Daemon is already started')
         self.__watcher.start()    # Activate file watcher
         return
       try:                        # Try to start
         msg = check_output([self.__YDC, '-c', self.config.fileName, 'start'], universal_newlines=True)
-        logger.info('Daemon started, message: %s', msg)
+        LOGGER.info('Daemon started, message: %s', msg)
       except CalledProcessError as e:
-        logger.error('Daemon start failed: %s', e.output)
+        LOGGER.error('Daemon start failed: %s', e.output)
         return
       self.__watcher.start()      # Activate file watcher
     if wait:
@@ -574,69 +592,72 @@ class YDDaemon:                 # Yandex.Disk daemon interface
   def stop(self, wait=False):              # Execute 'yandex-disk stop' in separate thread
     def do_stop():
       if self.__getOutput() == "":
-        logger.info('Daemon is not started')
+        LOGGER.info('Daemon is not started')
         return
       try:
         msg = check_output([self.__YDC, '-c', self.config.fileName, 'stop'], universal_newlines=True)
-        logger.info('Daemon stopped, message: %s', msg)
+        LOGGER.info('Daemon stopped, message: %s', msg)
       except:
-        logger.info('Daemon stop failed')
+        LOGGER.info('Daemon stop failed')
     if wait:
       do_stop()
     else:
       Thread(target=do_stop).start()
 
   def exit(self):                          # Handle daemon/indicator closing
-    logger.debug("Indicator %sexit started: ", self.ID)
+    LOGGER.debug("Indicator %sexit started: ", self.ID)
     self.__watcher.stop()
     self.__timer.cancel()  # stop event timer if it is running
     # Stop yandex-disk daemon if it is required by its configuration
     if self.config.get('stoponexitfromindicator', False):
       self.stop(wait=True)
-      logger.info('Demon %sstopped', self.ID)
-    logger.debug('Indicator %sexited', self.ID)
+      LOGGER.info('Demon %sstopped', self.ID)
+    LOGGER.debug('Indicator %sexited', self.ID)
 
 #################### Indicatior class ####################
-class Indicator(YDDaemon):            # Yandex.Disk appIndicator
+class Indicator(YDDaemon):            
+  """ Yandex.Disk appIndicator class """
 
   ####### YDDaemon virtual classes/methods implementations
-  def error(self, errStr, cfgPath):        # Show error messages implementation
-      dialog = Gtk.MessageDialog(None, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK_CANCEL,
-                                  _('Yandex.Disk Indicator: daemon start failed'))
-      dialog.format_secondary_text(_('Yandex.Disk daemon failed to start because it is not' +
-          ' configured properly\n\n'+ errStr + '\n\n' +
-          '  To configure it up: press OK button.\n  Press Cancel to exit.'))
-      dialog.set_default_size(400, 250)
-      dialog.set_icon(logo)
-      response = dialog.run()
-      dialog.destroy()
-      if response == Gtk.ResponseType.OK:  # Launch Set-up utility
-        logger.debug('starting configuration utility')
-        retCode = call([pathJoin(installDir, 'ya-setup'), cfgPath])
-      else:
-        retCode = 1
-      dialog.destroy()
-      return retCode              # 0 when error is not critical or fixed (daemon has been configured via ya-setup)
+  def error(self, errStr, cfgPath):        
+    """ Show error messages implementation """
+    dialog = Gtk.MessageDialog(None, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK_CANCEL,
+                                _('Yandex.Disk Indicator: daemon start failed'))
+    dialog.format_secondary_text(_('Yandex.Disk daemon failed to start because it is not' +
+        ' configured properly\n\n'+ errStr + '\n\n' +
+        '  To configure it up: press OK button.\n  Press Cancel to exit.'))
+    dialog.set_default_size(400, 250)
+    dialog.set_icon(APPLOGO)
+    response = dialog.run()
+    dialog.destroy()
+    if response == Gtk.ResponseType.OK:  # Launch Set-up utility
+      LOGGER.debug('starting configuration utility')
+      retCode = call([pathJoin(APPINSTPATH, 'ya-setup'), cfgPath])
+    else:
+      retCode = 1
+    dialog.destroy()
+    return retCode              # 0 when error is not critical or fixed (daemon has been configured via ya-setup)
 
-  def change(self, vals):             # Implementation of daemon class call-back function
+  def change(self, vals):             #
+    """ Implementation of daemon class call-back function """
     ### NOTE: it is called not from main thread, so it have to add action in main loop queue
     '''
     It handles daemon status changes by updating icon, creating messages and also update
     status information in menu (status, sizes and list of last synchronized items).
     It is called when daemon detects any change of its status.
     '''
-    logger.info('%sChange event: %s', self.ID, ','.join(['stat' if vals['statchg'] else '',
+    LOGGER.info('%sChange event: %s', self.ID, ','.join(['stat' if vals['statchg'] else '',
                                                          'size' if vals['szchg'] else '',
                                                          'last' if vals['lastchg'] else '']))
     def do_change(vals, path):
-      # Update information in menu
+      """ Update information in menu """
       self.menu.update(vals, path)
       # Handle daemon status change by icon change
       if vals['status'] != vals['laststatus']:
-        logger.info('Status: %s ->  %s', vals['laststatus'], vals['status'])
+        LOGGER.info('Status: %s ->  %s', vals['laststatus'], vals['status'])
         self.updateIcon(vals['status'])          # Update icon
         # Create notifications for status change events
-        if config['notifications']:
+        if APPCONF['notifications']:
           if vals['laststatus'] == 'none':       # Daemon has been started
             self.notify.send(_('Yandex.Disk daemon has been started'))
           if vals['status'] == 'busy':           # Just entered into 'busy'
@@ -661,7 +682,7 @@ class Indicator(YDDaemon):            # Yandex.Disk appIndicator
     # Create indicator notification engine
     self.notify = Notification(_('Yandex.Disk ') + ID)
     # Setup icons theme
-    self.setIconTheme(config['theme'])
+    self.setIconTheme(APPCONF['theme'])
     # Create staff for icon animation support (don't start it here)
     def iconAnimation():          # Changes busy icon by loop (triggered by self.timer)
       # Set next animation icon
@@ -681,12 +702,13 @@ class Indicator(YDDaemon):            # Yandex.Disk appIndicator
     # Initialize Yandex.Disk daemon connection object
     super().__init__(path, ID)
 
-  def setIconTheme(self, theme):      # Determine paths to icons according to current theme
-    # global installDir, configPath
+  def setIconTheme(self, theme):      
+    """ Determine paths to icons according to current theme """
+    # global APPINSTPATH, APPCONFPATH
     theme = 'light' if theme else 'dark'
     # Determine theme from application configuration settings
-    defaultPath = pathJoin(installDir, 'icons', theme)
-    userPath = pathJoin(configPath, 'icons', theme)
+    defaultPath = pathJoin(APPINSTPATH, 'icons', theme)
+    userPath = pathJoin(APPCONFPATH, 'icons', theme)
     # Set appropriate paths to all status icons
     self.icon = dict()
     for status in ['idle', 'error', 'paused', 'none', 'no_net', 'busy']:
@@ -700,7 +722,7 @@ class Indicator(YDDaemon):            # Yandex.Disk appIndicator
     self.themePath = userPath if pathExists(userIcon) else defaultPath
 
   def updateIcon(self, status):       # Change indicator icon according to just changed daemon status
-    # Set icon according to the current status
+    """ Set icon according to the current daemon status """
     self.ind.set_icon_full(self.icon[status], '')
     # Handle animation
     if status == 'busy':        # Just entered into 'busy' status
@@ -807,18 +829,18 @@ class Indicator(YDDaemon):            # Yandex.Disk appIndicator
         self.last.set_submenu(self.lastItems)
         # Switch off last items menu sensitivity if no items in list
         self.last.set_sensitive(vals['lastitems'])
-        logger.debug("Sub-menu 'Last synchronized' has %s items", str(len(vals['lastitems'])))
+        LOGGER.debug("Sub-menu 'Last synchronized' has %s items", str(len(vals['lastitems'])))
         
       self.show_all()                                 # Renew menu
 
     def openAbout(self, widget):            # Show About window
-      # global logo, indicators
-      for i in indicators:
+      # global APPLOGO, APPINDICATORS
+      for i in APPINDICATORS:
         i.menu.about.set_sensitive(False)           # Disable menu item
       aboutWindow = Gtk.AboutDialog()
-      aboutWindow.set_logo(logo);   aboutWindow.set_icon(logo)
+      aboutWindow.set_logo(APPLOGO);   aboutWindow.set_icon(APPLOGO)
       aboutWindow.set_program_name(_('Yandex.Disk indicator'))
-      aboutWindow.set_version(_('Version ') + appVer)
+      aboutWindow.set_version(_('Version ') + APPVER)
       aboutWindow.set_copyright(COPYRIGHT)
       aboutWindow.set_license(LICENSE)
       aboutWindow.set_authors([_('Sly_tom_cat <slytomcat@mail.ru> '),
@@ -840,7 +862,7 @@ class Indicator(YDDaemon):            # Yandex.Disk appIndicator
       aboutWindow.set_resizable(False)
       aboutWindow.run()
       aboutWindow.destroy()
-      for i in indicators:
+      for i in APPINDICATORS:
         i.menu.about.set_sensitive(True)            # Enable menu item
 
     def showOutput(self, widget):           # Request for daemon output
@@ -848,10 +870,10 @@ class Indicator(YDDaemon):            # Yandex.Disk appIndicator
       def displayOutput(outText, widget):
         ### NOTE: it is called not from main thread, so it have to add action in main loop queue
         def do_display(outText, widget):
-          # global logo
+          # global APPLOGO
           #outText = self.daemon.getOutput(True)
           statusWindow = Gtk.Dialog(_('Yandex.Disk daemon output message'))
-          statusWindow.set_icon(logo)
+          statusWindow.set_icon(APPLOGO)
           statusWindow.set_border_width(6)
           statusWindow.add_button(_('Close'), Gtk.ResponseType.CLOSE)
           textBox = Gtk.TextView()                            # Create text-box to display daemon output
@@ -877,12 +899,12 @@ class Indicator(YDDaemon):            # Yandex.Disk appIndicator
         self.daemon.stop()
 
     def openPath(self, _, path):       # Open path
-      logger.info("Opening '%s'", path)
+      LOGGER.info("Opening '%s'", path)
       if pathExists(path):
         try:
           call(['xdg-open', path])
         except:
-          logger.error("Start of '%s' failed", path)
+          LOGGER.error("Start of '%s' failed", path)
 
     def close(self, _):                # Quit from indicator
       appExit()
@@ -907,25 +929,27 @@ class Indicator(YDDaemon):            # Yandex.Disk appIndicator
       if not self.active:
         self.timer = timeout_add(self.interval, self.handler)
         self.active = True
-        # logger.debug('timer started %s %s', self.timer, interval)
+        # LOGGER.debug('timer started %s %s', self.timer, interval)
 
     def stop(self):                     # Stop active timer
       if self.active:
-        # logger.debug('timer to stop %s', self.timer)
+        # LOGGER.debug('timer to stop %s', self.timer)
         source_remove(self.timer)
         self.active = False
 
 #### Application functions and classes
-class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
+class Preferences(Gtk.Dialog):  #
+  """ Preferences window of application and daemons """
 
-  class excludeDirsList(Gtk.Dialog):                                      # Excluded list dialogue
+  class excludeDirsList(Gtk.Dialog):                                      
+    """ Excluded dirs dialogue """
 
-    def __init__(self, _, parent, dcofig):   # show current list
+    def __init__(self, widget, parent, dcofig):   # show current list
       self.dconfig = dcofig
       self.parent = parent
       Gtk.Dialog.__init__(self, title=_('Folders that are excluded from synchronization'),
                           parent=parent, flags=1)
-      self.set_icon(logo)
+      self.set_icon(APPLOGO)
       self.set_size_request(400, 300)
       self.add_button(_('Add catalogue'),
                       Gtk.ResponseType.APPLY).connect("clicked", self.addFolder, self)
@@ -946,17 +970,17 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
       self.dirset = [val for val in CVal(self.dconfig.get('exclude-dirs', None))]
       for val in self.dirset:
         self.exList.append([False, val])
-      #logger.debug(str(self.dirset))
+      #LOGGER.debug(str(self.dirset))
       self.show_all()
 
 
-    def exitFromDialog(self, _):     # Save list from dialogue to "exclude-dirs" property
+    def exitFromDialog(self, widget):     # Save list from dialogue to "exclude-dirs" property
       if self.dconfig.changed:
         eList = CVal()                                      # Store path value from dialogue rows
         for i in self.dirset:
           eList.add(i)
         self.dconfig['exclude-dirs'] = eList.get()          # Save collected value
-      #logger.debug(str(self.dirset))
+      #LOGGER.debug(str(self.dirset))
       self.destroy()                                        # Close dialogue
 
     def lineToggled(self, _, path):  # Line click handler, it switch row selection
@@ -971,9 +995,9 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
           self.dconfig.changed = True
         else:
           listIiter = self.exList.iter_next(listIiter)
-      #logger.debug(str(self.dirset))
+      #LOGGER.debug(str(self.dirset))
 
-    def addFolder(self, _, parent):  # Add new path to list via FileChooserDialog
+    def addFolder(self, widget, parent):  # Add new path to list via FileChooserDialog
       dialog = Gtk.FileChooserDialog(_('Select catalogue to add to list'), parent,
                                      Gtk.FileChooserAction.SELECT_FOLDER,
                                      (_('Close'), Gtk.ResponseType.CANCEL,
@@ -991,16 +1015,16 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
               self.dirset.append(path)
               self.dconfig.changed = True
       dialog.destroy()
-      #logger.debug(str(self.dirset))
+      #LOGGER.debug(str(self.dirset))
 
-  def __init__(self, _):
-    # global config, indicators, logo
+  def __init__(self, widget):
+    # global config, APPINDICATORS, APPLOGO
     # Preferences Window routine
-    for i in indicators:
+    for i in APPINDICATORS:
       i.menu.preferences.set_sensitive(False)   # Disable menu items to avoid multi-dialogs creation
     # Create Preferences window
-    Gtk.Dialog.__init__(self, _('Yandex.Disk-indicator and Yandex.Disks preferences'), flags=1)
-    self.set_icon(logo)
+    super().__init__(_('Yandex.Disk-indicator and Yandex.Disks preferences'), flags=1)
+    self.set_icon(APPLOGO)
     self.set_border_width(6)
     self.add_button(_('Close'), Gtk.ResponseType.CLOSE)
     pref_notebook = Gtk.Notebook()              # Create notebook for indicator and daemon options
@@ -1013,13 +1037,13 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
                      ('theme', _('Prefer light icon theme')),
                      ('fmextensions', _('Activate file manager extensions'))]:
       cb.append(Gtk.CheckButton(msg))
-      cb[-1].set_active(config[key])
+      cb[-1].set_active(APPCONF[key])
       cb[-1].connect("toggled", self.onButtonToggled, cb[-1], key)
       preferencesBox.add(cb[-1])
     # --- End of Indicator preferences tab --- add it to notebook
     pref_notebook.append_page(preferencesBox, Gtk.Label(_('Indicator settings')))
     # Add daemos tabs
-    for i in indicators:
+    for i in APPINDICATORS:
       # --- Daemon start options tab ---
       optionsBox = Gtk.VBox(spacing=5)
       key = 'startonstartofindicator'           # Start daemon on indicator start
@@ -1066,33 +1090,34 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
     self.set_resizable(False)
     self.show_all()
     self.run()
-    if config.changed:
-      config.save()                             # Save app config
-    for i in indicators:
+    if APPCONF.changed:
+      APPCONF.save()                             # Save app config
+    for i in APPINDICATORS:
       if i.config.changed:
         i.config.save()                         # Save daemon options in config file
       i.menu.preferences.set_sensitive(True)    # Enable menu items
     self.destroy()
 
-  def onButtonToggled(self, _, button, key, dconfig=None, ow=None):  # Handle clicks
+  def onButtonToggled(self, _, button, key, dconfig=None, ow=None):  
+    """ Handle clicks on controls """
     toggleState = button.get_active()
-    logger.debug('Togged: %s  val: %s', key, str(toggleState))
+    LOGGER.debug('Togged: %s  val: %s', key, str(toggleState))
     # Update configurations
     if key in ['read-only', 'overwrite', 'startonstartofindicator', 'stoponexitfromindicator']:
       dconfig[key] = toggleState                # Update daemon config
       dconfig.changed = True
     else:
-      config.changed = True                     # Update application config
-      config[key] = toggleState
+      APPCONF.changed = True                     # Update application config
+      APPCONF[key] = toggleState
     if key == 'theme':
-        for i in indicators:                    # Update all indicators' icons
+        for i in APPINDICATORS:                    # Update all APPINDICATORS' icons
           i.setIconTheme(toggleState)           # Update icon theme
           i.updateIcon(i.currentStatus)         # Update current icon
     elif key == 'autostart':
       if toggleState:
-        copyFile(autoStartSrc, autoStartDst)
+        copyFile(APPAUTOSTARTSRC, APPAUTOSTARTDST)
       else:
-        deleteFile(autoStartDst)
+        deleteFile(APPAUTOSTARTDST)
     elif key == 'fmextensions':
       if not button.get_inconsistent():         # It is a first call
         if not activateActions(toggleState):            
@@ -1105,33 +1130,35 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
     elif key == 'read-only':
       ow.set_sensitive(toggleState)
 
-def appExit():          # Exit from application (it closes all indicators)
-  # global indicators
-  logger.debug("Exit started")
-  for i in indicators:
+def appExit():          
+  """ Exit from application (it closes all APPINDICATORS) """
+  # global APPINDICATORS
+  LOGGER.debug("Exit started")
+  for i in APPINDICATORS:
     i.exit()
   Gtk.main_quit()
   
-def activateActions(activate):  # Install/deinstall file extensions
-  # global installDir
+def activateActions(activate):  
+  """ Install/deinstall file extensions """
+  # global APPINSTPATH
   userHome = getenv("HOME")
   result = False
   try:                  # Catch all exceptions during FM action activation/deactivation
 
     # --- Actions for Nautilus ---
     if which("nautilus") is not None:
-      logger.info("Nautilus installed")
+      LOGGER.info("Nautilus installed")
       ver = check_output(["lsb_release", "-rs"])
       if ver != '' and float(ver) < 12.10:
         nautilusPath = ".gnome2/nautilus-scripts/"
       else:
         nautilusPath = ".local/share/nautilus/scripts"
-      logger.debug(nautilusPath)
+      LOGGER.debug(nautilusPath)
       if activate:      # Install actions for Nautilus
 
-        copyFile(pathJoin(installDir, "fm-actions/Nautilus_Nemo/publish"),
+        copyFile(pathJoin(APPINSTPATH, "fm-actions/Nautilus_Nemo/publish"),
                  pathJoin(userHome, nautilusPath, _("Publish via Yandex.Disk")))
-        copyFile(pathJoin(installDir, "fm-actions/Nautilus_Nemo/unpublish"),
+        copyFile(pathJoin(APPINSTPATH, "fm-actions/Nautilus_Nemo/unpublish"),
                  pathJoin(userHome, nautilusPath, _("Unpublish from Yandex.disk")))
       else:             # Remove actions for Nautilus
         deleteFile(pathJoin(userHome, nautilusPath, _("Publish via Yandex.Disk")))
@@ -1140,11 +1167,11 @@ def activateActions(activate):  # Install/deinstall file extensions
 
     # --- Actions for Nemo ---
     if which("nemo") is not None:
-      logger.info("Nemo installed")
+      LOGGER.info("Nemo installed")
       if activate:      # Install actions for Nemo
-        copyFile(pathJoin(installDir, "fm-actions/Nautilus_Nemo/publish"),
+        copyFile(pathJoin(APPINSTPATH, "fm-actions/Nautilus_Nemo/publish"),
                  pathJoin(userHome, ".local/share/nemo/scripts", _("Publish via Yandex.Disk")))
-        copyFile(pathJoin(installDir, "fm-actions/Nautilus_Nemo/unpublish"),
+        copyFile(pathJoin(APPINSTPATH, "fm-actions/Nautilus_Nemo/unpublish"),
                  pathJoin(userHome, ".local/share/nemo/scripts", _("Unpublish from Yandex.disk")))
       else:             # Remove actions for Nemo
         deleteFile(pathJoin(userHome, ".gnome2/nemo-scripts", _("Publish via Yandex.Disk")))
@@ -1153,7 +1180,7 @@ def activateActions(activate):  # Install/deinstall file extensions
 
     # --- Actions for Thunar ---
     if which("thunar") is not None:
-      logger.info("Thunar installed")
+      LOGGER.info("Thunar installed")
       ucaPath = pathJoin(userHome, ".config/Thunar/uca.xml")
       # Read uca.xml
       with open(ucaPath) as ucaf:
@@ -1198,10 +1225,10 @@ def activateActions(activate):  # Install/deinstall file extensions
 
     # --- Actions for Dolphin ---
     if which("dolphin") is not None:
-      logger.info("Dolphin installed")
+      LOGGER.info("Dolphin installed")
       if activate:      # Install actions for Dolphin
         makeDirs(pathJoin(userHome, '.local/share/kservices5/ServiceMenus'))
-        copyFile(pathJoin(installDir, "fm-actions/Dolphin/ydpublish.desktop"),
+        copyFile(pathJoin(APPINSTPATH, "fm-actions/Dolphin/ydpublish.desktop"),
                  pathJoin(userHome, ".local/share/kservices5/ServiceMenus/ydpublish.desktop"))
       else:             # Remove actions for Dolphin
         deleteFile(pathJoin(userHome, ".local/share/kservices5/ServiceMenus/ydpublish.desktop"))
@@ -1209,17 +1236,17 @@ def activateActions(activate):  # Install/deinstall file extensions
 
     # --- Actions for Pantheon-files ---
     if which("pantheon-files") is not None:
-      logger.info("Pantheon-files installed")
+      LOGGER.info("Pantheon-files installed")
       ctrs_path = "/usr/share/contractor/"
       if activate:      # Install actions for Pantheon-files
-        src_path = pathJoin(installDir, "fm-actions", "pantheon-files")
+        src_path = pathJoin(APPINSTPATH, "fm-actions", "pantheon-files")
         ctr_pub = pathJoin(src_path, "yandex-disk-indicator-publish.contract")
         ctr_unpub = pathJoin(src_path, "yandex-disk-indicator-unpublish.contract")
         res = call(["gksudo", "-D", "yd-tools", "cp", ctr_pub, ctr_unpub, ctrs_path])
         if res == 0:
           result = True
         else:
-          logger.error("Cannot enable actions for Pantheon-files")
+          LOGGER.error("Cannot enable actions for Pantheon-files")
       else:             # Remove actions for Pantheon-files
         res = call(["gksudo", "-D", "yd-tools", "rm",
                     pathJoin(ctrs_path, "yandex-disk-indicator-publish.contract"),
@@ -1227,15 +1254,15 @@ def activateActions(activate):  # Install/deinstall file extensions
         if res == 0:
           result = True
         else:
-          logger.error("Cannot disable actions for Pantheon-files")
+          LOGGER.error("Cannot disable actions for Pantheon-files")
 
     # --- Actions for Caja ---
     if which("caja") is not None:
-      logger.info("Caja installed")
+      LOGGER.info("Caja installed")
       if activate:      # Install actions for Nemo
-        copyFile(pathJoin(installDir, "fm-actions/Nautilus_Nemo/publish"),
+        copyFile(pathJoin(APPINSTPATH, "fm-actions/Nautilus_Nemo/publish"),
                  pathJoin(userHome, ".config/caja/scripts", _("Publish via Yandex.Disk")))
-        copyFile(pathJoin(installDir, "fm-actions/Nautilus_Nemo/unpublish"),
+        copyFile(pathJoin(APPINSTPATH, "fm-actions/Nautilus_Nemo/unpublish"),
                  pathJoin(userHome, ".config/caja/scripts", _("Unpublish from Yandex.disk")))
       else:             # Remove actions for Nemo
         deleteFile(pathJoin(userHome, ".config/caja/scripts", _("Publish via Yandex.Disk")))
@@ -1243,10 +1270,11 @@ def activateActions(activate):  # Install/deinstall file extensions
       result = True
 
   except Exception as e:
-    logger.error("The following error occurred during the FM actions activation:\n %s", str(e))
+    LOGGER.error("The following error occurred during the FM actions activation:\n %s", str(e))
   return result
 
-def argParse(ver):              # Parse command line arguments
+def argParse(ver):              
+  """ Parse command line arguments """
   parser = ArgumentParser(description=_('Desktop indicator for yandex-disk daemon'), add_help=False)
   group = parser.add_argument_group(_('Options'))
   group.add_argument('-l', '--log', type=int, choices=range(10, 60, 10), dest='level', default=30,
@@ -1269,7 +1297,8 @@ def argParse(ver):              # Parse command line arguments
             help=_('Print version and exit'))
   return parser.parse_args()
 
-def checkAutoStart(path):       # Check that auto-start is enabled
+def checkAutoStart(path):       
+  """ Check that auto-start is enabled """
   if pathExists(path):
     i = 1 if getenv('XDG_CURRENT_DESKTOP') in ('Unity', 'Pantheon') else 0
     with open(path, 'rt') as f:
@@ -1291,29 +1320,29 @@ def setProcName(newname):
 ###################### MAIN #########################
 if __name__ == '__main__':
   # Application constants
-  appName = 'yandex-disk-indicator'
-  # See appVer in the beginnig of the code
-  appHomeName = 'yd-tools'
-  installDir = pathJoin('/usr/share', appHomeName)
-  logo = Pixbuf.new_from_file(pathJoin(installDir, 'icons/yd-128.png'))
-  configPath = pathJoin(getenv("HOME"), '.config', appHomeName)
+  APPNAME = 'yandex-disk-indicator'
+  # See APPVER in the beginnig of the code
+  APPHOME = 'yd-tools'
+  APPINSTPATH = pathJoin('/usr/share', APPHOME)
+  APPLOGO = Pixbuf.new_from_file(pathJoin(APPINSTPATH, 'icons/yd-128.png'))
+  APPCONFPATH = pathJoin(getenv("HOME"), '.config', APPHOME)
   # Define .desktop files locations for indicator auto-start facility
-  autoStartSrc = '/usr/share/applications/Yandex.Disk-indicator.desktop'
-  autoStartDst = expanduser('~/.config/autostart/Yandex.Disk-indicator.desktop')
+  APPAUTOSTARTSRC = '/usr/share/applications/Yandex.Disk-indicator.desktop'
+  APPAUTOSTARTDST = expanduser('~/.config/autostart/Yandex.Disk-indicator.desktop')
 
   # Initialize logging
   basicConfig(format='%(asctime)-15s %(levelname)-8s %(message)s')
-  logger = getLogger('')
+  LOGGER = getLogger('')
 
   # Setup localization
   # Load translation object (or NullTranslations) and define _() function.
-  _ = translation(appName, '/usr/share/locale', fallback=True).gettext
+  _ = translation(APPNAME, '/usr/share/locale', fallback=True).gettext
 
   # Get command line arguments or their default values
-  args = argParse(appVer)
+  args = argParse(APPVER)
 
   # Change the process name
-  setProcName(appHomeName)
+  setProcName(APPHOME)
 
   # Check for already running instance of the indicator application
   if (str(getpid()) !=
@@ -1321,15 +1350,15 @@ if __name__ == '__main__':
     sysExit(_('The indicator instance is already running.'))
 
   # Set user specified logging level
-  logger.setLevel(args.level)
+  LOGGER.setLevel(args.level)
 
   # Report app version and logging level
-  logger.info('%s v.%s', appName, appVer)
-  logger.debug('Logging level: %s', str(args.level))
+  LOGGER.info('%s v.%s', APPNAME, APPVER)
+  LOGGER.debug('Logging level: %s', str(args.level))
 
   # Application configuration
   '''
-  User configuration is stored in ~/.config/<appHomeName>/<appName>.conf file.
+  User configuration is stored in ~/.config/<APPHOME>/<APPNAME>.conf file.
   This file can contain comments (line starts with '#') and config values in
   form: key=value[,value[,value ...]] where keys and values can be quoted ("...") or not.
   The following key words are reserved for configuration:
@@ -1348,66 +1377,66 @@ if __name__ == '__main__':
   configuration file to provide the functionality of obsolete 'startonstart' and 'stoponexit'
   values for each daemon individually.
   '''
-  config = Config(pathJoin(configPath, appName + '.conf'))
+  APPCONF = Config(pathJoin(APPCONFPATH, APPNAME + '.conf'))
   # Read some settings to variables, set default values and update some values
-  config['autostart'] = checkAutoStart(autoStartDst)
+  APPCONF['autostart'] = checkAutoStart(APPAUTOSTARTDST)
   # Setup on-screen notification settings from config value
-  config.setdefault('notifications', True)
-  config.setdefault('theme', False)
-  config.setdefault('fmextensions', True)
-  config.setdefault('daemons', '~/.config/yandex-disk/config.cfg')
+  APPCONF.setdefault('notifications', True)
+  APPCONF.setdefault('theme', False)
+  APPCONF.setdefault('fmextensions', True)
+  APPCONF.setdefault('daemons', '~/.config/yandex-disk/config.cfg')
   # Is it a first run?
-  if not config.readSuccess:
-    logger.info('No config, probably it is a first run.')
+  if not APPCONF.readSuccess:
+    LOGGER.info('No config, probably it is a first run.')
     # Create application config folders in ~/.config
     try:
-      makeDirs(configPath)
-      makeDirs(pathJoin(configPath, 'icons/light'))
-      makeDirs(pathJoin(configPath, 'icons/dark'))
+      makeDirs(APPCONFPATH)
+      makeDirs(pathJoin(APPCONFPATH, 'icons/light'))
+      makeDirs(pathJoin(APPCONFPATH, 'icons/dark'))
       # Copy icon themes readme to user config catalogue
-      copyFile(pathJoin(installDir, 'icons/readme'), pathJoin(configPath, 'icons/readme'))
+      copyFile(pathJoin(APPINSTPATH, 'icons/readme'), pathJoin(APPCONFPATH, 'icons/readme'))
     except:
-      sysExit('Can\'t create configuration files in %s' % configPath)
+      sysExit('Can\'t create configuration files in %s' % APPCONFPATH)
     # Activate indicator automatic start on system start-up
-    if not pathExists(autoStartDst):
+    if not pathExists(APPAUTOSTARTDST):
       try:
         makeDirs(expanduser('~/.config/autostart'))
-        copyFile(autoStartSrc, autoStartDst)
-        config['autostart'] = True
+        copyFile(APPAUTOSTARTSRC, APPAUTOSTARTDST)
+        APPCONF['autostart'] = True
       except:
-        logger.error('Can\'t activate indicator automatic start on system start-up')
+        LOGGER.error('Can\'t activate indicator automatic start on system start-up')
 
     # Activate FM actions according to config (as it is first run)
-    activateActions(config['fmextensions'])
+    activateActions(APPCONF['fmextensions'])
     # Default settings should be saved (later)
-    config.changed = True
+    APPCONF.changed = True
 
   # Add new daemon if it is not in current list
-  daemons = [expanduser(d) for d in CVal(config['daemons'])]
+  daemons = [expanduser(d) for d in CVal(APPCONF['daemons'])]
   if args.cfg:
     args.cfg = expanduser(args.cfg)
     if args.cfg not in daemons:
       daemons.append(args.cfg)
-      config.changed = True
+      APPCONF.changed = True
   # Remove daemon if it is in the current list
   if args.rcfg:
     args.rcfg = expanduser(args.rcfg)
     if args.rcfg in daemons:
       daemons.remove(args.rcfg)
-      config.changed = True
+      APPCONF.changed = True
   # Check that at least one daemon is in the daemons list
   if not daemons:
     sysExit(_('No daemons specified.\nCheck correctness of -r and -c options.'))
   # Update config if daemons list has been changed
-  if config.changed:
-    config['daemons'] = CVal(daemons).get()
+  if APPCONF.changed:
+    APPCONF['daemons'] = CVal(daemons).get()
     # Update configuration file
-    config.save()
+    APPCONF.save()
 
   # Make indicator objects for each daemon in daemons list
-  indicators = []
+  APPINDICATORS = []
   for dm in daemons:
-    indicators.append(Indicator(dm, _('#%d ') % len(indicators) if len(daemons) > 1 else ''))
+    APPINDICATORS.append(Indicator(dm, _('#%d ') % len(APPINDICATORS) if len(daemons) > 1 else ''))
 
   # Register the SIGINT/SIGTERM handler for graceful exit when indicator is killed
   unix_signal_add(PRIORITY_HIGH, SIGINT, appExit)
