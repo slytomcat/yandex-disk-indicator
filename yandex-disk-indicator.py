@@ -205,8 +205,7 @@ class Config(dict):             # Configuration
             logger.warning('Wrong value(s) in line \'%s %s %s\'', kv, self.delimiter, vv)
           else:                       # Value is OK
             if key in self.keys():    # Check double values
-              logger.warning(('Double values for one key:\n%s = %s\nand\n%s = %s\n' +
-                              'Last one is stored.'), key, self[key], key, value)
+              logger.warning('Double values for one key:\n%s = %s\nand\n%s = %s\nLast one is stored.', key, self[key], key, value)
             self[key] = value         # Store last value
             logger.debug('Config value read as: %s = %s', key, str(value))
     logger.info('Config read: %s', self.fileName)
@@ -601,7 +600,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
 class Indicator(YDDaemon):            # Yandex.Disk appIndicator
 
   ####### YDDaemon virtual classes/methods implementations
-  def error(self, errStr, cfPath):        # Show error messages implementation
+  def error(self, errStr, cfgPath):        # Show error messages implementation
       dialog = Gtk.MessageDialog(None, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK_CANCEL,
                                   _('Yandex.Disk Indicator: daemon start failed'))
       dialog.format_secondary_text(_('Yandex.Disk daemon failed to start because it is not' +
@@ -866,7 +865,7 @@ class Indicator(YDDaemon):            # Yandex.Disk appIndicator
         idle_add(do_display, outText, widget)
       self.daemon.output(lambda t: displayOutput(t, widget))
       
-    def openInBrowser(self, widget, url):   # Open URL
+    def openInBrowser(self, _, url):   # Open URL
       openNewBrowser(url)
 
     def startStopDaemon(self, widget):      # Start/Stop daemon
@@ -877,7 +876,7 @@ class Indicator(YDDaemon):            # Yandex.Disk appIndicator
       elif action == '\u2060':  # Stop
         self.daemon.stop()
 
-    def openPath(self, widget, path):       # Open path
+    def openPath(self, _, path):       # Open path
       logger.info("Opening '%s'", path)
       if pathExists(path):
         try:
@@ -885,7 +884,7 @@ class Indicator(YDDaemon):            # Yandex.Disk appIndicator
         except:
           logger.error("Start of '%s' failed", path)
 
-    def close(self, widget):                # Quit from indicator
+    def close(self, _):                # Quit from indicator
       appExit()
 
   class Timer:                        # Timer implementation
@@ -921,7 +920,7 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
 
   class excludeDirsList(Gtk.Dialog):                                      # Excluded list dialogue
 
-    def __init__(self, widget, parent, dcofig):   # show current list
+    def __init__(self, _, parent, dcofig):   # show current list
       self.dconfig = dcofig
       self.parent = parent
       Gtk.Dialog.__init__(self, title=_('Folders that are excluded from synchronization'),
@@ -951,7 +950,7 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
       self.show_all()
 
 
-    def exitFromDialog(self, widget):     # Save list from dialogue to "exclude-dirs" property
+    def exitFromDialog(self, _):     # Save list from dialogue to "exclude-dirs" property
       if self.dconfig.changed:
         eList = CVal()                                      # Store path value from dialogue rows
         for i in self.dirset:
@@ -960,10 +959,10 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
       #logger.debug(str(self.dirset))
       self.destroy()                                        # Close dialogue
 
-    def lineToggled(self, widget, path):  # Line click handler, it switch row selection
+    def lineToggled(self, _, path):  # Line click handler, it switch row selection
       self.exList[path][0] = not self.exList[path][0]
 
-    def deleteSelected(self, widget):     # Remove selected rows from list
+    def deleteSelected(self, _):     # Remove selected rows from list
       listIiter = self.exList.get_iter_first()
       while listIiter is not None and self.exList.iter_is_valid(listIiter):
         if self.exList.get(listIiter, 0)[0]:
@@ -974,7 +973,7 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
           listIiter = self.exList.iter_next(listIiter)
       #logger.debug(str(self.dirset))
 
-    def addFolder(self, widget, parent):  # Add new path to list via FileChooserDialog
+    def addFolder(self, _, parent):  # Add new path to list via FileChooserDialog
       dialog = Gtk.FileChooserDialog(_('Select catalogue to add to list'), parent,
                                      Gtk.FileChooserAction.SELECT_FOLDER,
                                      (_('Close'), Gtk.ResponseType.CANCEL,
@@ -994,7 +993,7 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
       dialog.destroy()
       #logger.debug(str(self.dirset))
 
-  def __init__(self, widget):
+  def __init__(self, _):
     # global config, indicators, logo
     # Preferences Window routine
     for i in indicators:
@@ -1075,7 +1074,7 @@ class Preferences(Gtk.Dialog):  # Preferences window of application and daemons
       i.menu.preferences.set_sensitive(True)    # Enable menu items
     self.destroy()
 
-  def onButtonToggled(self, widget, button, key, dconfig=None, ow=None):  # Handle clicks
+  def onButtonToggled(self, _, button, key, dconfig=None, ow=None):  # Handle clicks
     toggleState = button.get_active()
     logger.debug('Togged: %s  val: %s', key, str(toggleState))
     # Update configurations
@@ -1122,8 +1121,8 @@ def activateActions(activate):  # Install/deinstall file extensions
     # --- Actions for Nautilus ---
     if which("nautilus") is not None:
       logger.info("Nautilus installed")
-      ver = check_output(["lsb_release -r | sed -n '1{s/[^0-9]//g;p;q}'"], shell=True)
-      if ver != '' and int(ver) < 1210:
+      ver = check_output(["lsb_release", "-rs"])
+      if ver != '' and float(ver) < 12.10:
         nautilusPath = ".gnome2/nautilus-scripts/"
       else:
         nautilusPath = ".local/share/nautilus/scripts"
@@ -1244,7 +1243,7 @@ def activateActions(activate):  # Install/deinstall file extensions
       result = True
 
   except Exception as e:
-    logger.error("The following error occurred during the FM actions activation:\n %s" % str(e))
+    logger.error("The following error occurred during the FM actions activation:\n %s", str(e))
   return result
 
 def argParse(ver):              # Parse command line arguments
@@ -1413,6 +1412,5 @@ if __name__ == '__main__':
   # Register the SIGINT/SIGTERM handler for graceful exit when indicator is killed
   unix_signal_add(PRIORITY_HIGH, SIGINT, appExit)
   unix_signal_add(PRIORITY_HIGH, SIGTERM, appExit)
-
   # Start GTK Main loop
   Gtk.main()
