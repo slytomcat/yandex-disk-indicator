@@ -1,0 +1,4 @@
+#!/bin/bash
+
+cd /usr/share/yd-tools
+python3 yandex-disk-indicator.py
