@@ -90,7 +90,7 @@ class Indicator(YDDaemon):
     dialog.set_default_size(400, 250)
     dialog.set_icon(APPLOGO)
     response = dialog.run()
-    
+
     if errStr != '' and response == Gtk.ResponseType.OK:  # Launch Set-up utility
       LOGGER.debug('starting configuration utility')
       retCode = call([pathJoin(APPINSTPATH, 'ya-setup'), cfgPath])
@@ -101,9 +101,9 @@ class Indicator(YDDaemon):
 
   def change(self, vals):
     """ Implementation of daemon class call-back function
-    
+
     NOTE: it is called not from main thread, so it have to add action in main loop queue
-    
+
     It handles daemon status changes by updating icon, creating messages and also update
     status information in menu (status, sizes and list of last synchronized items).
     It is called when daemon detects any change of its status.
@@ -111,7 +111,7 @@ class Indicator(YDDaemon):
     LOGGER.info('%sChange event: %s', self.ID, ','.join(['stat' if vals['statchg'] else '',
                                                          'size' if vals['szchg'] else '',
                                                          'last' if vals['lastchg'] else '']))
-    
+
     def do_change(vals, path):
       """ Update information in menu """
       self.menu.update(vals, path)
@@ -299,7 +299,7 @@ class Indicator(YDDaemon):
         # Switch off last items menu sensitivity if no items in list
         self.last.set_sensitive(vals['lastitems'])
         LOGGER.debug("Sub-menu 'Last synchronized' has %s items", str(len(vals['lastitems'])))
-        
+
       self.show_all()                                 # Renew menu
 
     def openAbout(self, widget):            # Show About window
@@ -356,7 +356,7 @@ class Indicator(YDDaemon):
         idle_add(do_display, outText, widget)
 
       self.daemon.output(lambda t: displayOutput(t, widget))
-      
+
     def openInBrowser(self, _, url):   # Open URL
       openNewBrowser(url)
 
@@ -626,7 +626,7 @@ if __name__ == '__main__':
 
   # Setup localization
   _ = translation(APPNAME, fallback=True).gettext
-  
+
   # Get command line arguments or their default values
   args = argParse(APPVER)
 
@@ -634,8 +634,7 @@ if __name__ == '__main__':
   setProcName(APPHOME)
 
   # Check for already running instance of the indicator application
-  if (str(getpid()) !=
-      check_output(["pgrep", '-u', str(geteuid()), "yd-tools"], universal_newlines=True).strip()):
+  if (str(getpid()) != check_output(["pgrep", '-u', str(geteuid()), "yd-tools"], universal_newlines=True).strip()):
     sysExit(_('The indicator instance is already running.'))
 
   # Set user specified logging level

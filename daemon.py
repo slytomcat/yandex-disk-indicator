@@ -41,14 +41,14 @@ class YDDaemon:                 # Yandex.Disk daemon interface
               'error' - error message
               'path' - path of error
   error    - Virtual method for error handling. It have to be redefined by UI class.
- 
+
   Class interface variables:
   ID       - the daemon identity string (empty in single daemon configuration)
   config   - The daemon configuration dictionary (object of _DConfig(Config) class)
   """
   #################### Virtual methods ##################
   # they have to be implemented in GUI part of code
-  
+
   def error(self, errStr, cfgPath):
     """ Error handler """
     LOGGER.debug('%sError %s , path %s', self.ID, errStr, cfgPath)
@@ -78,7 +78,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
         LOGGER.info("Watcher was not started: path '%s' was not found.", self.path)
         return
       self.mark = stat(self.path).st_ctime_ns
-      
+
       def wHandler():
         st = stat(self.path).st_ctime_ns
         if st != self.mark:
@@ -86,11 +86,11 @@ class YDDaemon:                 # Yandex.Disk daemon interface
           self.handler(*self.args, **self.kwargs)
         self.timer = thTimer(0.5, wHandler)
         self.timer.start()
-      
+
       self.timer = thTimer(0.5, wHandler)
       self.timer.start()
       self.status = True
-    
+
     def stop(self):
       if not self.status:
         return
@@ -179,7 +179,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
     # Declare event handler staff for callback from watcher and timer
     self.__tCnt = 0                          # Timer event counter
     self.__lock = Lock()                     # event handler lock
-    
+
     def eventHandler(watch):
       """
       Handles watcher (when watch=False) and and timer (when watch=True) events.
@@ -205,7 +205,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
         self.__timer.start()
       # Leave the critical section
       self.__lock.release()
-    
+
     # Initialize watcher staff
     self.__watcher = self.__Watcher(pathJoin(expanduser(self.config['dir']), '.sync/cli.log'), eventHandler, (True,))
     # Initialize timer staff

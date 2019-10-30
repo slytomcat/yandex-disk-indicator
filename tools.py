@@ -7,8 +7,8 @@ from shutil import copy as fileCopy, which
 from os.path import exists as pathExists, join as pathJoin
 from subprocess import check_output, call
 from re import findall as reFindall, search as reSearch, sub as reSub,  M as reM, S as reS
-
 from logging import getLogger
+
 LOGGER = getLogger('')
 
 # define fake gettext
@@ -238,7 +238,7 @@ def activateActions(activate, appInstPath):
     # --- Actions for Nautilus ---
     if which("nautilus") is not None:
       LOGGER.info("Nautilus installed")
-      ver = check_output(["lsb_release", "-rs"])
+      ver = check_output([which("lsb_release"), "-rs"])
       if ver != '' and float(ver) < 12.10:
         nautilusPath = ".gnome2/nautilus-scripts/"
       else:
@@ -328,17 +328,18 @@ def activateActions(activate, appInstPath):
     if which("pantheon-files") is not None:
       LOGGER.info("Pantheon-files installed")
       ctrs_path = "/usr/share/contractor/"
+      gksudo = which("gksudo")
       if activate:      # Install actions for Pantheon-files
         src_path = pathJoin(appInstPath, "fm-actions", "pantheon-files")
         ctr_pub = pathJoin(src_path, "yandex-disk-indicator-publish.contract")
         ctr_unpub = pathJoin(src_path, "yandex-disk-indicator-unpublish.contract")
-        res = call(["gksudo", "-D", "yd-tools", "cp", ctr_pub, ctr_unpub, ctrs_path])
+        res = call([gksudo, "-D", "yd-tools", "cp", ctr_pub, ctr_unpub, ctrs_path])
         if res == 0:
           result = True
         else:
           LOGGER.error("Cannot enable actions for Pantheon-files")
       else:             # Remove actions for Pantheon-files
-        res = call(["gksudo", "-D", "yd-tools", "rm",
+        res = call([gksudo, "-D", "yd-tools", "rm",
                     pathJoin(ctrs_path, "yandex-disk-indicator-publish.contract"),
                     pathJoin(ctrs_path, "yandex-disk-indicator-unpublish.contract")])
         if res == 0:
