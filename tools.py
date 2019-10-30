@@ -3,7 +3,6 @@
 
 from os import remove, makedirs, getenv
 from argparse import ArgumentParser
-from logging import getLogger
 from shutil import copy as fileCopy, which
 from os.path import exists as pathExists, join as pathJoin
 from subprocess import check_output, call
