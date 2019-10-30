@@ -138,7 +138,7 @@ class Indicator(YDDaemon):
             self.notify.send(_('Synchronization ERROR'))
       # Remember current status (required for Preferences dialog)
       self.currentStatus = vals['status']
-  
+
     idle_add(do_change, vals, self.config['dir'])
 
   ####### Own classes/methods
@@ -149,7 +149,7 @@ class Indicator(YDDaemon):
     self.setIconTheme(APPCONF['theme'])
     # Create staff for icon animation support (don't start it here)
 
-    self._seqNum = 2  # Number current busy icon 
+    self._seqNum = 2  # Number current busy icon
 
     def iconAnimation():          # Changes busy icon by loop (triggered by self.timer)
       # Set next animation icon
