@@ -611,8 +611,8 @@ if __name__ == '__main__':
 
   # Setup localization
   # Load translation object (or NullTranslations) and define _() function.
-  _ = translation(APPNAME, '/usr/share/locale', fallback=True).gettext
-
+  translation(APPNAME, '/usr/share/locale', fallback=True).install()
+  
   # Get command line arguments or their default values
   args = argParse(APPVER)
 
