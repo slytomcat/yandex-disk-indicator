@@ -34,13 +34,13 @@ from gi.repository.GdkPixbuf import Pixbuf
 from gi.repository.GLib import timeout_add, source_remove, idle_add, unix_signal_add, PRIORITY_HIGH
 
 from webbrowser import open_new as openNewBrowser
-from logging import basicConfig, getLogger
+from logging import basicConfig
 from signal import SIGTERM, SIGINT
 from gettext import translation
 from os.path import exists as pathExists, join as pathJoin, relpath as relativePath, expanduser
 from os import getenv, getpid, geteuid
 from daemon import YDDaemon, sysExit
-from tools import copyFile, deleteFile, makeDirs, shortPath, CVal, Config, activateActions, checkAutoStart, setProcName, argParse, check_output, call, pathExists
+from tools import copyFile, deleteFile, makeDirs, shortPath, CVal, Config, activateActions, checkAutoStart, setProcName, argParse, check_output, call, pathExists, getLogger
 
 class Notification:             
   """ On-screen notification """

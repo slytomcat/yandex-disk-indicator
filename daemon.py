@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from tools import Config, CVal, check_output, reFindall, pathExists, pathJoin
+from tools import Config, CVal, check_output, reFindall, pathExists, pathJoin, getLogger
 
 from os import stat
 from os.path import expanduser
@@ -12,8 +12,6 @@ from sys import exit as sysExit
 from subprocess import CalledProcessError
 
 
-
-from logging import getLogger
 LOGGER = getLogger('')
 
 #################### Main daemon class ####################

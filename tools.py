@@ -13,7 +13,8 @@ from logging import getLogger
 LOGGER = getLogger('')
 
 # define fake gettext
-_ = lambda x:x
+def _(s):
+  return s
 
 #################### Common utility functions and classes ####################
 def copyFile(src, dst):
