@@ -17,39 +17,39 @@ def _(s):
 
 #################### Common utility functions and classes ####################
 def copyFile(src, dst):
-  '''File copy functiion'''
+  """File copy functiion"""
   try:
     fileCopy(src, dst)
   except:
     LOGGER.error("File Copy Error: from %s to %s", src, dst)
 
 def deleteFile(dst):
-  '''Delete file function'''
+  """Delete file function"""
   try:
     remove(dst)
   except:
     LOGGER.error('File Deletion Error: %s', dst)
 
 def makeDirs(dst):
-  '''Create all child directories up to specified'''
+  """Create all child directories up to specified"""
   try:
     makedirs(dst, exist_ok=True)
   except:
     LOGGER.error('Dirs creation Error: %s', dst)
 
 def shortPath(path):
-  '''Make short path to display it'''
+  """Make short path to display it"""
   return (path[: 20] + '...' + path[-27:] if len(path) > 50 else path).replace('_', '\u02CD')
 
 class CVal:                     # Multivalue helper
-  ''' Class to work with value that can be None, scalar item or list of items depending
-      of number of elementary items added to it or it contain. '''
+  """ Class to work with value that can be None, scalar item or list of items depending
+      of number of elementary items added to it or it contain. """
 
   def __init__(self, initialValue=None):
     self.set(initialValue)   # store initial value
     self.index = None
 
-  def get(self):                  
+  def get(self):
     # Just returns the current value of cVal
     return self.val
 
@@ -60,7 +60,7 @@ class CVal:                     # Multivalue helper
       self.val = self.val[0]
     return self.val
 
-  def add(self, item):            
+  def add(self, item):
     """ Add item """
     if isinstance(self.val, list):  # Is it third, fourth ... value?
       self.val.append(item)         # Just append new item to list
@@ -70,7 +70,7 @@ class CVal:                     # Multivalue helper
       self.val = [self.val, item]   # Convert scalar value to list of items.
     return self.val
 
-  def __iter__(self):             
+  def __iter__(self):
     """ cVal iterator object initialization """
     if isinstance(self.val, list):  # Is CVal a list?
       self.index = -1
@@ -80,7 +80,7 @@ class CVal:                     # Multivalue helper
       self.index = -2
     return self
 
-  def __next__(self):             
+  def __next__(self):
     """ cVal iterator support """
     if self.index is None:            # Is CVal not defined?
       raise StopIteration             # Stop iterations
@@ -90,22 +90,22 @@ class CVal:                     # Multivalue helper
         return self.val[self.index]
       self.index = None               # There is no more elements in list.
       raise StopIteration             # Stop iterations
-    else:                             # CVal has scalar type.
-      self.index = None               # Remember that there is no more iterations possible
-      return self.val
+    # CVal has scalar type.
+    self.index = None                # Remember that there is no more iterations possible
+    return self.val
 
   def __bool__(self):
-    """ returns False for empty cVal oterways returns True """ 
+    """ returns False for empty cVal oterways returns True """
     return self.val is not None
 
-class Config(dict):             
+class Config(dict):
   """ Configuration is a class to represent stored on disk configuration values """
 
   def __init__(self, fileName, load=True,
                bools=None, boolval=None,
                usequotes=True, delimiter='='):
-    bools = [['true', 'yes', 'y'], ['false', 'no', 'n']] if  bools is None else bools
-    boolval=['yes', 'no'] if boolval is None else boolval
+    bools = [['true', 'yes', 'y'], ['false', 'no', 'n']] if bools is None else bools
+    boolval = ['yes', 'no'] if boolval is None else boolval
     super().__init__()
     self.fileName = fileName
     self.bools = bools             # Values to detect boolean in self.load
@@ -228,7 +228,7 @@ class Config(dict):
     self.changed = False                  # Reset flag of change in not stored config
     return True
 
-def activateActions(activate, appInstPath):  
+def activateActions(activate, appInstPath):
   """ Install/deinstall file extensions """
   userHome = getenv("HOME")
   result = False
@@ -362,7 +362,7 @@ def activateActions(activate, appInstPath):
     LOGGER.error("The following error occurred during the FM actions activation:\n %s", str(e))
   return result
 
-def checkAutoStart(path):       
+def checkAutoStart(path):
   """ Check that auto-start is enabled """
   if pathExists(path):
     i = 1 if getenv('XDG_CURRENT_DESKTOP') in ('Unity', 'Pantheon') else 0
@@ -383,7 +383,7 @@ def setProcName(newname):
   buff.value = bytes(newname, 'UTF8')
   libc.prctl(15, byref(buff), 0, 0, 0)
 
-def argParse(ver):              
+def argParse(ver):
   """ Parse command line arguments """
   parser = ArgumentParser(description=_('Desktop indicator for yandex-disk daemon'), add_help=False)
   group = parser.add_argument_group(_('Options'))

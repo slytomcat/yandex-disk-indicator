@@ -42,10 +42,10 @@ from os import getenv, getpid, geteuid
 from daemon import YDDaemon, sysExit
 from tools import copyFile, deleteFile, makeDirs, shortPath, CVal, Config, activateActions, checkAutoStart, setProcName, argParse, check_output, call, pathExists, getLogger
 
-class Notification:             
+class Notification:
   """ On-screen notification """
 
-  def __init__(self, title):    
+  def __init__(self, title):
     """ Initialize notification engine """
     if not Notify.is_initted():
       Notify.init(APPNAME)
@@ -69,23 +69,23 @@ class Notification:
       LOGGER.error('Message engine failure')
 
 #################### Indicatior class ####################
-class Indicator(YDDaemon):            
+class Indicator(YDDaemon):
   """ Yandex.Disk appIndicator class """
 
   ####### YDDaemon virtual classes/methods implementations
-  def error(self, errStr, cfgPath):        
+  def error(self, errStr, cfgPath):
     """ Error handler GUI implementation """
     # it must handle two types of error cases:
     # - yandex-disk is not installed (errStr=='' in that case) - just show error message and return
     # - yandex-disk is not configured (errStr!='' in that case) - suggest to configure it and run ya-setup if needed
     dialog = Gtk.MessageDialog(None, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK_CANCEL,
-                                _('Yandex.Disk Indicator: daemon start failed'))
-    if errStr == '': 
-      dialog.format_secondary_text(_('Yandex.Disk utility is not installed.\n'+
+                               _('Yandex.Disk Indicator: daemon start failed'))
+    if errStr == '':
+      dialog.format_secondary_text(_('Yandex.Disk utility is not installed.\n' +
         'Visit www.yandex.ru, download and install Yandex.Disk daemon.'))
-    else: 
+    else:
       dialog.format_secondary_text(_('Yandex.Disk daemon failed to start because it is not' +
-        ' configured properly\n\n'+ errStr + '\n\n' +
+        ' configured properly\n\n' + errStr + '\n\n' +
         '  To configure it up: press OK button.\n  Press Cancel to exit.'))
     dialog.set_default_size(400, 250)
     dialog.set_icon(APPLOGO)
@@ -99,17 +99,19 @@ class Indicator(YDDaemon):
     dialog.destroy()
     return retCode              # 0 when error is not critical or fixed (daemon has been configured via ya-setup)
 
-  def change(self, vals):             #
-    """ Implementation of daemon class call-back function """
-    ### NOTE: it is called not from main thread, so it have to add action in main loop queue
-    '''
+  def change(self, vals):
+    """ Implementation of daemon class call-back function 
+    
+    NOTE: it is called not from main thread, so it have to add action in main loop queue
+    
     It handles daemon status changes by updating icon, creating messages and also update
     status information in menu (status, sizes and list of last synchronized items).
     It is called when daemon detects any change of its status.
-    '''
+    """
     LOGGER.info('%sChange event: %s', self.ID, ','.join(['stat' if vals['statchg'] else '',
                                                          'size' if vals['szchg'] else '',
                                                          'last' if vals['lastchg'] else '']))
+    
     def do_change(vals, path):
       """ Update information in menu """
       self.menu.update(vals, path)
@@ -138,19 +140,21 @@ class Indicator(YDDaemon):
       self.currentStatus = vals['status']
     idle_add(do_change, vals, self.config['dir'])
 
-  ####### Own classes/methods 
+  ####### Own classes/methods
   def __init__(self, path, ID):
     # Create indicator notification engine
     self.notify = Notification(_('Yandex.Disk ') + ID)
     # Setup icons theme
     self.setIconTheme(APPCONF['theme'])
     # Create staff for icon animation support (don't start it here)
+
     def iconAnimation():          # Changes busy icon by loop (triggered by self.timer)
       # Set next animation icon
       self.ind.set_icon_full(pathJoin(self.themePath, 'yd-busy' + str(self._seqNum) + '.png'), '')
       # Calculate next icon number
       self._seqNum = self._seqNum % 5 + 1   # 5 icon numbers in loop (1-2-3-4-5-1-2-3...)
       return True                           # True required to continue triggering by timer
+
     self.iconTimer = self.Timer(777, iconAnimation, start=False)
     # Create App Indicator
     self.ind = appIndicator.Indicator.new(
@@ -163,7 +167,7 @@ class Indicator(YDDaemon):
     # Initialize Yandex.Disk daemon connection object
     super().__init__(path, ID)
 
-  def setIconTheme(self, theme):      
+  def setIconTheme(self, theme):
     """ Determine paths to icons according to current theme """
     # global APPINSTPATH, APPCONFPATH
     theme = 'light' if theme else 'dark'
@@ -328,6 +332,7 @@ class Indicator(YDDaemon):
 
     def showOutput(self, widget):           # Request for daemon output
       widget.set_sensitive(False)                         # Disable menu item
+
       def displayOutput(outText, widget):
         ### NOTE: it is called not from main thread, so it have to add action in main loop queue
         def do_display(outText, widget):
@@ -346,6 +351,7 @@ class Indicator(YDDaemon):
           statusWindow.show_all();  statusWindow.run();   statusWindow.destroy()
           widget.set_sensitive(True)                          # Enable menu item
         idle_add(do_display, outText, widget)
+
       self.daemon.output(lambda t: displayOutput(t, widget))
       
     def openInBrowser(self, _, url):   # Open URL
@@ -371,14 +377,14 @@ class Indicator(YDDaemon):
       appExit()
 
   class Timer:                        # Timer implementation
-    ''' Timer class methods:
+    """ Timer class methods:
           __init__ - initialize the timer object with specified interval and handler. Start it
-                    if start value is not False. 
+                    if start value is not False.
           start    - Start timer if it is not started yet.
           stop     - Stop running timer or do nothing if it is not running.
         Interface variables:
           active   - True when timer is currently running, otherwise - False
-    '''
+    """
     def __init__(self, interval, handler, start=True):
       self.interval = interval          # Timer interval (ms)
       self.handler = handler            # Handler function
@@ -399,10 +405,10 @@ class Indicator(YDDaemon):
         self.active = False
 
 #### Application functions and classes
-class Preferences(Gtk.Dialog):  #
+class Preferences(Gtk.Dialog):
   """ Preferences window of application and daemons """
 
-  class excludeDirsList(Gtk.Dialog):                                      
+  class excludeDirsList(Gtk.Dialog):
     """ Excluded dirs dialogue """
 
     def __init__(self, widget, parent, dcofig):   # show current list
@@ -431,9 +437,8 @@ class Preferences(Gtk.Dialog):  #
       self.dirset = [val for val in CVal(self.dconfig.get('exclude-dirs', None))]
       for val in self.dirset:
         self.exList.append([False, val])
-      #LOGGER.debug(str(self.dirset))
+      # LOGGER.debug(str(self.dirset))
       self.show_all()
-
 
     def exitFromDialog(self, widget):     # Save list from dialogue to "exclude-dirs" property
       if self.dconfig.changed:
@@ -441,7 +446,7 @@ class Preferences(Gtk.Dialog):  #
         for i in self.dirset:
           eList.add(i)
         self.dconfig['exclude-dirs'] = eList.get()          # Save collected value
-      #LOGGER.debug(str(self.dirset))
+      # LOGGER.debug(str(self.dirset))
       self.destroy()                                        # Close dialogue
 
     def lineToggled(self, _, path):  # Line click handler, it switch row selection
@@ -456,7 +461,7 @@ class Preferences(Gtk.Dialog):  #
           self.dconfig.changed = True
         else:
           listIiter = self.exList.iter_next(listIiter)
-      #LOGGER.debug(str(self.dirset))
+      # LOGGER.debug(str(self.dirset))
 
     def addFolder(self, widget, parent):  # Add new path to list via FileChooserDialog
       dialog = Gtk.FileChooserDialog(_('Select catalogue to add to list'), parent,
@@ -476,7 +481,7 @@ class Preferences(Gtk.Dialog):  #
               self.dirset.append(path)
               self.dconfig.changed = True
       dialog.destroy()
-      #LOGGER.debug(str(self.dirset))
+      # LOGGER.debug(str(self.dirset))
 
   def __init__(self, widget):
     # global config, APPINDICATORS, APPLOGO
@@ -559,7 +564,7 @@ class Preferences(Gtk.Dialog):  #
       i.menu.preferences.set_sensitive(True)    # Enable menu items
     self.destroy()
 
-  def onButtonToggled(self, _, button, key, dconfig=None, ow=None):  
+  def onButtonToggled(self, _, button, key, dconfig=None, ow=None):
     """ Handle clicks on controls """
     toggleState = button.get_active()
     LOGGER.debug('Togged: %s  val: %s', key, str(toggleState))
@@ -581,7 +586,7 @@ class Preferences(Gtk.Dialog):  #
         deleteFile(APPAUTOSTARTDST)
     elif key == 'fmextensions':
       if not button.get_inconsistent():         # It is a first call
-        if not activateActions(toggleState, APPINSTPATH):            
+        if not activateActions(toggleState, APPINSTPATH):
           toggleState = not toggleState         # When activation/deactivation is not success: revert settings back
           button.set_inconsistent(True)         # set inconsistent state to detect second call
           button.set_active(toggleState)        # set check-button to reverted status
@@ -591,7 +596,7 @@ class Preferences(Gtk.Dialog):  #
     elif key == 'read-only':
       ow.set_sensitive(toggleState)
 
-def appExit():          
+def appExit():
   """ Exit from application (it closes all APPINDICATORS) """
   # global APPINDICATORS
   LOGGER.debug("Exit started")
@@ -638,7 +643,7 @@ if __name__ == '__main__':
   LOGGER.debug('Logging level: %s', str(args.level))
 
   # Application configuration
-  '''
+  """
   User configuration is stored in ~/.config/<APPHOME>/<APPNAME>.conf file.
   This file can contain comments (line starts with '#') and config values in
   form: key=value[,value[,value ...]] where keys and values can be quoted ("...") or not.
@@ -657,7 +662,7 @@ if __name__ == '__main__':
   Additionally 'startonstartofindicator' and 'stoponexitfromindicator' values are added into daemon
   configuration file to provide the functionality of obsolete 'startonstart' and 'stoponexit'
   values for each daemon individually.
-  '''
+  """
   APPCONF = Config(pathJoin(APPCONFPATH, APPNAME + '.conf'))
   # Read some settings to variables, set default values and update some values
   APPCONF['autostart'] = checkAutoStart(APPAUTOSTARTDST)
