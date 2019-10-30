@@ -1,5 +1,5 @@
-yd-tools (1.11.0) bionic; urgency=medium
+yd-tools (1.12.0) bionic; urgency=medium
   * Changes:
-    - Detailed error description for daemon config problems, #209 helper
+    - Split program onto 3 file to isolate daemon and GUI parts
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Fri, 21 Jun 2019 01:36:09 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Wed, 30 Oct 2019 14:49:04 +0300
