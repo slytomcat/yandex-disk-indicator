@@ -31,6 +31,7 @@ require_version('Notify', '0.7')
 from gi.repository import Notify
 require_version('GdkPixbuf', '2.0')
 from gi.repository.GdkPixbuf import Pixbuf
+from gi.repository.GLib import timeout_add, source_remove, idle_add, unix_signal_add, PRIORITY_HIGH
 
 from webbrowser import open_new as openNewBrowser
 from logging import basicConfig, getLogger
@@ -74,17 +75,24 @@ class Indicator(YDDaemon):
 
   ####### YDDaemon virtual classes/methods implementations
   def error(self, errStr, cfgPath):        
-    """ Show error messages implementation """
+    """ Error handler GUI implementation """
+    # it must handle two types of error cases:
+    # - yandex-disk is not installed (errStr=='' in that case) - just show error message and return
+    # - yandex-disk is not configured (errStr!='' in that case) - suggest to configure it and run ya-setup if needed
     dialog = Gtk.MessageDialog(None, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK_CANCEL,
                                 _('Yandex.Disk Indicator: daemon start failed'))
-    dialog.format_secondary_text(_('Yandex.Disk daemon failed to start because it is not' +
+    if errStr == '': 
+      dialog.format_secondary_text(_('Yandex.Disk utility is not installed.\n'+
+        'Visit www.yandex.ru, download and install Yandex.Disk daemon.'))
+    else: 
+      dialog.format_secondary_text(_('Yandex.Disk daemon failed to start because it is not' +
         ' configured properly\n\n'+ errStr + '\n\n' +
         '  To configure it up: press OK button.\n  Press Cancel to exit.'))
     dialog.set_default_size(400, 250)
     dialog.set_icon(APPLOGO)
     response = dialog.run()
-    dialog.destroy()
-    if response == Gtk.ResponseType.OK:  # Launch Set-up utility
+    
+    if errStr != '' and response == Gtk.ResponseType.OK:  # Launch Set-up utility
       LOGGER.debug('starting configuration utility')
       retCode = call([pathJoin(APPINSTPATH, 'ya-setup'), cfgPath])
     else:
@@ -591,7 +599,7 @@ def appExit():
   for i in APPINDICATORS:
     i.exit()
   Gtk.main_quit()
-  
+
 ###################### MAIN #########################
 if __name__ == '__main__':
   # Application constants
@@ -610,8 +618,7 @@ if __name__ == '__main__':
   LOGGER = getLogger('')
 
   # Setup localization
-  # Load translation object (or NullTranslations) and define _() function.
-  translation(APPNAME, '/usr/share/locale', fallback=True).install()
+  _ = translation(APPNAME, fallback=True).gettext
   
   # Get command line arguments or their default values
   args = argParse(APPVER)

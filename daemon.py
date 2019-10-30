@@ -130,8 +130,8 @@ class YDDaemon:                 # Yandex.Disk daemon interface
     self.ID = ID                                      # Remember daemon identity
     self.__YDC = which('yandex-disk')
     if self.__YDC is None:
-      sysExit(_('Yandex.Disk utility is not installed.\n ' +
-            'Visit www.yandex.ru, download and install Yandex.Disk daemon.'))
+      self.error('', '')
+      exit(1)
     # Try to read Yandex.Disk configuration file and make sure that it is correctly configured
     self.config = self.__DConfig(cfgFile, load=False)
     while True:

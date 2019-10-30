@@ -13,6 +13,9 @@ from sys import exit as sysExit
 from logging import getLogger
 LOGGER = getLogger('')
 
+# define fake gettext
+_ = lambda x:x
+
 #################### Common utility functions and classes ####################
 def copyFile(src, dst):
   '''File copy functiion'''
