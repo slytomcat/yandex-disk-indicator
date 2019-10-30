@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from tools import Config, check_output, reFindall, pathExists, pathJoin
+from tools import Config, CVal, check_output, reFindall, pathExists, pathJoin
 
 from os import stat
 from os.path import expanduser
 from shutil import which
 from threading import Timer as thTimer, Lock, Thread
 from tempfile import gettempdir
+from sys import exit as sysExit
 from subprocess import CalledProcessError
 
 
