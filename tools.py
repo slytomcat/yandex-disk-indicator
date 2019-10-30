@@ -6,9 +6,9 @@ from argparse import ArgumentParser
 from logging import getLogger
 from shutil import copy as fileCopy, which
 from os.path import exists as pathExists, join as pathJoin
-from subprocess import check_output, CalledProcessError, call
-from re import findall as reFindall, sub as reSub, search as reSearch, M as reM, S as reS
+from subprocess import check_output, call
 from sys import exit as sysExit
+from re import findall as reFindall, search as reSearch, M as reM, S as reS
 
 from logging import getLogger
 LOGGER = getLogger('')

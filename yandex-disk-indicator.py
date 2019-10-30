@@ -38,11 +38,10 @@ from logging import basicConfig, getLogger
 from signal import SIGTERM, SIGINT
 from gettext import translation
 from os.path import exists as pathExists, join as pathJoin, relpath as relativePath, expanduser
-from os import stat, getpid, geteuid
-
-
+from os import getenv, stat, getpid, geteuid
+from re import sub as reSub
 from daemon import YDDaemon
-from tools import copyFile, deleteFile, makeDirs, shortPath, CVal, Config, activateActions, checkAutoStart, setProcName, argParse
+from tools import copyFile, deleteFile, makeDirs, shortPath, CVal, Config, activateActions, checkAutoStart, setProcName, argParse, check_output, call, pathExists, reFindall
 
 class Notification:             
   """ On-screen notification """
