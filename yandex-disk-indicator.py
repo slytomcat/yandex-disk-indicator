@@ -634,7 +634,7 @@ if __name__ == '__main__':
   setProcName(APPHOME)
 
   # Check for already running instance of the indicator application
-  if (str(getpid()) != check_output(["pgrep", '-u', str(geteuid()), "yd-tools"], universal_newlines=True).strip()):
+  if str(getpid()) != check_output(["pgrep", '-u', str(geteuid()), "yd-tools"], universal_newlines=True).strip():
     sysExit(_('The indicator instance is already running.'))
 
   # Set user specified logging level
