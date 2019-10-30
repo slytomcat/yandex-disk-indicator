@@ -16,12 +16,12 @@ LOGGER = getLogger('')
 
 #################### Main daemon class ####################
 class YDDaemon:                 # Yandex.Disk daemon interface
-  '''
+  """
   This is the fully automated class that serves as daemon interface.
   Public methods:
   __init__ - Handles initialization of the object and as a part - auto-start daemon if it
              is required by configuration settings.
-  output   - Provides daemon output (in user language) through the parameter of callback. Executed in separate thread 
+  output   - Provides daemon output (in user language) through the parameter of callback. Executed in separate thread
   start    - Request to start daemon. Do nothing if it is alreday started. Executed in separate thread
   stop     - Request to stop daemon. Do nothing if it is not started. Executed in separate thread
   exit     - Handles 'Stop on exit' facility according to daemon configuration settings.
@@ -45,21 +45,21 @@ class YDDaemon:                 # Yandex.Disk daemon interface
   Class interface variables:
   ID       - the daemon identity string (empty in single daemon configuration)
   config   - The daemon configuration dictionary (object of _DConfig(Config) class)
-  '''
+  """
   #################### Virtual methods ##################
   # they have to be implemented in GUI part of code
   
-  def error(self, errStr, cfgPath):                    
+  def error(self, errStr, cfgPath):
     """ Error handler """
     LOGGER.debug('%sError %s , path %s', self.ID, errStr, cfgPath)
-    return 0 
+    return 0
 
-  def change(self, vals):                  
+  def change(self, vals):
     """ Updates handler """
     LOGGER.debug('%sUpdate event: %s',  self.ID, str(vals))
 
   #################### Private classes ####################
-  class __Watcher:                         
+  class __Watcher:
     """ File changes watcher implementation """
     def __init__(self, path, handler, *args, **kwargs):
       self.path = path
@@ -76,6 +76,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
         LOGGER.info("Watcher was not started: path '%s' was not found.", self.path)
         return
       self.mark = stat(self.path).st_ctime_ns
+      
       def wHandler():
         st = stat(self.path).st_ctime_ns
         if st != self.mark:
@@ -83,6 +84,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
           self.handler(*self.args, **self.kwargs)
         self.timer = thTimer(0.5, wHandler)
         self.timer.start()
+      
       self.timer = thTimer(0.5, wHandler)
       self.timer.start()
       self.status = True
@@ -92,7 +94,8 @@ class YDDaemon:                 # Yandex.Disk daemon interface
         return
       self.timer.cancel()
 
-  class __DConfig(Config):                 # Redefined class for daemon config
+  class __DConfig(Config):                 
+    """ Redefined class for daemon config """
 
     def save(self):  # Update daemon config file
       # Make a new Config object
@@ -127,10 +130,10 @@ class YDDaemon:                 # Yandex.Disk daemon interface
 
   #################### Private methods ####################
   def __init__(self, cfgFile, ID):         # Check that daemon installed and configured and initialize object
-    '''
+    """
     cfgFile  - full path to config file
     ID       - identity string '#<n> ' in multi-instance environment or
-               '' in single instance environment'''
+               '' in single instance environment"""
     self.ID = ID                                      # Remember daemon identity
     self.__YDC = which('yandex-disk')
     if self.__YDC is None:
@@ -146,17 +149,17 @@ class YDDaemon:                 # Yandex.Disk daemon interface
         d = self.config.get('dir', "")
         a = self.config.get('auth', "")
         if not d or not a:
-          errorStr = ("Error: " + ("option 'dir'" if not d else "") + (" and " if not d and not a else "") + 
-            ("option 'auth'" if not a else "") + (" are " if not a and not d else " is ") + 
-            "missing in the daemon configuration file %s" % cfgFile )
+          errorStr = ("Error: " + ("option 'dir'" if not d else "") + (" and " if not d and not a else "") +
+            ("option 'auth'" if not a else "") + (" are " if not a and not d else " is ") +
+            "missing in the daemon configuration file %s" % cfgFile)
         else:
           dp = expanduser(d)
-          dne = not pathExists(dp) 
+          dne = not pathExists(dp)
           ap = expanduser(a)
           ane = not pathExists(ap)
           if ane or dne:
-            errorStr = ("Error: " + ("path %s" % dp if dne else "") + (" and " if dne and ane else "") + 
-              ("path %s" % ap if ane else "") + (" are " if ane and dne else " is ") + "not exist" )
+            errorStr = ("Error: " + ("path %s" % dp if dne else "") + (" and " if dne and ane else "") +
+              ("path %s" % ap if ane else "") + (" are " if ane and dne else " is ") + "not exist")
           else:
             break # no config problems was found, go on
       # some configuration problem was found and errorStr contains the detailed description of the problem
@@ -170,27 +173,28 @@ class YDDaemon:                 # Yandex.Disk daemon interface
     # Set initial daemon status values
     self.__v = {'status': 'unknown', 'progress': '', 'laststatus': 'unknown', 'statchg': True,
                 'total': '...', 'used': '...', 'free': '...', 'trash': '...', 'szchg': True,
-                'error':'', 'path':'', 'lastitems': [], 'lastchg': True}
+                'error': '', 'path': '', 'lastitems': [], 'lastchg': True}
     # Declare event handler staff for callback from watcher and timer
-    self.__tCnt = 0                          # Timer event counter 
-    self.__lock = Lock()                     # event handler lock 
+    self.__tCnt = 0                          # Timer event counter
+    self.__lock = Lock()                     # event handler lock
+    
     def eventHandler(watch):
-      '''
+      """
       Handles watcher (when watch=False) and and timer (when watch=True) events.
       After receiving and parsing the daemon output it raises outside change event if daemon changes
       at least one of its status values.
-      '''
+      """
       # Enter to critical section through acquiring of the lock as it can be called from two different threads
       self.__lock.acquire()
       # Parse fresh daemon output. Parsing returns true when something changed
       if self.__parseOutput(self.__getOutput()):
         LOGGER.debug('%sEvent raised by %s', self.ID, (' Watcher' if watch else ' Timer'))
-        self.change(self.__v)                # Call the callback of update event handler 
+        self.change(self.__v)                # Call the callback of update event handler
       # --- Handle timer delays ---
       self.__timer.cancel()                  # Cancel timer if it still active
       if watch or self.__v['status'] == 'busy':
         delay = 2                            # Initial delay
-        self.__tCnt = 0                      # Reset counter 
+        self.__tCnt = 0                      # Reset counter
       else:                                  # It called by timer
         delay = 2 + self.__tCnt              # Increase interval up to 10 sec (2 + 8)
         self.__tCnt += 1                     # Increase counter to increase delay next activation.
@@ -208,15 +212,15 @@ class YDDaemon:                 # Yandex.Disk daemon interface
 
     # Start daemon if it is required in configuration
     if self.config.get('startonstartofindicator', True):
-      self.start()                       
+      self.start()
     else:
       self.__watcher.start()             # try to activate file watcher
 
   def __getOutput(self, userLang=False):   # Get result of 'yandex-disk status'
     cmd = [self.__YDC, '-c', self.config.fileName, 'status']
     if not userLang:      # Change locale settings when it required
-      cmd = ['env', '-i', "TMPDIR=%s"%self.tmpDir] + cmd
-    #LOGGER.debug('cmd = %s', str(cmd))
+      cmd = ['env', '-i', "TMPDIR=%s" % self.tmpDir] + cmd
+    # LOGGER.debug('cmd = %s', str(cmd))
     try:
       output = check_output(cmd, universal_newlines=True)
     except:
@@ -225,7 +229,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
     return output
 
   def __parseOutput(self, out):            # Parse the daemon output
-    '''
+    """
     It parses the daemon output and check that something changed from last daemon status.
     The self.__v dictionary is updated with new daemon statuses. It returns True is something changed
     Daemon status is converted form daemon raw statuses into internal representation.
@@ -236,7 +240,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
      - 'index' is ignored (previous status is kept)
      - 'no internet access' converted to 'no_net'
      - 'error' covers all other errors, except 'no internet access'
-    '''
+    """
     self.__v['statchg'] = False
     self.__v['szchg'] = False
     self.__v['lastchg'] = False
@@ -291,13 +295,13 @@ class YDDaemon:                 # Yandex.Disk daemon interface
 
   #################### Interface methods ####################
   def output(self, callBack):              # Receive daemon output in separate thread and pass it back through the callback
-    Thread(target=lambda:callBack(self.__getOutput(True))).start()
+    Thread(target=lambda: callBack(self.__getOutput(True))).start()
 
   def start(self, wait=False):             # Execute 'yandex-disk start' in separate thread
-    '''
+    """
     Execute 'yandex-disk start' in separate thread
     Additionally it starts watcher in case of success start
-    '''
+    """
     def do_start():
       if self.__getOutput() != "":
         LOGGER.info('Daemon is already started')
