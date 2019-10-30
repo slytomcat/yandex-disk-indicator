@@ -14,7 +14,10 @@ mkdir -p $TARGET/share/yd-tools/fm-actions/pantheon-files
 mkdir -p $TARGET/share/yd-tools/icons/dark
 mkdir -p $TARGET/share/yd-tools/icons/light
 mkdir -p $TARGET/share/yd-tools/translations
-cp ../yandex-disk-indicator.py $TARGET/bin/yandex-disk-indicator
+cp ../yandex-disk-indicator $TARGET/bin/yandex-disk-indicator
+cp ../yandex-disk-indicator.py $TARGET/share/yd-tools/
+cp ../daemon.py $TARGET/share/yd-tools/
+cp ../tools.py $TARGET/share/yd-tools/
 cp ../ya-setup $TARGET/share/yd-tools/
 cp ../translations/yandex-disk-indicator_ru.mo $TARGET/share/locale/ru/LC_MESSAGES/yandex-disk-indicator.mo
 cp ../translations/yandex-disk-indicator_el.mo $TARGET/share/locale/el/LC_MESSAGES/yandex-disk-indicator.mo

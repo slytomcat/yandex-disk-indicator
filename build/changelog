@@ -1,5 +1,5 @@
 yd-tools (@version) @series; urgency=medium
   * Changes:
-    - Detailed error description for daemon config problems, #209 helper
+    - Split program into 3 files to isolate daemon and GUI parts
 
  -- Sly_tom_cat <slytomcat@mail.ru>  @date
