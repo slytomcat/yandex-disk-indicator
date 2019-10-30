@@ -68,6 +68,8 @@ class YDDaemon:                 # Yandex.Disk daemon interface
       self.kwargs = kwargs
       # Don't start timer initially
       self.status = False
+      self.mark = None
+      self.timer = None
 
     def start(self):                    # Activate iNotify watching
       if self.status:
@@ -94,7 +96,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
         return
       self.timer.cancel()
 
-  class __DConfig(Config):                 
+  class __DConfig(Config):
     """ Redefined class for daemon config """
 
     def save(self):  # Update daemon config file

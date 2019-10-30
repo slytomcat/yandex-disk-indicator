@@ -100,7 +100,7 @@ class Indicator(YDDaemon):
     return retCode              # 0 when error is not critical or fixed (daemon has been configured via ya-setup)
 
   def change(self, vals):
-    """ Implementation of daemon class call-back function 
+    """ Implementation of daemon class call-back function
     
     NOTE: it is called not from main thread, so it have to add action in main loop queue
     
@@ -138,6 +138,7 @@ class Indicator(YDDaemon):
             self.notify.send(_('Synchronization ERROR'))
       # Remember current status (required for Preferences dialog)
       self.currentStatus = vals['status']
+  
     idle_add(do_change, vals, self.config['dir'])
 
   ####### Own classes/methods
@@ -147,6 +148,8 @@ class Indicator(YDDaemon):
     # Setup icons theme
     self.setIconTheme(APPCONF['theme'])
     # Create staff for icon animation support (don't start it here)
+
+    self._seqNum = 2  # Number current busy icon 
 
     def iconAnimation():          # Changes busy icon by loop (triggered by self.timer)
       # Set next animation icon
@@ -166,6 +169,7 @@ class Indicator(YDDaemon):
     self.ind.set_menu(self.menu)                  # Attach menu to indicator
     # Initialize Yandex.Disk daemon connection object
     super().__init__(path, ID)
+    self.currentStatus = None                 # Current daemon status
 
   def setIconTheme(self, theme):
     """ Determine paths to icons according to current theme """
@@ -175,7 +179,7 @@ class Indicator(YDDaemon):
     defaultPath = pathJoin(APPINSTPATH, 'icons', theme)
     userPath = pathJoin(APPCONFPATH, 'icons', theme)
     # Set appropriate paths to all status icons
-    self.icon = dict()
+    self.icon = {}
     for status in ['idle', 'error', 'paused', 'none', 'no_net', 'busy']:
       name = ('yd-ind-pause.png' if status in {'paused', 'none', 'no_net'} else
               'yd-busy1.png' if status == 'busy' else
@@ -337,7 +341,6 @@ class Indicator(YDDaemon):
         ### NOTE: it is called not from main thread, so it have to add action in main loop queue
         def do_display(outText, widget):
           # global APPLOGO
-          #outText = self.daemon.getOutput(True)
           statusWindow = Gtk.Dialog(_('Yandex.Disk daemon output message'))
           statusWindow.set_icon(APPLOGO)
           statusWindow.set_border_width(6)

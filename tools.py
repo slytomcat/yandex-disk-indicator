@@ -46,6 +46,7 @@ class CVal:                     # Multivalue helper
       of number of elementary items added to it or it contain. """
 
   def __init__(self, initialValue=None):
+    self.val = None
     self.set(initialValue)   # store initial value
     self.index = None
 
