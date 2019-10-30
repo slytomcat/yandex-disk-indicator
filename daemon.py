@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from tools import *
+from tools import Config
 
 from os import stat
 from threading import Timer as thTimer, Lock, Thread

@@ -38,10 +38,11 @@ from logging import basicConfig, getLogger
 from signal import SIGTERM, SIGINT
 from gettext import translation
 from os.path import exists as pathExists, join as pathJoin, relpath as relativePath, expanduser
-from os import stat
+from os import stat, getpid, geteuid
+
 
 from daemon import YDDaemon
-from tools import *
+from tools import copyFile, deleteFile, makeDirs, shortPath, CVal, Config, activateActions, checkAutoStart, setProcName, argParse
 
 class Notification:             
   """ On-screen notification """
@@ -582,7 +583,7 @@ class Preferences(Gtk.Dialog):  #
         deleteFile(APPAUTOSTARTDST)
     elif key == 'fmextensions':
       if not button.get_inconsistent():         # It is a first call
-        if not activateActions(toggleState):            
+        if not activateActions(toggleState, APPINSTPATH):            
           toggleState = not toggleState         # When activation/deactivation is not success: revert settings back
           button.set_inconsistent(True)         # set inconsistent state to detect second call
           button.set_active(toggleState)        # set check-button to reverted status
@@ -689,7 +690,7 @@ if __name__ == '__main__':
         LOGGER.error('Can\'t activate indicator automatic start on system start-up')
 
     # Activate FM actions according to config (as it is first run)
-    activateActions(APPCONF['fmextensions'])
+    activateActions(APPCONF['fmextensions'], APPINSTPATH)
     # Default settings should be saved (later)
     APPCONF.changed = True
 

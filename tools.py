@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from os import remove, makedirs, getenv, getpid, geteuid
+from os import remove, makedirs, getenv
 from argparse import ArgumentParser
 from logging import getLogger
 from shutil import copy as fileCopy, which
-from os.path import exists as pathExists, join as pathJoin, relpath as relativePath, expanduser
+from os.path import exists as pathExists, join as pathJoin
 from subprocess import check_output, CalledProcessError, call
 from re import findall as reFindall, sub as reSub, search as reSearch, M as reM, S as reS
 from sys import exit as sysExit
@@ -229,9 +229,8 @@ class Config(dict):
     self.changed = False                  # Reset flag of change in not stored config
     return True
 
-def activateActions(activate):  
+def activateActions(activate, appInstPath):  
   """ Install/deinstall file extensions """
-  # global APPINSTPATH
   userHome = getenv("HOME")
   result = False
   try:                  # Catch all exceptions during FM action activation/deactivation
@@ -247,9 +246,9 @@ def activateActions(activate):
       LOGGER.debug(nautilusPath)
       if activate:      # Install actions for Nautilus
 
-        copyFile(pathJoin(APPINSTPATH, "fm-actions/Nautilus_Nemo/publish"),
+        copyFile(pathJoin(appInstPath, "fm-actions/Nautilus_Nemo/publish"),
                  pathJoin(userHome, nautilusPath, _("Publish via Yandex.Disk")))
-        copyFile(pathJoin(APPINSTPATH, "fm-actions/Nautilus_Nemo/unpublish"),
+        copyFile(pathJoin(appInstPath, "fm-actions/Nautilus_Nemo/unpublish"),
                  pathJoin(userHome, nautilusPath, _("Unpublish from Yandex.disk")))
       else:             # Remove actions for Nautilus
         deleteFile(pathJoin(userHome, nautilusPath, _("Publish via Yandex.Disk")))
@@ -260,9 +259,9 @@ def activateActions(activate):
     if which("nemo") is not None:
       LOGGER.info("Nemo installed")
       if activate:      # Install actions for Nemo
-        copyFile(pathJoin(APPINSTPATH, "fm-actions/Nautilus_Nemo/publish"),
+        copyFile(pathJoin(appInstPath, "fm-actions/Nautilus_Nemo/publish"),
                  pathJoin(userHome, ".local/share/nemo/scripts", _("Publish via Yandex.Disk")))
-        copyFile(pathJoin(APPINSTPATH, "fm-actions/Nautilus_Nemo/unpublish"),
+        copyFile(pathJoin(appInstPath, "fm-actions/Nautilus_Nemo/unpublish"),
                  pathJoin(userHome, ".local/share/nemo/scripts", _("Unpublish from Yandex.disk")))
       else:             # Remove actions for Nemo
         deleteFile(pathJoin(userHome, ".gnome2/nemo-scripts", _("Publish via Yandex.Disk")))
@@ -319,7 +318,7 @@ def activateActions(activate):
       LOGGER.info("Dolphin installed")
       if activate:      # Install actions for Dolphin
         makeDirs(pathJoin(userHome, '.local/share/kservices5/ServiceMenus'))
-        copyFile(pathJoin(APPINSTPATH, "fm-actions/Dolphin/ydpublish.desktop"),
+        copyFile(pathJoin(appInstPath, "fm-actions/Dolphin/ydpublish.desktop"),
                  pathJoin(userHome, ".local/share/kservices5/ServiceMenus/ydpublish.desktop"))
       else:             # Remove actions for Dolphin
         deleteFile(pathJoin(userHome, ".local/share/kservices5/ServiceMenus/ydpublish.desktop"))
@@ -330,7 +329,7 @@ def activateActions(activate):
       LOGGER.info("Pantheon-files installed")
       ctrs_path = "/usr/share/contractor/"
       if activate:      # Install actions for Pantheon-files
-        src_path = pathJoin(APPINSTPATH, "fm-actions", "pantheon-files")
+        src_path = pathJoin(appInstPath, "fm-actions", "pantheon-files")
         ctr_pub = pathJoin(src_path, "yandex-disk-indicator-publish.contract")
         ctr_unpub = pathJoin(src_path, "yandex-disk-indicator-unpublish.contract")
         res = call(["gksudo", "-D", "yd-tools", "cp", ctr_pub, ctr_unpub, ctrs_path])
@@ -351,9 +350,9 @@ def activateActions(activate):
     if which("caja") is not None:
       LOGGER.info("Caja installed")
       if activate:      # Install actions for Nemo
-        copyFile(pathJoin(APPINSTPATH, "fm-actions/Nautilus_Nemo/publish"),
+        copyFile(pathJoin(appInstPath, "fm-actions/Nautilus_Nemo/publish"),
                  pathJoin(userHome, ".config/caja/scripts", _("Publish via Yandex.Disk")))
-        copyFile(pathJoin(APPINSTPATH, "fm-actions/Nautilus_Nemo/unpublish"),
+        copyFile(pathJoin(appInstPath, "fm-actions/Nautilus_Nemo/unpublish"),
                  pathJoin(userHome, ".config/caja/scripts", _("Unpublish from Yandex.disk")))
       else:             # Remove actions for Nemo
         deleteFile(pathJoin(userHome, ".config/caja/scripts", _("Publish via Yandex.Disk")))
