@@ -53,7 +53,7 @@ class CVal:                     # Multivalue helper
     # Just returns the current value of cVal
     return self.val
 
-  def set(self, value):           
+  def set(self, value):
     """ Set internal value """
     self.val = value
     if isinstance(self.val, list) and len(self.val) == 1:
