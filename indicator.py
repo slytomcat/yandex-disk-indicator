@@ -32,12 +32,12 @@ from gi.repository import Notify
 require_version('GdkPixbuf', '2.0')
 from gi.repository.GdkPixbuf import Pixbuf
 from gi.repository.GLib import timeout_add, source_remove, idle_add, unix_signal_add, PRIORITY_HIGH
-
+from sys import exit as sysExit
 from webbrowser import open_new as openNewBrowser
 from signal import SIGTERM, SIGINT
 from os.path import exists as pathExists, join as pathJoin, relpath as relativePath, expanduser
 from os import getenv, getpid, geteuid
-from daemon import YDDaemon, sysExit
+from daemon import YDDaemon
 from tools import copyFile, deleteFile, makeDirs, shortPath, CVal, Config, activateActions, checkAutoStart
 from tools import setProcName, argParse, check_output, call, pathExists, LOGGER, _
 
