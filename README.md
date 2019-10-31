@@ -4,6 +4,8 @@
 [![wiki](https://img.shields.io/badge/wiki-available-green.svg)](https://github.com/slytomcat/yandex-disk-indicator/wiki)
 [![PPA](https://img.shields.io/badge/PPA-available-green.svg)](https://launchpad.net/~slytomcat/+archive/ubuntu/ppa)
 
+[![DeepSource](https://static.deepsource.io/deepsource-badge-light.svg)](https://deepsource.io/gh/slytomcat/yandex-disk-indicator/?ref=repository-badge)
+
 Desktop panel indicator for YandexDisk CLI client for Linux
 
 INSTALLATION:
