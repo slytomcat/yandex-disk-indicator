@@ -12,6 +12,8 @@ from subprocess import CalledProcessError
 
 
 # ################### Main daemon class ################### #
+
+
 class YDDaemon:                 # Yandex.Disk daemon interface
     """
     This is the fully automated class that serves as daemon interface.
@@ -43,6 +45,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
     ID       - the daemon identity string (empty in single daemon configuration)
     config   - The daemon configuration dictionary (object of _DConfig(Config) class)
     """
+
     # ################### Virtual methods ################# #
     # they have to be implemented in GUI part of code
 
@@ -59,6 +62,8 @@ class YDDaemon:                 # Yandex.Disk daemon interface
 
 
     # ################### Private classes ################### #
+
+
     class __Watcher:
         """ File changes watcher implementation """
         def __init__(self, path, handler, *args, **kwargs):
@@ -137,6 +142,8 @@ class YDDaemon:                 # Yandex.Disk daemon interface
 
 
     # ################### Private methods ################### #
+
+
     def __init__(self, cfgFile, ID):         # Check that daemon installed and configured and initialize object
         """ cfgFile  - full path to config file
             ID       - identity string '#<n> ' in multi-instance environment or
@@ -168,7 +175,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
                         errorStr = ("Error: " + ("path %s" % dp if dne else "") + (" and " if dne and ane else "") +
                                     ("path %s" % ap if ane else "") + (" are " if ane and dne else " is ") + "not exist")
                     else:
-                        break # no config problems was found, go on
+                        break  # no config problems was found, go on
             # some configuration problem was found and errorStr contains the detailed description of the problem
             if self.error(errorStr, cfgFile) != 0:
                 if ID != '':
