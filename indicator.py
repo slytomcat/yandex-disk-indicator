@@ -1,26 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-APPNAME = 'yandex-disk-indicator'
-APPVER = '1.12.0'
-#
-from datetime import datetime
-COPYRIGHT = 'Copyright ' + '\u00a9' + ' 2013-' + str(datetime.today().year) + ' Sly_tom_cat'
-#
-LICENSE = """
-This program is free software: you can redistribute it and/or
-modify it under the terms of the GNU General Public License as
-published by the Free Software Foundation, either version 3 of
-the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty
-of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see http://www.gnu.org/licenses
-"""
 
 from gi import require_version
 require_version('Gtk', '3.0')
@@ -40,6 +20,28 @@ from os import getenv, getpid, geteuid
 from daemon import YDDaemon
 from tools import copyFile, deleteFile, makeDirs, shortPath, CVal, Config, activateActions, checkAutoStart
 from tools import setProcName, argParse, check_output, call, pathExists, LOGGER, _
+from datetime import datetime
+
+APPNAME = 'yandex-disk-indicator'
+APPVER = '1.12.0'
+#
+COPYRIGHT = 'Copyright ' + '\u00a9' + ' 2013-' + str(datetime.today().year) + ' Sly_tom_cat'
+#
+LICENSE = """
+This program is free software: you can redistribute it and/or
+modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty
+of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see http://www.gnu.org/licenses
+"""
+
 
 class Notification:
     """ On-screen notification """
@@ -67,11 +69,11 @@ class Notification:
         except:
             LOGGER.error('Message engine failure')
 
-#################### Indicatior class ####################
+# ################### Indicatior class ################### #
 class Indicator(YDDaemon):
     """ Yandex.Disk appIndicator class """
 
-    ####### YDDaemon virtual classes/methods implementations
+    # ###### YDDaemon virtual classes/methods implementations
     def error(self, errStr, cfgPath):
         """ Error handler GUI implementation """
         # it must handle two types of error cases:
@@ -81,13 +83,13 @@ class Indicator(YDDaemon):
             text1 = _('Yandex.Disk Indicator: daemon start failed')
             buttons = Gtk.ButtonsType.OK
             text2 = (_('Yandex.Disk utility is not installed.\n' +
-                      'Visit www.yandex.ru, download and install Yandex.Disk daemon.'))
+                       'Visit www.yandex.ru, download and install Yandex.Disk daemon.'))
         else:
             text1 = _('Yandex.Disk Indicator: daemon start failed')
             buttons = Gtk.ButtonsType.OK_CANCEL
             text2 = (_('Yandex.Disk daemon failed to start because it is not' +
-                      ' configured properly\n\n' + errStr + '\n\n' +
-                      '  To configure it up: press OK button.\n  Press Cancel to exit.'))
+                       ' configured properly\n\n' + errStr + '\n\n' +
+                       '  To configure it up: press OK button.\n  Press Cancel to exit.'))
         dialog = Gtk.MessageDialog(None, 0, Gtk.MessageType.INFO, buttons, text1)
         dialog.format_secondary_text(text2)
         dialog.set_icon(APPLOGO)
@@ -102,48 +104,48 @@ class Indicator(YDDaemon):
         return retCode              # 0 when error is not critical or fixed (daemon has been configured via ya-setup)
 
     def change(self, vals):
-      """ Implementation of daemon class call-back function
+        """ Implementation of daemon class call-back function
 
-      NOTE: it is called not from main thread, so it have to add action in main GUI loop queue
+        NOTE: it is called not from main thread, so it have to add action in main GUI loop queue
 
-      It handles daemon status changes by updating icon, creating messages and also update
-      status information in menu (status, sizes and list of last synchronized items).
-      It is called when daemon detects any change of its status.
-      """
-      LOGGER.info('%sChange event: %s', self.ID, ','.join(['stat' if vals['statchg'] else '',
-                                                          'size' if vals['szchg'] else '',
-                                                          'last' if vals['lastchg'] else '']))
+        It handles daemon status changes by updating icon, creating messages and also update
+        status information in menu (status, sizes and list of last synchronized items).
+        It is called when daemon detects any change of its status.
+        """
+        LOGGER.info('%sChange event: %s', self.ID, ','.join(['stat' if vals['statchg'] else '',
+                                                             'size' if vals['szchg'] else '',
+                                                             'last' if vals['lastchg'] else '']))
 
-      def do_change(vals, path):
-          """ Update information in menu """
-          self.menu.update(vals, path)
-          # Handle daemon status change by icon change
-          if vals['status'] != vals['laststatus']:
-              LOGGER.info('Status: %s ->  %s', vals['laststatus'], vals['status'])
-              self.updateIcon(vals['status'])          # Update icon
-              # Create notifications for status change events
-              if APPCONF['notifications']:
-                  if vals['laststatus'] == 'none':       # Daemon has been started
-                      self.notify.send(_('Yandex.Disk daemon has been started'))
-                  if vals['status'] == 'busy':           # Just entered into 'busy'
-                      self.notify.send(_('Synchronization started'))
-                  elif vals['status'] == 'idle':         # Just entered into 'idle'
-                      if vals['laststatus'] == 'busy':     # ...from 'busy' status
-                          self.notify.send(_('Synchronization has been completed'))
-                  elif vals['status'] == 'paused':       # Just entered into 'paused'
-                      if vals['laststatus'] not in ['none', 'unknown']:  # ...not from 'none'/'unknown' status
-                          self.notify.send(_('Synchronization has been paused'))
-                  elif vals['status'] == 'none':         # Just entered into 'none' from some another status
-                      if vals['laststatus'] != 'unknown':  # ... not from 'unknown'
-                          self.notify.send(_('Yandex.Disk daemon has been stopped'))
-                  else:                                  # status is 'error' or 'no-net'
-                      self.notify.send(_('Synchronization ERROR'))
-          # Remember current status (required for Preferences dialog)
-          self.currentStatus = vals['status']
+        def do_change(vals, path):
+            """ Update information in menu """
+            self.menu.update(vals, path)
+            # Handle daemon status change by icon change
+            if vals['status'] != vals['laststatus']:
+                LOGGER.info('Status: %s ->  %s', vals['laststatus'], vals['status'])
+                self.updateIcon(vals['status'])          # Update icon
+                # Create notifications for status change events
+                if APPCONF['notifications']:
+                    if vals['laststatus'] == 'none':       # Daemon has been started
+                        self.notify.send(_('Yandex.Disk daemon has been started'))
+                    if vals['status'] == 'busy':           # Just entered into 'busy'
+                        self.notify.send(_('Synchronization started'))
+                    elif vals['status'] == 'idle':         # Just entered into 'idle'
+                        if vals['laststatus'] == 'busy':     # ...from 'busy' status
+                            self.notify.send(_('Synchronization has been completed'))
+                    elif vals['status'] == 'paused':       # Just entered into 'paused'
+                        if vals['laststatus'] not in ['none', 'unknown']:  # ...not from 'none'/'unknown' status
+                            self.notify.send(_('Synchronization has been paused'))
+                    elif vals['status'] == 'none':         # Just entered into 'none' from some another status
+                        if vals['laststatus'] != 'unknown':  # ... not from 'unknown'
+                            self.notify.send(_('Yandex.Disk daemon has been stopped'))
+                    else:                                  # status is 'error' or 'no-net'
+                        self.notify.send(_('Synchronization ERROR'))
+            # Remember current status (required for Preferences dialog)
+            self.currentStatus = vals['status']
 
-      idle_add(do_change, vals, self.config['dir'])
+        idle_add(do_change, vals, self.config['dir'])
 
-    ####### Own classes/methods
+    # ###### Own classes/methods
     def __init__(self, path, ID):
         # Create indicator notification engine
         self.notify = Notification(_('Yandex.Disk ') + ID)
@@ -264,20 +266,19 @@ class Indicator(YDDaemon):
             # Update status data on first run or when status has changed
             if vals['statchg'] or vals['laststatus'] == 'unknown':
                 self.status.set_label(_('Status: ') + self.YD_STATUS[vals['status']] +
-                                      (vals['progress'] if vals['status'] == 'busy'
-                                      else
-                                      ' '.join((':', vals['error'], shortPath(vals['path']))) if vals['status'] == 'error'
-                                      else
+                                      (vals['progress'] if vals['status'] == 'busy' else
+                                      ' '.join((':', vals['error'], shortPath(vals['path']))) if vals['status'] == 'error' else
                                       ''))
                 # Update pseudo-static items on first run or when daemon has stopped or started
                 if 'none' in (vals['status'], vals['laststatus']) or vals['laststatus'] == 'unknown':
                     started = vals['status'] != 'none'
                     self.status.set_sensitive(started)
                     # zero-space UTF symbols are used to detect requered action without need to compare translated strings
-                    self.daemon_ss.set_label(('\u2060' + _('Stop Yandex.Disk daemon')) if started else ('\u200B' + _('Start Yandex.Disk daemon')))
+                    self.daemon_ss.set_label(('\u2060' + _('Stop Yandex.Disk daemon')) if started else
+                                             ('\u200B' + _('Start Yandex.Disk daemon')))
                     if self.ID != '':                             # Set daemon identity row in multidaemon mode
                         self.yddir.set_label(self.ID + _('  Folder: ') + (shortPath(yddir) if yddir else '< NOT CONFIGURED >'))
-                    self.open_folder.set_sensitive(yddir != '') # Activate Open YDfolder if daemon configured
+                    self.open_folder.set_sensitive(yddir != '')  # Activate Open YDfolder if daemon configured
             # Update sizes data on first run or when size data has changed
             if vals['szchg'] or vals['laststatus'] == 'unknown':
                 self.used.set_label(_('Used: ') + vals['used'] + '/' + vals['total'])
@@ -316,21 +317,21 @@ class Indicator(YDDaemon):
             aboutWindow.set_copyright(COPYRIGHT)
             aboutWindow.set_license(LICENSE)
             aboutWindow.set_authors([_('Sly_tom_cat <slytomcat@mail.ru> '),
-              _('\nSpecial thanks to:'),
-              _(' - Snow Dimon https://habrahabr.ru/users/Snowdimon/ - author of ya-setup utility'),
-              _(' - Christiaan Diedericks https://www.thefanclub.co.za/ - author of Grive tools'),
-              _(' - ryukusu_luminarius <my-faios@ya.ru> - icons designer'),
-              _(' - metallcorn <metallcorn@jabber.ru> - icons designer'),
-              _(' - Chibiko <zenogears@jabber.ru> - deb package creation assistance'),
-              _(' - RingOV <ringov@mail.ru> - localization assistance'),
-              _(' - GreekLUG team https://launchpad.net/~greeklug - Greek translation'),
-              _(' - Peyu Yovev <spacy00001@gmail.com> - Bulgarian translation'),
-              _(' - Eldar Fahreev <fahreeve@yandex.ru> - FM actions for Pantheon-files'),
-              _(' - Ace Of Snakes <aceofsnakesmain@gmail.com> - optimization of FM actions for Dolphin'),
-              _(' - Ivan Burmin https://github.com/Zirrald - ya-setup multilingual support'),
-              _('And to all other people who contributed to this project via'),
-              _(' - Ubuntu.ru forum http://forum.ubuntu.ru/index.php?topic=241992'),
-              _(' - github.com https://github.com/slytomcat/yandex-disk-indicator')])
+                                     _('\nSpecial thanks to:'),
+                                     _(' - Snow Dimon https://habrahabr.ru/users/Snowdimon/ - author of ya-setup utility'),
+                                     _(' - Christiaan Diedericks https://www.thefanclub.co.za/ - author of Grive tools'),
+                                     _(' - ryukusu_luminarius <my-faios@ya.ru> - icons designer'),
+                                     _(' - metallcorn <metallcorn@jabber.ru> - icons designer'),
+                                     _(' - Chibiko <zenogears@jabber.ru> - deb package creation assistance'),
+                                     _(' - RingOV <ringov@mail.ru> - localization assistance'),
+                                     _(' - GreekLUG team https://launchpad.net/~greeklug - Greek translation'),
+                                     _(' - Peyu Yovev <spacy00001@gmail.com> - Bulgarian translation'),
+                                     _(' - Eldar Fahreev <fahreeve@yandex.ru> - FM actions for Pantheon-files'),
+                                     _(' - Ace Of Snakes <aceofsnakesmain@gmail.com> - optimization of FM actions for Dolphin'),
+                                     _(' - Ivan Burmin https://github.com/Zirrald - ya-setup multilingual support'),
+                                     _('And to all other people who contributed to this project via'),
+                                     _(' - Ubuntu.ru forum http://forum.ubuntu.ru/index.php?topic=241992'),
+                                     _(' - github.com https://github.com/slytomcat/yandex-disk-indicator')])
             aboutWindow.set_resizable(False)
             aboutWindow.run()
             aboutWindow.destroy()
@@ -341,7 +342,7 @@ class Indicator(YDDaemon):
             widget.set_sensitive(False)                         # Disable menu item
 
             def displayOutput(outText, widget):
-                ### NOTE: it is called not from main thread, so it have to add action in main loop queue
+                # # # NOTE: it is called not from main thread, so it have to add action in main loop queue
                 def do_display(outText, widget):
                     # global APPLOGO
                     statusWindow = Gtk.Dialog(_('Yandex.Disk daemon output message'))
@@ -410,7 +411,7 @@ class Indicator(YDDaemon):
                 source_remove(self.timer)
                 self.active = False
 
-#### Application functions and classes
+# ### Application functions and classes
 class Preferences(Gtk.Dialog):
     """ Preferences window of application and daemons """
 
@@ -610,7 +611,7 @@ def appExit():
         i.exit()
     Gtk.main_quit()
 
-###################### MAIN #########################
+# ##################### MAIN #########################
 if __name__ == '__main__':
     # Application constants
     # See APPNAME and APPVER in the beginnig of the code

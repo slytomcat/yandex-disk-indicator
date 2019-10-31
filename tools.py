@@ -20,7 +20,7 @@ LOGGER = getLogger('')
 _ = translation(APPNAME, fallback=True).gettext
 
 
-#################### Common utility functions and classes ####################
+# ################### Common utility functions and classes ################### #
 def copyFile(src, dst):
     """File copy functiion"""
     try:
