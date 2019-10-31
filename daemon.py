@@ -11,7 +11,7 @@ from tempfile import gettempdir
 from subprocess import CalledProcessError
 
 
-#################### Main daemon class ####################
+# ################### Main daemon class ################### #
 class YDDaemon:                 # Yandex.Disk daemon interface
     """
     This is the fully automated class that serves as daemon interface.
@@ -43,7 +43,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
     ID       - the daemon identity string (empty in single daemon configuration)
     config   - The daemon configuration dictionary (object of _DConfig(Config) class)
     """
-    #################### Virtual methods ##################
+    # ################### Virtual methods ################# #
     # they have to be implemented in GUI part of code
 
     def error(self, errStr, cfgPath):
@@ -55,7 +55,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
         """ Updates handler """
         LOGGER.debug('%sUpdate event: %s',  self.ID, str(vals))
 
-    #################### Private classes ####################
+    # ################### Private classes ################### #
     class __Watcher:
         """ File changes watcher implementation """
         def __init__(self, path, handler, *args, **kwargs):
@@ -127,7 +127,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
                 return True
             return False
 
-    #################### Private methods ####################
+    # ################### Private methods ################### #
     def __init__(self, cfgFile, ID):         # Check that daemon installed and configured and initialize object
         """
         cfgFile  - full path to config file
@@ -292,7 +292,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
         # return True when something changed, if nothing changed - return False
         return self.__v['statchg'] or self.__v['szchg'] or self.__v['lastchg']
 
-    #################### Interface methods ####################
+    # ################### Interface methods ################### #
     def output(self, callBack):              # Receive daemon output in separate thread and pass it back through the callback
         Thread(target=lambda: callBack(self.__getOutput(True))).start()
 
