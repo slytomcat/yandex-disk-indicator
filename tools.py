@@ -51,8 +51,7 @@ def shortPath(path):
 
 
 class CVal:                     # Multivalue helper
-    """ Class to work with value that can be None, scalar item or list of items depending
-        of number of elementary items added to it or it contain. """
+    """Class to work with value that can be None, scalar item or list of items depending of number of items added to it."""
 
 
     def __init__(self, initialValue=None):

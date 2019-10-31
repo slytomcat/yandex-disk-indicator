@@ -15,8 +15,7 @@ from subprocess import CalledProcessError
 
 
 class YDDaemon:                 # Yandex.Disk daemon interface
-    """
-    This is the fully automated class that serves as daemon interface.
+    """This is the fully automated class that serves as daemon interface.
     Public methods:
     __init__ - Handles initialization of the object and as a part - auto-start daemon if it
               is required by configuration settings.
@@ -105,7 +104,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
 
 
     class __DConfig(Config):
-        """ Redefined class for daemon config """
+        """Redefined class for daemon config"""
 
 
         def save(self):  # Update daemon config file
@@ -145,9 +144,8 @@ class YDDaemon:                 # Yandex.Disk daemon interface
 
 
     def __init__(self, cfgFile, ID):         # Check that daemon installed and configured and initialize object
-        """ cfgFile  - full path to config file
-            ID       - identity string '#<n> ' in multi-instance environment or
-                       '' in single instance environment"""
+        """cfgFile  - full path to config file
+        ID       - identity string '#<n> ' in multi-instance environment or '' in single instance environment"""
         self.ID = ID                                      # Remember daemon identity
         self.__YDC = which('yandex-disk')
         if self.__YDC is None:

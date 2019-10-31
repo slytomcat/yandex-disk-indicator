@@ -151,8 +151,8 @@ class Indicator(YDDaemon):
 
         idle_add(do_change, vals, self.config['dir'])
 
+    """ Own classes/methods """
 
-    # ###### Own classes/methods
     def __init__(self, path, ID):
         # Create indicator notification engine
         self.notify = Notification(_('Yandex.Disk ') + ID)
@@ -278,8 +278,7 @@ class Indicator(YDDaemon):
             if vals['statchg'] or vals['laststatus'] == 'unknown':
                 self.status.set_label(_('Status: ') + self.YD_STATUS[vals['status']] +
                                       (vals['progress'] if vals['status'] == 'busy' else
-                                      ' '.join((':', vals['error'], shortPath(vals['path']))) if vals['status'] == 'error' else
-                                      ''))
+                                       ' '.join((':', vals['error'], shortPath(vals['path']))) if vals['status'] == 'error' else ''))
                 # Update pseudo-static items on first run or when daemon has stopped or started
                 if 'none' in (vals['status'], vals['laststatus']) or vals['laststatus'] == 'unknown':
                     started = vals['status'] != 'none'
@@ -403,13 +402,16 @@ class Indicator(YDDaemon):
 
 
     class Timer:                        # Timer implementation (GUI related)
-        """ Timer class methods:
-              __init__ - initialize the timer object with specified interval and handler. Start it
-                        if start value is not False.
-              start    - Start timer if it is not started yet.
-              stop     - Stop running timer or do nothing if it is not running.
-            Interface variables:
-              active   - True when timer is currently running, otherwise - False
+        """Timer class methods:
+
+        __init__ - initialize the timer object with specified interval and handler. Start it if start value True.
+        start    - Start timer if it is not started yet.
+        stop     - Stop running timer or do nothing if it is not running.
+
+        Interface variables:
+
+        active   - True when timer is currently running, otherwise - False
+
         """
 
         def __init__(self, interval, handler, start=True):
