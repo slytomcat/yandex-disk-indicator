@@ -46,12 +46,14 @@ along with this program.  If not, see http://www.gnu.org/licenses
 class Notification:
     """ On-screen notification """
 
+
     def __init__(self, title):
         """ Initialize notification engine """
         if not Notify.is_initted():
             Notify.init(APPNAME)
         self.title = title
         self.note = None
+
 
     def send(self, messg):
         # global APPLOGO
@@ -69,9 +71,11 @@ class Notification:
         except:
             LOGGER.error('Message engine failure')
 
+
 # ################### Indicatior class ################### #
 class Indicator(YDDaemon):
     """ Yandex.Disk appIndicator class """
+
 
     # ###### YDDaemon virtual classes/methods implementations
     def error(self, errStr, cfgPath):
@@ -103,6 +107,7 @@ class Indicator(YDDaemon):
         dialog.destroy()
         return retCode              # 0 when error is not critical or fixed (daemon has been configured via ya-setup)
 
+
     def change(self, vals):
         """ Implementation of daemon class call-back function
 
@@ -115,6 +120,7 @@ class Indicator(YDDaemon):
         LOGGER.info('%sChange event: %s', self.ID, ','.join(['stat' if vals['statchg'] else '',
                                                              'size' if vals['szchg'] else '',
                                                              'last' if vals['lastchg'] else '']))
+
 
         def do_change(vals, path):
             """ Update information in menu """
@@ -144,6 +150,7 @@ class Indicator(YDDaemon):
             self.currentStatus = vals['status']
 
         idle_add(do_change, vals, self.config['dir'])
+
 
     # ###### Own classes/methods
     def __init__(self, path, ID):
@@ -176,6 +183,7 @@ class Indicator(YDDaemon):
         super().__init__(path, ID)
         self.currentStatus = None                 # Current daemon status
 
+
     def setIconTheme(self, theme):
         """ Determine paths to icons according to current theme """
         # global APPINSTPATH, APPCONFPATH
@@ -195,6 +203,7 @@ class Indicator(YDDaemon):
         # Set theme paths according to existence of first busy icon
         self.themePath = userPath if pathExists(userIcon) else defaultPath
 
+
     def updateIcon(self, status):       # Change indicator icon according to just changed daemon status
         """ Set icon according to the current daemon status """
         self.ind.set_icon_full(self.icon[status], '')
@@ -204,6 +213,7 @@ class Indicator(YDDaemon):
             self.iconTimer.start()    # Start animation timer
         else:
             self.iconTimer.stop()     # Stop animation timer when status is not busy
+
 
     class Menu(Gtk.Menu):               # Indicator menu
 
@@ -261,6 +271,7 @@ class Indicator(YDDaemon):
             self.YD_STATUS = {'idle': _('Synchronized'), 'busy': _('Sync.: '), 'none': _('Not started'),
                               'paused': _('Paused'), 'no_net': _('Not connected'), 'error': _('Error')}
 
+
         def update(self, vals, yddir):  # Update information in menu
             self.folder = yddir
             # Update status data on first run or when status has changed
@@ -306,6 +317,7 @@ class Indicator(YDDaemon):
 
             self.show_all()                                 # Renew menu
 
+
         def openAbout(self, widget):            # Show About window
             # global APPLOGO, APPINDICATORS
             for i in APPINDICATORS:
@@ -338,8 +350,10 @@ class Indicator(YDDaemon):
             for i in APPINDICATORS:
                 i.menu.about.set_sensitive(True)            # Enable menu item
 
+
         def showOutput(self, widget):           # Request for daemon output
             widget.set_sensitive(False)                         # Disable menu item
+
 
             def displayOutput(outText, widget):
                 # # # NOTE: it is called not from main thread, so it have to add action in main loop queue
@@ -361,8 +375,10 @@ class Indicator(YDDaemon):
 
             self.daemon.output(lambda t: displayOutput(t, widget))
 
+
         def openInBrowser(self, _, url):   # Open URL
             openNewBrowser(url)
+
 
         def startStopDaemon(self, widget):      # Start/Stop daemon
             action = widget.get_label()[:1]
@@ -372,6 +388,7 @@ class Indicator(YDDaemon):
             elif action == '\u2060':  # Stop
                 self.daemon.stop()
 
+
         def openPath(self, _, path):       # Open path
             LOGGER.info("Opening '%s'", path)
             if pathExists(path):
@@ -380,8 +397,10 @@ class Indicator(YDDaemon):
                 except:
                     LOGGER.error("Start of '%s' failed", path)
 
+
         def close(self, _):                # Quit from indicator
             appExit()
+
 
     class Timer:                        # Timer implementation (GUI related)
         """ Timer class methods:
@@ -392,6 +411,7 @@ class Indicator(YDDaemon):
             Interface variables:
               active   - True when timer is currently running, otherwise - False
         """
+
         def __init__(self, interval, handler, start=True):
             self.interval = interval          # Timer interval (ms)
             self.handler = handler            # Handler function
@@ -399,11 +419,13 @@ class Indicator(YDDaemon):
             if start:
                 self.start()                    # Start timer if required
 
+
         def start(self):       # Start inactive timer or update if it is active
             if not self.active:
                 self.timer = timeout_add(self.interval, self.handler)
                 self.active = True
                 # LOGGER.debug('timer started %s %s', self.timer, interval)
+
 
         def stop(self):                     # Stop active timer
             if self.active:
@@ -411,12 +433,15 @@ class Indicator(YDDaemon):
                 source_remove(self.timer)
                 self.active = False
 
+
 # ### Application functions and classes
 class Preferences(Gtk.Dialog):
     """ Preferences window of application and daemons """
 
+
     class excludeDirsList(Gtk.Dialog):
         """ Excluded dirs dialogue """
+
 
         def __init__(self, widget, parent, dcofig):   # show current list
             self.dconfig = dcofig
@@ -447,6 +472,7 @@ class Preferences(Gtk.Dialog):
             # LOGGER.debug(str(self.dirset))
             self.show_all()
 
+
         def exitFromDialog(self, widget):     # Save list from dialogue to "exclude-dirs" property
             if self.dconfig.changed:
                 eList = CVal()                                      # Store path value from dialogue rows
@@ -456,8 +482,10 @@ class Preferences(Gtk.Dialog):
             # LOGGER.debug(str(self.dirset))
             self.destroy()                                        # Close dialogue
 
+
         def lineToggled(self, _, path):  # Line click handler, it switch row selection
             self.exList[path][0] = not self.exList[path][0]
+
 
         def deleteSelected(self, _):     # Remove selected rows from list
             listIiter = self.exList.get_iter_first()
@@ -470,11 +498,10 @@ class Preferences(Gtk.Dialog):
                     listIiter = self.exList.iter_next(listIiter)
             # LOGGER.debug(str(self.dirset))
 
+
         def addFolder(self, widget, parent):  # Add new path to list via FileChooserDialog
-            dialog = Gtk.FileChooserDialog(_('Select catalogue to add to list'), parent,
-                                          Gtk.FileChooserAction.SELECT_FOLDER,
-                                          (_('Close'), Gtk.ResponseType.CANCEL,
-                                           _('Select'), Gtk.ResponseType.ACCEPT))
+            dialog = Gtk.FileChooserDialog(_('Select catalogue to add to list'), parent, Gtk.FileChooserAction.SELECT_FOLDER,
+                                           (_('Close'), Gtk.ResponseType.CANCEL, _('Select'), Gtk.ResponseType.ACCEPT))
             dialog.set_default_response(Gtk.ResponseType.CANCEL)
             dialog.set_select_multiple(True)
             rootDir = self.dconfig['dir']
@@ -489,6 +516,7 @@ class Preferences(Gtk.Dialog):
                             self.dconfig.changed = True
             dialog.destroy()
             # LOGGER.debug(str(self.dirset))
+
 
     def __init__(self, widget):
         # global config, APPINDICATORS, APPLOGO
@@ -506,9 +534,9 @@ class Preferences(Gtk.Dialog):
         preferencesBox = Gtk.VBox(spacing=5)
         cb = []
         for key, msg in [('autostart', _('Start Yandex.Disk indicator when you start your computer')),
-                        ('notifications', _('Show on-screen notifications')),
-                        ('theme', _('Prefer light icon theme')),
-                        ('fmextensions', _('Activate file manager extensions'))]:
+                         ('notifications', _('Show on-screen notifications')),
+                         ('theme', _('Prefer light icon theme')),
+                         ('fmextensions', _('Activate file manager extensions'))]:
             cb.append(Gtk.CheckButton(msg))
             cb[-1].set_active(APPCONF[key])
             cb[-1].connect("toggled", self.onButtonToggled, cb[-1], key)
@@ -571,6 +599,7 @@ class Preferences(Gtk.Dialog):
             i.menu.preferences.set_sensitive(True)      # Enable menu items
         self.destroy()
 
+
     def onButtonToggled(self, _, button, key, dconfig=None, ow=None):
         """ Handle clicks on controls """
         toggleState = button.get_active()
@@ -603,6 +632,7 @@ class Preferences(Gtk.Dialog):
         elif key == 'read-only':
             ow.set_sensitive(toggleState)
 
+
 def appExit():
     """ Exit from application (it closes all APPINDICATORS) """
     # global APPINDICATORS
@@ -610,6 +640,7 @@ def appExit():
     for i in APPINDICATORS:
         i.exit()
     Gtk.main_quit()
+
 
 # ##################### MAIN #########################
 if __name__ == '__main__':

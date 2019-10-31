@@ -46,14 +46,17 @@ class YDDaemon:                 # Yandex.Disk daemon interface
     # ################### Virtual methods ################# #
     # they have to be implemented in GUI part of code
 
+
     def error(self, errStr, cfgPath):
         """ Error handler """
         LOGGER.debug('%sError %s , path %s', self.ID, errStr, cfgPath)
         return 0
 
+
     def change(self, vals):
         """ Updates handler """
         LOGGER.debug('%sUpdate event: %s',  self.ID, str(vals))
+
 
     # ################### Private classes ################### #
     class __Watcher:
@@ -67,6 +70,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
             self.status = False
             self.mark = None
             self.timer = None
+
 
         def start(self):                    # Activate iNotify watching
             if self.status:
@@ -88,13 +92,16 @@ class YDDaemon:                 # Yandex.Disk daemon interface
             self.timer.start()
             self.status = True
 
+
         def stop(self):
             if not self.status:
                 return
             self.timer.cancel()
 
+
     class __DConfig(Config):
         """ Redefined class for daemon config """
+
 
         def save(self):  # Update daemon config file
             # Make a new Config object
@@ -112,6 +119,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
             fileConfig.save()
             self.changed = False
 
+
         def load(self):  # Get daemon config from its config file
             if super().load():                                    # Load config from file
                 # Convert values representations
@@ -126,6 +134,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
                     self['exclude-dirs'] = self.getValue(exDirs)
                 return True
             return False
+
 
     # ################### Private methods ################### #
     def __init__(self, cfgFile, ID):         # Check that daemon installed and configured and initialize object
@@ -148,8 +157,8 @@ class YDDaemon:                 # Yandex.Disk daemon interface
                 a = self.config.get('auth', "")
                 if not d or not a:
                     errorStr = ("Error: " + ("option 'dir'" if not d else "") + (" and " if not d and not a else "") +
-                               ("option 'auth'" if not a else "") + (" are " if not a and not d else " is ") +
-                               "missing in the daemon configuration file %s" % cfgFile)
+                                ("option 'auth'" if not a else "") + (" are " if not a and not d else " is ") +
+                                "missing in the daemon configuration file %s" % cfgFile)
                 else:
                     dp = expanduser(d)
                     dne = not pathExists(dp)
@@ -157,7 +166,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
                     ane = not pathExists(ap)
                     if ane or dne:
                         errorStr = ("Error: " + ("path %s" % dp if dne else "") + (" and " if dne and ane else "") +
-                          ("path %s" % ap if ane else "") + (" are " if ane and dne else " is ") + "not exist")
+                                    ("path %s" % ap if ane else "") + (" are " if ane and dne else " is ") + "not exist")
                     else:
                         break # no config problems was found, go on
             # some configuration problem was found and errorStr contains the detailed description of the problem
@@ -214,6 +223,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
         else:
             self.__watcher.start()             # try to activate file watcher
 
+
     def __getOutput(self, userLang=False):   # Get result of 'yandex-disk status'
         cmd = [self.__YDC, '-c', self.config.fileName, 'status']
         if not userLang:      # Change locale settings when it required
@@ -225,6 +235,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
             output = ''         # daemon is not running or bad
             # LOGGER.debug('Status output = %s', output)
         return output
+
 
     def __parseOutput(self, out):            # Parse the daemon output
         """
@@ -291,15 +302,18 @@ class YDDaemon:                 # Yandex.Disk daemon interface
         # return True when something changed, if nothing changed - return False
         return self.__v['statchg'] or self.__v['szchg'] or self.__v['lastchg']
 
+
     # ################### Interface methods ################### #
     def output(self, callBack):              # Receive daemon output in separate thread and pass it back through the callback
         Thread(target=lambda: callBack(self.__getOutput(True))).start()
+
 
     def start(self, wait=False):             # Execute 'yandex-disk start' in separate thread
         """
         Execute 'yandex-disk start' in separate thread
         Additionally it starts watcher in case of success start
         """
+
         def do_start():
             if self.__getOutput() != "":
                 LOGGER.info('Daemon is already started')
@@ -312,12 +326,15 @@ class YDDaemon:                 # Yandex.Disk daemon interface
                 LOGGER.error('Daemon start failed: %s', e.output)
                 return
             self.__watcher.start()      # Activate file watcher
+
         if wait:
             do_start()
         else:
             Thread(target=do_start).start()
 
+
     def stop(self, wait=False):              # Execute 'yandex-disk stop' in separate thread
+
         def do_stop():
             if self.__getOutput() == "":
                 LOGGER.info('Daemon is not started')
@@ -327,6 +344,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
                 LOGGER.info('Daemon stopped, message: %s', msg)
             except:
                 LOGGER.info('Daemon stop failed')
+
         if wait:
             do_stop()
         else:
