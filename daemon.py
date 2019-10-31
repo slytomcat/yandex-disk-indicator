@@ -8,7 +8,6 @@ from os.path import expanduser
 from shutil import which
 from threading import Timer as thTimer, Lock, Thread
 from tempfile import gettempdir
-from sys import exit as sysExit
 from subprocess import CalledProcessError
 
 

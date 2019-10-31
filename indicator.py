@@ -35,7 +35,6 @@ from gi.repository.GLib import timeout_add, source_remove, idle_add, unix_signal
 
 from webbrowser import open_new as openNewBrowser
 from signal import SIGTERM, SIGINT
-from gettext import translation
 from os.path import exists as pathExists, join as pathJoin, relpath as relativePath, expanduser
 from os import getenv, getpid, geteuid
 from daemon import YDDaemon, sysExit
@@ -91,7 +90,6 @@ class Indicator(YDDaemon):
                       '  To configure it up: press OK button.\n  Press Cancel to exit.'))
         dialog = Gtk.MessageDialog(None, 0, Gtk.MessageType.INFO, buttons, text1)
         dialog.format_secondary_text(text2)
-        #dialog.set_default_size(400, 250)
         dialog.set_icon(APPLOGO)
         response = dialog.run()
 
@@ -475,7 +473,7 @@ class Preferences(Gtk.Dialog):
             dialog = Gtk.FileChooserDialog(_('Select catalogue to add to list'), parent,
                                           Gtk.FileChooserAction.SELECT_FOLDER,
                                           (_('Close'), Gtk.ResponseType.CANCEL,
-                                            _('Select'), Gtk.ResponseType.ACCEPT))
+                                           _('Select'), Gtk.ResponseType.ACCEPT))
             dialog.set_default_response(Gtk.ResponseType.CANCEL)
             dialog.set_select_multiple(True)
             rootDir = self.dconfig['dir']
@@ -623,7 +621,6 @@ if __name__ == '__main__':
     # Define .desktop files locations for indicator auto-start facility
     APPAUTOSTARTSRC = '/usr/share/applications/Yandex.Disk-indicator.desktop'
     APPAUTOSTARTDST = expanduser('~/.config/autostart/Yandex.Disk-indicator.desktop')
-
 
     # Get command line arguments or their default values
     args = argParse(APPVER)
