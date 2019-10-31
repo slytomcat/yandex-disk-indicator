@@ -1,5 +1,7 @@
 yd-tools (@version) @series; urgency=medium
   * Changes:
     - Split program into 3 files to isolate daemon and GUI parts
+    - PEP8 formatting
+    - automatic code checks through deepsource.io
 
  -- Sly_tom_cat <slytomcat@mail.ru>  @date
