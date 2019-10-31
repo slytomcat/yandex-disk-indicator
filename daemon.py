@@ -129,10 +129,9 @@ class YDDaemon:                 # Yandex.Disk daemon interface
 
     # ################### Private methods ################### #
     def __init__(self, cfgFile, ID):         # Check that daemon installed and configured and initialize object
-        """
-        cfgFile  - full path to config file
-        ID       - identity string '#<n> ' in multi-instance environment or
-                  '' in single instance environment"""
+        """ cfgFile  - full path to config file
+            ID       - identity string '#<n> ' in multi-instance environment or
+                       '' in single instance environment"""
         self.ID = ID                                      # Remember daemon identity
         self.__YDC = which('yandex-disk')
         if self.__YDC is None:
@@ -149,8 +148,8 @@ class YDDaemon:                 # Yandex.Disk daemon interface
                 a = self.config.get('auth', "")
                 if not d or not a:
                     errorStr = ("Error: " + ("option 'dir'" if not d else "") + (" and " if not d and not a else "") +
-                      ("option 'auth'" if not a else "") + (" are " if not a and not d else " is ") +
-                      "missing in the daemon configuration file %s" % cfgFile)
+                               ("option 'auth'" if not a else "") + (" are " if not a and not d else " is ") +
+                               "missing in the daemon configuration file %s" % cfgFile)
                 else:
                     dp = expanduser(d)
                     dne = not pathExists(dp)
@@ -263,15 +262,15 @@ class YDDaemon:                 # Yandex.Disk daemon interface
                 self.__v['laststatus'] = self.__v['status']
                 # Convert daemon raw status to internal representation
                 val = ('none' if val == '' else
-                      # Ignore index status
-                      'busy' if val == 'index' and self.__v['laststatus'] == "unknown" else
-                      self.__v['laststatus'] if val == 'index' and self.__v['laststatus'] != "unknown" else
-                      # Rename long error status
-                      'no_net' if val == 'no internet access' else
-                      # pass 'busy', 'idle' and 'paused' statuses 'as is'
-                      val if val in ['busy', 'idle', 'paused'] else
-                      # Status 'error' covers 'error', 'failed to connect to daemon process' and other.
-                      'error')
+                       # Ignore index status
+                       'busy' if val == 'index' and self.__v['laststatus'] == "unknown" else
+                       self.__v['laststatus'] if val == 'index' and self.__v['laststatus'] != "unknown" else
+                       # Rename long error status
+                       'no_net' if val == 'no internet access' else
+                       # pass 'busy', 'idle' and 'paused' statuses 'as is'
+                       val if val in ['busy', 'idle', 'paused'] else
+                       # Status 'error' covers 'error', 'failed to connect to daemon process' and other.
+                       'error')
             elif key != 'progress' and val == '':   # 'progress' can be '' the rest - can't
                 val = '...'                           # Make default filling for empty values
             # Check value change and store changed
