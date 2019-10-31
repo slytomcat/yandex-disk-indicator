@@ -89,9 +89,9 @@ class YDDaemon:                 # Yandex.Disk daemon interface
             self.status = True
 
         def stop(self):
-          if not self.status:
-              return
-          self.timer.cancel()
+            if not self.status:
+                return
+            self.timer.cancel()
 
     class __DConfig(Config):
         """ Redefined class for daemon config """
@@ -320,14 +320,14 @@ class YDDaemon:                 # Yandex.Disk daemon interface
 
     def stop(self, wait=False):              # Execute 'yandex-disk stop' in separate thread
         def do_stop():
-          if self.__getOutput() == "":
-              LOGGER.info('Daemon is not started')
-              return
-          try:
-              msg = check_output([self.__YDC, '-c', self.config.fileName, 'stop'], universal_newlines=True)
-              LOGGER.info('Daemon stopped, message: %s', msg)
-          except:
-              LOGGER.info('Daemon stop failed')
+            if self.__getOutput() == "":
+                LOGGER.info('Daemon is not started')
+                return
+            try:
+                msg = check_output([self.__YDC, '-c', self.config.fileName, 'stop'], universal_newlines=True)
+                LOGGER.info('Daemon stopped, message: %s', msg)
+            except:
+                LOGGER.info('Daemon stop failed')
         if wait:
             do_stop()
         else:
