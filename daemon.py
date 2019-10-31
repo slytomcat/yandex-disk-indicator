@@ -13,7 +13,6 @@ from subprocess import CalledProcessError
 
 # ################### Main daemon class ################### #
 
-
 class YDDaemon:                 # Yandex.Disk daemon interface
     """This is the fully automated class that serves as daemon interface.
     Public methods:
@@ -48,7 +47,6 @@ class YDDaemon:                 # Yandex.Disk daemon interface
     # ################### Virtual methods ################# #
     # they have to be implemented in GUI part of code
 
-
     def error(self, errStr, cfgPath):
         """ Error handler """
         LOGGER.debug('%sError %s , path %s', self.ID, errStr, cfgPath)
@@ -61,7 +59,6 @@ class YDDaemon:                 # Yandex.Disk daemon interface
 
 
     # ################### Private classes ################### #
-
 
     class __Watcher:
         """ File changes watcher implementation """
@@ -141,7 +138,6 @@ class YDDaemon:                 # Yandex.Disk daemon interface
 
 
     # ################### Private methods ################### #
-
 
     def __init__(self, cfgFile, ID):         # Check that daemon installed and configured and initialize object
         """cfgFile  - full path to config file
@@ -309,6 +305,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
 
 
     # ################### Interface methods ################### #
+
     def output(self, callBack):              # Receive daemon output in separate thread and pass it back through the callback
         Thread(target=lambda: callBack(self.__getOutput(True))).start()
 
