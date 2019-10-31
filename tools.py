@@ -167,7 +167,7 @@ class Config(dict):
                                           # lines, lines without delimiter, and lines with comments.
             with open(self.fileName) as cf:
                 res = [reFindall(r'^\s*(.+?)\s*%s\s*(.*)$' % self.delimiter, l)[0]
-                      for l in cf if l and self.delimiter in l and l.lstrip()[0] != '#']
+                       for l in cf if l and self.delimiter in l and l.lstrip()[0] != '#']
             self.readSuccess = True
         except:
             LOGGER.error('Config file read error: %s', self.fileName)
@@ -252,9 +252,9 @@ def activateActions(activate, appInstPath):
             LOGGER.debug(nautilusPath)
             if activate:      # Install actions for Nautilus
                 copyFile(pathJoin(appInstPath, "fm-actions/Nautilus_Nemo/publish"),
-                        pathJoin(userHome, nautilusPath, _("Publish via Yandex.Disk")))
+                         pathJoin(userHome, nautilusPath, _("Publish via Yandex.Disk")))
                 copyFile(pathJoin(appInstPath, "fm-actions/Nautilus_Nemo/unpublish"),
-                        pathJoin(userHome, nautilusPath, _("Unpublish from Yandex.disk")))
+                         pathJoin(userHome, nautilusPath, _("Unpublish from Yandex.disk")))
             else:             # Remove actions for Nautilus
                 deleteFile(pathJoin(userHome, nautilusPath, _("Publish via Yandex.Disk")))
                 deleteFile(pathJoin(userHome, nautilusPath, _("Unpublish from Yandex.disk")))
@@ -265,9 +265,9 @@ def activateActions(activate, appInstPath):
             LOGGER.info("Nemo installed")
             if activate:      # Install actions for Nemo
                 copyFile(pathJoin(appInstPath, "fm-actions/Nautilus_Nemo/publish"),
-                        pathJoin(userHome, ".local/share/nemo/scripts", _("Publish via Yandex.Disk")))
+                         pathJoin(userHome, ".local/share/nemo/scripts", _("Publish via Yandex.Disk")))
                 copyFile(pathJoin(appInstPath, "fm-actions/Nautilus_Nemo/unpublish"),
-                        pathJoin(userHome, ".local/share/nemo/scripts", _("Unpublish from Yandex.disk")))
+                         pathJoin(userHome, ".local/share/nemo/scripts", _("Unpublish from Yandex.disk")))
             else:             # Remove actions for Nemo
                 deleteFile(pathJoin(userHome, ".gnome2/nemo-scripts", _("Publish via Yandex.Disk")))
                 deleteFile(pathJoin(userHome, ".gnome2/nemo-scripts", _("Unpublish from Yandex.disk")))
@@ -286,26 +286,26 @@ def activateActions(activate, appInstPath):
             if activate:      # Install actions for Thunar
                 if _("Publish via Yandex.Disk") not in nActs.keys():
                     nActs[_("Publish via Yandex.Disk")] = ("<action><icon>folder-publicshare</icon>" +
-                                    '<name>' + _("Publish via Yandex.Disk") +
-                                    '</name><command>yandex-disk publish %f | xclip -filter -selection' +
-                                    ' clipboard; zenity --info ' +
-                                    '--window-icon=/usr/share/yd-tools/icons/yd-128.png ' +
-                                    '--title="Yandex.Disk" --ok-label="' + _('Close') + '" --text="' +
-                                    _('URL to file: %f was copied into clipboard.') +
-                                    '"</command><description/><patterns>*</patterns>' +
-                                    '<directories/><audio-files/><image-files/><other-files/>' +
-                                    "<text-files/><video-files/></action>")
+                                                           '<name>' + _("Publish via Yandex.Disk") +
+                                                           '</name><command>yandex-disk publish %f | xclip -filter -selection' +
+                                                           ' clipboard; zenity --info ' +
+                                                           '--window-icon=/usr/share/yd-tools/icons/yd-128.png ' +
+                                                           '--title="Yandex.Disk" --ok-label="' + _('Close') + '" --text="' +
+                                                           _('URL to file: %f was copied into clipboard.') +
+                                                           '"</command><description/><patterns>*</patterns>' +
+                                                           '<directories/><audio-files/><image-files/><other-files/>' +
+                                                           "<text-files/><video-files/></action>")
                 if _("Unpublish from Yandex.disk") not in nActs.keys():
                     nActs[_("Unpublish from Yandex.disk")] = ("<action><icon>folder</icon><name>" +
-                                    _("Unpublish from Yandex.disk") +
-                                    '</name><command>zenity --info ' +
-                                    '--window-icon=/usr/share/yd-tools/icons/yd-128_g.png --ok-label="' +
-                                    _('Close') + '" --title="Yandex.Disk" --text="' +
-                                    _("Unpublish from Yandex.disk") +
-                                    ': `yandex-disk unpublish %f`"</command>' +
-                                    '<description/><patterns>*</patterns>' +
-                                    '<directories/><audio-files/><image-files/><other-files/>' +
-                                    "<text-files/><video-files/></action>")
+                                                              _("Unpublish from Yandex.disk") +
+                                                              '</name><command>zenity --info ' +
+                                                              '--window-icon=/usr/share/yd-tools/icons/yd-128_g.png --ok-label="' +
+                                                              _('Close') + '" --title="Yandex.Disk" --text="' +
+                                                              _("Unpublish from Yandex.disk") +
+                                                              ': `yandex-disk unpublish %f`"</command>' +
+                                                              '<description/><patterns>*</patterns>' +
+                                                              '<directories/><audio-files/><image-files/><other-files/>' +
+                                                              "<text-files/><video-files/></action>")
 
             else:             # Remove actions for Thunar
                 if _("Publish via Yandex.Disk") in nActs.keys():
@@ -324,7 +324,7 @@ def activateActions(activate, appInstPath):
             if activate:      # Install actions for Dolphin
                 makeDirs(pathJoin(userHome, '.local/share/kservices5/ServiceMenus'))
                 copyFile(pathJoin(appInstPath, "fm-actions/Dolphin/ydpublish.desktop"),
-                        pathJoin(userHome, ".local/share/kservices5/ServiceMenus/ydpublish.desktop"))
+                         pathJoin(userHome, ".local/share/kservices5/ServiceMenus/ydpublish.desktop"))
             else:             # Remove actions for Dolphin
                 deleteFile(pathJoin(userHome, ".local/share/kservices5/ServiceMenus/ydpublish.desktop"))
             result = True
@@ -357,9 +357,9 @@ def activateActions(activate, appInstPath):
             LOGGER.info("Caja installed")
             if activate:      # Install actions for Nemo
                 copyFile(pathJoin(appInstPath, "fm-actions/Nautilus_Nemo/publish"),
-                        pathJoin(userHome, ".config/caja/scripts", _("Publish via Yandex.Disk")))
+                         pathJoin(userHome, ".config/caja/scripts", _("Publish via Yandex.Disk")))
                 copyFile(pathJoin(appInstPath, "fm-actions/Nautilus_Nemo/unpublish"),
-                        pathJoin(userHome, ".config/caja/scripts", _("Unpublish from Yandex.disk")))
+                         pathJoin(userHome, ".config/caja/scripts", _("Unpublish from Yandex.disk")))
             else:             # Remove actions for Nemo
                 deleteFile(pathJoin(userHome, ".config/caja/scripts", _("Publish via Yandex.Disk")))
                 deleteFile(pathJoin(userHome, ".config/caja/scripts", _("Unpublish from Yandex.disk")))
