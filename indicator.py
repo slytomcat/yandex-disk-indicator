@@ -574,7 +574,7 @@ class Preferences(Gtk.Dialog):
             overwrite = Gtk.CheckButton(_('Overwrite locally changed files by files' +
                                           ' from Yandex.Disk (in read-only mode)'))
             overwrite.set_tooltip_text(_("Locally changed files will be overwritten if a newer " +
-                                        "version of this file appear in Yandex.Disk."))
+                                         "version of this file appear in Yandex.Disk."))
             overwrite.set_active(i.config[key])
             overwrite.set_sensitive(i.config['read-only'])
             cbRO.connect("toggled", self.onButtonToggled, cbRO, 'read-only', i.config, overwrite)

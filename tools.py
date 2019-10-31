@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from os import remove, makedirs, getenv
 from argparse import ArgumentParser
 from shutil import copy as fileCopy, which
+from os import remove, makedirs, getenv
 from os.path import exists as pathExists, join as pathJoin
 from subprocess import check_output, call
 from re import findall as reFindall, search as reSearch, sub as reSub,  M as reM, S as reS
@@ -179,8 +179,8 @@ class Config(dict):
         When value is a single item then it creates key:value item in dictionary
         When value is a list of items it creates key:[value, value,...] dictionary's item.
         """
-        try:                              # Read configuration file into list of tuples ignoring blank
-                                          # lines, lines without delimiter, and lines with comments.
+        try:                            # Read configuration file into list of tuples ignoring blank
+                                        # lines, lines without delimiter, and lines with comments.
             with open(self.fileName) as cf:
                 res = [reFindall(r'^\s*(.+?)\s*%s\s*(.*)$' % self.delimiter, l)[0]
                        for l in cf if l and self.delimiter in l and l.lstrip()[0] != '#']
