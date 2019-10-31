@@ -28,12 +28,14 @@ def copyFile(src, dst):
     except:
         LOGGER.error("File Copy Error: from %s to %s", src, dst)
 
+
 def deleteFile(dst):
     """Delete file function"""
     try:
         remove(dst)
     except:
         LOGGER.error('File Deletion Error: %s', dst)
+
 
 def makeDirs(dst):
     """Create all child directories up to specified"""
@@ -42,22 +44,27 @@ def makeDirs(dst):
     except:
         LOGGER.error('Dirs creation Error: %s', dst)
 
+
 def shortPath(path):
     """Make short path to display it"""
     return (path[: 20] + '...' + path[-27:] if len(path) > 50 else path).replace('_', '\u02CD')
 
+
 class CVal:                     # Multivalue helper
     """ Class to work with value that can be None, scalar item or list of items depending
         of number of elementary items added to it or it contain. """
+
 
     def __init__(self, initialValue=None):
         self.val = None
         self.set(initialValue)   # store initial value
         self.index = None
 
+
     def get(self):
         # Just returns the current value of cVal
         return self.val
+
 
     def set(self, value):
         """ Set internal value """
@@ -65,6 +72,7 @@ class CVal:                     # Multivalue helper
         if isinstance(self.val, list) and len(self.val) == 1:
             self.val = self.val[0]
         return self.val
+
 
     def add(self, item):
         """ Add item """
@@ -76,6 +84,7 @@ class CVal:                     # Multivalue helper
             self.val = [self.val, item]   # Convert scalar value to list of items.
         return self.val
 
+
     def __iter__(self):
         """ cVal iterator object initialization """
         if isinstance(self.val, list):  # Is CVal a list?
@@ -85,6 +94,7 @@ class CVal:                     # Multivalue helper
         else:                           # CVal is scalar type.
             self.index = -2
         return self
+
 
     def __next__(self):
         """ cVal iterator support """
@@ -100,12 +110,15 @@ class CVal:                     # Multivalue helper
         self.index = None                   # Remember that there is no more iterations possible
         return self.val
 
+
     def __bool__(self):
         """ returns False for empty cVal oterways returns True """
         return self.val is not None
 
+
 class Config(dict):
     """ Configuration is a class to represent stored on disk configuration values """
+
 
     def __init__(self, fileName, load=True,
                  bools=None, boolval=None,
@@ -122,12 +135,14 @@ class Config(dict):
         if load:
             self.load()
 
+
     def decode(self, value):              # Convert string to value before store it
         if value.lower() in self.bools[0]:
             value = True
         elif value.lower() in self.bools[1]:
             value = False
         return value
+
 
     def getValue(self, st):               # Find value(s) in string after '='
         v = CVal()                                      # Value accumulator
@@ -153,6 +168,7 @@ class Config(dict):
                 # else:                                 # Error: No value after comma
             # else:                                     # Error: Next symbol is not comma
             return None                                 # Error
+
 
     def load(self):
         """
@@ -195,12 +211,14 @@ class Config(dict):
         LOGGER.info('Config read: %s', self.fileName)
         return True
 
+
     def encode(self, val):                # Convert value to string before save it
         if isinstance(val, bool):       # Treat Boolean
             val = self.boolval[0] if val else self.boolval[1]
         if self.usequotes:
             val = '"' + val + '"'         # Put value within quotes
         return val
+
 
     def save(self):
         """ save in-memory configuration to file on disk """
@@ -234,6 +252,7 @@ class Config(dict):
         LOGGER.info('Config written: %s', self.fileName)
         self.changed = False                  # Reset flag of change in not stored config
         return True
+
 
 def activateActions(activate, appInstPath):
     """ Install/deinstall file extensions """
@@ -369,6 +388,7 @@ def activateActions(activate, appInstPath):
         LOGGER.error("The following error occurred during the FM actions activation:\n %s", str(e))
     return result
 
+
 def checkAutoStart(path):
     """ Check that auto-start is enabled """
     if pathExists(path):
@@ -382,6 +402,7 @@ def checkAutoStart(path):
                 return True
     return False
 
+
 def setProcName(newname):
     """ Sets the executable name """
     from ctypes import cdll, byref, create_string_buffer
@@ -389,6 +410,7 @@ def setProcName(newname):
     buff = create_string_buffer(len(newname) + 1)
     buff.value = bytes(newname, 'UTF8')
     libc.prctl(15, byref(buff), 0, 0, 0)
+
 
 def argParse(ver):
     """ Parse command line arguments """
