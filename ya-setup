@@ -7,6 +7,10 @@
 ####   - addes quotes around config values
 #### modified by Ivan Burmin:
 ####   - multi-language support
+#### modified by s3r6:
+####   - exiting setup dialogs on wrong password fix
+####   - authorization error output without cutting text
+####   - successfull authorization shows notification
 
 ### Command line positional argument: $1 - configfile path
 
@@ -80,10 +84,10 @@ function showAuthDialog() {
 
     if [ $? -eq "0" ]; then
       # auth ok
-      zenity --notification --text "Yandex disk client authorization success"
+      zenity --notification --text "$_YD_auth_success"
     else
       # auth failed
-      zenity --warning --title="$_YD_auth_title" --text "$auth_output"
+      zenity --warning --title="$_YD_auth_title" --text "$auth_output" --no-wrap
       showAuthDialog
     fi
   else
