@@ -53,17 +53,14 @@ def shortPath(path):
 class CVal:                     # Multivalue helper
     """Class to work with value that can be None, scalar item or list of items depending of number of items added to it."""
 
-
     def __init__(self, initialValue=None):
         self.val = None
         self.set(initialValue)   # store initial value
         self.index = None
 
-
     def get(self):
         # Just returns the current value of cVal
         return self.val
-
 
     def set(self, value):
         """ Set internal value """
@@ -71,7 +68,6 @@ class CVal:                     # Multivalue helper
         if isinstance(self.val, list) and len(self.val) == 1:
             self.val = self.val[0]
         return self.val
-
 
     def add(self, item):
         """ Add item """
@@ -83,7 +79,6 @@ class CVal:                     # Multivalue helper
             self.val = [self.val, item]   # Convert scalar value to list of items.
         return self.val
 
-
     def __iter__(self):
         """ cVal iterator object initialization """
         if isinstance(self.val, list):  # Is CVal a list?
@@ -93,7 +88,6 @@ class CVal:                     # Multivalue helper
         else:                           # CVal is scalar type.
             self.index = -2
         return self
-
 
     def __next__(self):
         """ cVal iterator support """
@@ -109,7 +103,6 @@ class CVal:                     # Multivalue helper
         self.index = None                   # Remember that there is no more iterations possible
         return self.val
 
-
     def __bool__(self):
         """ returns False for empty cVal oterways returns True """
         return self.val is not None
@@ -117,7 +110,6 @@ class CVal:                     # Multivalue helper
 
 class Config(dict):
     """ Configuration is a class to represent stored on disk configuration values """
-
 
     def __init__(self, fileName, load=True,
                  bools=None, boolval=None,
@@ -210,14 +202,12 @@ class Config(dict):
         LOGGER.info('Config read: %s', self.fileName)
         return True
 
-
     def encode(self, val):                # Convert value to string before save it
         if isinstance(val, bool):       # Treat Boolean
             val = self.boolval[0] if val else self.boolval[1]
         if self.usequotes:
             val = '"' + val + '"'         # Put value within quotes
         return val
-
 
     def save(self):
         """ save in-memory configuration to file on disk """

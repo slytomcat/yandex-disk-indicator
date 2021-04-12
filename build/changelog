@@ -3,5 +3,6 @@ yd-tools (@version) @series; urgency=medium
     - Split program into 3 files to isolate daemon and GUI parts
     - PEP8 formatting
     - automatic code checks through deepsource.io
+    - destroy indicators on exit
 
  -- Sly_tom_cat <slytomcat@mail.ru>  @date

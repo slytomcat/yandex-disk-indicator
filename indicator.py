@@ -121,7 +121,6 @@ class Indicator(YDDaemon):
                                                              'size' if vals['szchg'] else '',
                                                              'last' if vals['lastchg'] else '']))
 
-
         def do_change(vals, path):
             """ Update information in menu """
             self.menu.update(vals, path)
@@ -151,8 +150,8 @@ class Indicator(YDDaemon):
 
         idle_add(do_change, vals, self.config['dir'])
 
-    """ Own classes/methods """
 
+    """ Own classes/methods """
     def __init__(self, path, ID):
         # Create indicator notification engine
         self.notify = Notification(_('Yandex.Disk ') + ID)
@@ -182,6 +181,15 @@ class Indicator(YDDaemon):
         # Initialize Yandex.Disk daemon connection object
         super().__init__(path, ID)
         self.currentStatus = None                 # Current daemon status
+
+
+    def exit(self):
+        def do_exit(self):
+            self.menu.destroy()
+            self.ind.set_status(appIndicator.IndicatorStatus.PASSIVE)
+            LOGGER.debug("Indicator destroyed")
+        idle_add(do_exit, self)
+        super().exit()
 
 
     def setIconTheme(self, theme):
@@ -638,11 +646,10 @@ class Preferences(Gtk.Dialog):
 def appExit():
     """ Exit from application (it closes all APPINDICATORS) """
     # global APPINDICATORS
-    LOGGER.debug("Exit started")
+    LOGGER.debug("Quit is initialized")
     for i in APPINDICATORS:
         i.exit()
-    Gtk.main_quit()
-
+    idle_add(Gtk.main_quit)
 
 # ##################### MAIN #########################
 if __name__ == '__main__':
@@ -687,7 +694,7 @@ if __name__ == '__main__':
     when application starts.
 
     Note that daemon settings ('dir', 'read-only', 'overwrite' and 'exclude_dir') are stored
-    in ~/ .config/yandex-disk/config.cfg file. They are read in YDDaemon.__init__() method
+    in ~/.config/yandex-disk/config.cfg file. They are read in YDDaemon.__init__() method
     (in dictionary YDDaemon.config). Their values are saved to daemon config file also
     on exit from Menu.Preferences dialogue.
 

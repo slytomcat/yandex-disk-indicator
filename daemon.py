@@ -61,6 +61,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
     # ################### Private classes ################### #
 
     class __Watcher:
+
         """ File changes watcher implementation """
         def __init__(self, path, handler, *args, **kwargs):
             self.path = path
@@ -138,8 +139,8 @@ class YDDaemon:                 # Yandex.Disk daemon interface
 
 
     # ################### Private methods ################### #
-
     def __init__(self, cfgFile, ID):         # Check that daemon installed and configured and initialize object
+ 
         """cfgFile  - full path to config file
         ID       - identity string '#<n> ' in multi-instance environment or '' in single instance environment"""
         self.ID = ID                                      # Remember daemon identity
@@ -226,7 +227,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
 
 
     def __getOutput(self, userLang=False):   # Get result of 'yandex-disk status'
-        cmd = [self.__YDC, '-c', self.config.fileName, 'status']
+        cmd = [self.__YDC, 'status', '-c', self.config.fileName]
         if not userLang:      # Change locale settings when it required
             cmd = ['env', '-i', "TMPDIR=%s" % self.tmpDir] + cmd
         # LOGGER.debug('cmd = %s', str(cmd))
@@ -305,8 +306,8 @@ class YDDaemon:                 # Yandex.Disk daemon interface
 
 
     # ################### Interface methods ################### #
-
     def output(self, callBack):              # Receive daemon output in separate thread and pass it back through the callback
+
         Thread(target=lambda: callBack(self.__getOutput(True))).start()
 
 
@@ -322,7 +323,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
                 self.__watcher.start()    # Activate file watcher
                 return
             try:                        # Try to start
-                msg = check_output([self.__YDC, '-c', self.config.fileName, 'start'], universal_newlines=True)
+                msg = check_output([self.__YDC, 'start', '-c', self.config.fileName], universal_newlines=True)
                 LOGGER.info('Daemon started, message: %s', msg)
             except CalledProcessError as e:
                 LOGGER.error('Daemon start failed: %s', e.output)
@@ -342,7 +343,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
                 LOGGER.info('Daemon is not started')
                 return
             try:
-                msg = check_output([self.__YDC, '-c', self.config.fileName, 'stop'], universal_newlines=True)
+                msg = check_output([self.__YDC, 'stop', '-c', self.config.fileName], universal_newlines=True)
                 LOGGER.info('Daemon stopped, message: %s', msg)
             except:
                 LOGGER.info('Daemon stop failed')
@@ -353,11 +354,11 @@ class YDDaemon:                 # Yandex.Disk daemon interface
             Thread(target=do_stop).start()
 
     def exit(self):                          # Handle daemon/indicator closing
-        LOGGER.debug("Indicator %sexit started: ", self.ID)
+        LOGGER.debug("Daemon inerface %sexit started: ", self.ID)
         self.__watcher.stop()
         self.__timer.cancel()  # stop event timer if it is running
         # Stop yandex-disk daemon if it is required by its configuration
         if self.config.get('stoponexitfromindicator', False):
             self.stop(wait=True)
             LOGGER.info('Demon %sstopped', self.ID)
-        LOGGER.debug('Indicator %sexited', self.ID)
+        LOGGER.debug('Daemon inerface %sexited', self.ID)
