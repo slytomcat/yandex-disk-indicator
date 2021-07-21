@@ -22,8 +22,8 @@ Everybody welcome to translate it to other languages!
 NOTES:
 
 Indicator code assumes that:
-- yandex-disk-indicator.py is copied to /usr/bin/yandex-disk-indicator and marked as executable (chmod a+x ...)
-- fm-actions/ and icons/ folders, ya-setup files are located in /usr/share/yd-tools folder
+- yandex-disk-indicator is copied to /usr/bin/yandex-disk-indicator and marked as executable (chmod a+x ...)
+- fm-actions/ and icons/ folders, ya-setup and \*.py files are located in /usr/share/yd-tools folder
 - *.desktop files were placed in /usr/share/applications folder
 - compiled language files (translations/*.mo) are located in the system depended folders (i.e. usr/share/locale/{LANG}/LC_MESSAGES/ in Linux)
 - ya-setup utility translations files (translations/ya-setup*.lang) are located in /usr/share/yd-tools/translation folder
