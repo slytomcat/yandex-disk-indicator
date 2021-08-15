@@ -309,7 +309,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
     def start(self, wait=False):             # Execute 'yandex-disk start' in separate thread
         # Execute 'yandex-disk start' in separate thread
         # Additionally it starts watcher in case of success start
-        
+
         def do_start():
             if self.__getOutput() != "":
                 LOGGER.info('Daemon is already started')

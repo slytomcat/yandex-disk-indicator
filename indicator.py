@@ -680,7 +680,7 @@ if __name__ == '__main__':
     LOGGER.debug('Logging level: %s', str(args.level))
 
     # Application configuration
-    
+
     # User configuration is stored in ~/.config/<APPHOME>/<APPNAME>.conf file.
     # This file can contain comments (line starts with '#') and config values in
     # form: key=value[,value[,value ...]] where keys and values can be quoted ("...") or not.
@@ -699,7 +699,7 @@ if __name__ == '__main__':
     # Additionally 'startonstartofindicator' and 'stoponexitfromindicator' values are added into daemon
     # configuration file to provide the functionality of obsolete 'startonstart' and 'stoponexit'
     # values for each daemon individually.
-    
+
     APPCONF = Config(pathJoin(APPCONFPATH, APPNAME + '.conf'))
     # Read some settings to variables, set default values and update some values
     APPCONF['autostart'] = checkAutoStart(APPAUTOSTARTDST)
