@@ -15,7 +15,7 @@ mkdir -p $TARGET/share/yd-tools/icons/dark
 mkdir -p $TARGET/share/yd-tools/icons/light
 mkdir -p $TARGET/share/yd-tools/translations
 cp ../yandex-disk-indicator $TARGET/bin/yandex-disk-indicator
-cp ../yandex-disk-indicator.py $TARGET/share/yd-tools/
+cp ../indicator.py $TARGET/share/yd-tools/
 cp ../daemon.py $TARGET/share/yd-tools/
 cp ../tools.py $TARGET/share/yd-tools/
 cp ../ya-setup $TARGET/share/yd-tools/

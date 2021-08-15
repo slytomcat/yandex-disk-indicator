@@ -1,5 +1,5 @@
 usr/bin/yandex-disk-indicator usr/bin/
-usr/share/yd-tools/yandex-disk-indicator.py usr/share/yd-tools/
+usr/share/yd-tools/indicator.py usr/share/yd-tools/
 usr/share/yd-tools/daemon.py usr/share/yd-tools/
 usr/share/yd-tools/tools.py usr/share/yd-tools/
 usr/share/yd-tools/ya-setup usr/share/yd-tools/

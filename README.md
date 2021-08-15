@@ -14,9 +14,7 @@ See installation instruction in [Wiki](https://github.com/slytomcat/yandex-disk-
 
 INTERFACE LANGUAGES
 
-English, Russian, Greek, Bulgarian, Belorussian.
-
-Everybody welcome to translate it to other languages!  
+English, Russian, Greek, Bulgarian, Belorussian.  
 
 
 NOTES:
