@@ -9,7 +9,7 @@ from shutil import which
 from threading import Timer as thTimer, Lock, Thread
 from tempfile import gettempdir
 from subprocess import CalledProcessError
-from sys import exit
+from sys import exit as sysExit
 
 
 # ################### Main daemon class ################### #
@@ -146,7 +146,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
         self.__YDC = which('yandex-disk')
         if self.__YDC is None:
             self.error('', '')
-            exit(1)
+            sysExit(1)
         # Try to read Yandex.Disk configuration file and make sure that it is correctly configured
         self.config = self.__DConfig(cfgFile, load=False)
         while True:
@@ -175,7 +175,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
                 if ID != '':
                     self.config['dir'] = ""
                     break   # Exit from loop in multi-instance configuration
-                exit(1)
+                sysExit(1)
         self.tmpDir = gettempdir()
         # Set initial daemon status values
         self.__v = {'status': 'unknown', 'progress': '', 'laststatus': 'unknown', 'statchg': True,

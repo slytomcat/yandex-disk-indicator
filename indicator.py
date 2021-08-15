@@ -448,7 +448,7 @@ class Preferences(Gtk.Dialog):
 
 
     class excludeDirsList(Gtk.Dialog):
-        # Excluded dirs dialogue 
+        # Excluded dirs dialogue
 
 
         def __init__(self, widget, parent, dcofig):   # show current list
