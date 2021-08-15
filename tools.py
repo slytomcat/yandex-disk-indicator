@@ -22,7 +22,7 @@ _ = translation(APPNAME, fallback=True).gettext
 
 # ################### Common utility functions and classes ################### #
 def copyFile(src, dst):
-    """File copy functiion"""
+    # File copy functiion
     try:
         fileCopy(src, dst)
     except:
@@ -30,7 +30,7 @@ def copyFile(src, dst):
 
 
 def deleteFile(dst):
-    """Delete file function"""
+    # Delete file function
     try:
         remove(dst)
     except:
@@ -38,7 +38,7 @@ def deleteFile(dst):
 
 
 def makeDirs(dst):
-    """Create all child directories up to specified"""
+    # Create all child directories up to specified
     try:
         makedirs(dst, exist_ok=True)
     except:
@@ -46,12 +46,12 @@ def makeDirs(dst):
 
 
 def shortPath(path):
-    """Make short path to display it"""
+    # Make short path to display it
     return (path[: 20] + '...' + path[-27:] if len(path) > 50 else path).replace('_', '\u02CD')
 
 
 class CVal:                     # Multivalue helper
-    """Class to work with value that can be None, scalar item or list of items depending of number of items added to it."""
+    # Class to work with value that can be None, scalar item or list of items depending of number of items added to it.
 
     def __init__(self, initialValue=None):
         self.val = None
@@ -63,14 +63,14 @@ class CVal:                     # Multivalue helper
         return self.val
 
     def set(self, value):
-        """ Set internal value """
+        # Set internal value
         self.val = value
         if isinstance(self.val, list) and len(self.val) == 1:
             self.val = self.val[0]
         return self.val
 
     def add(self, item):
-        """ Add item """
+        # Add item
         if isinstance(self.val, list):    # Is it third, fourth ... value?
             self.val.append(item)         # Just append new item to list
         elif self.val is None:            # Is it first item?
@@ -80,7 +80,7 @@ class CVal:                     # Multivalue helper
         return self.val
 
     def __iter__(self):
-        """ cVal iterator object initialization """
+        # cVal iterator object initialization
         if isinstance(self.val, list):  # Is CVal a list?
             self.index = -1
         elif self.val is None:          # Is CVal not defined?
@@ -90,7 +90,7 @@ class CVal:                     # Multivalue helper
         return self
 
     def __next__(self):
-        """ cVal iterator support """
+        # cVal iterator support
         if self.index is None:              # Is CVal not defined?
             raise StopIteration             # Stop iterations
         self.index += 1
@@ -104,12 +104,12 @@ class CVal:                     # Multivalue helper
         return self.val
 
     def __bool__(self):
-        """ returns False for empty cVal oterways returns True """
+        # returns False for empty cVal oterways returns True
         return self.val is not None
 
 
 class Config(dict):
-    """ Configuration is a class to represent stored on disk configuration values """
+    # Configuration is a class to represent stored on disk configuration values
 
     def __init__(self, fileName, load=True,
                  bools=None, boolval=None,
@@ -162,14 +162,13 @@ class Config(dict):
 
 
     def load(self):
-        """
-        Reads config file to dictionary.
-        Config file should contain key=value rows.
-        Key can be quoted or not.
-        Value can be one item or list of comma-separated items. Each value item can be quoted or not.
-        When value is a single item then it creates key:value item in dictionary
-        When value is a list of items it creates key:[value, value,...] dictionary's item.
-        """
+        # Reads config file to dictionary.
+        # Config file should contain key=value rows.
+        # Key can be quoted or not.
+        # Value can be one item or list of comma-separated items. Each value item can be quoted or not.
+        # When value is a single item then it creates key:value item in dictionary
+        # When value is a list of items it creates key:[value, value,...] dictionary's item.
+
         try:                            # Read configuration file into list of tuples ignoring blank
                                         # lines, lines without delimiter, and lines with comments.
             with open(self.fileName) as cf:
@@ -210,7 +209,7 @@ class Config(dict):
         return val
 
     def save(self):
-        """ save in-memory configuration to file on disk """
+        # save in-memory configuration to file on disk
         try:                                      # Read the file in buffer
             with open(self.fileName, 'rt') as cf:
                 buf = cf.read()
@@ -244,7 +243,7 @@ class Config(dict):
 
 
 def activateActions(activate, appInstPath):
-    """ Install/deinstall file extensions """
+    # Install/deinstall file extensions
     userHome = getenv("HOME")
     result = False
     try:                  # Catch all exceptions during FM action activation/deactivation
@@ -379,7 +378,7 @@ def activateActions(activate, appInstPath):
 
 
 def checkAutoStart(path):
-    """ Check that auto-start is enabled """
+    # Check that auto-start is enabled
     if pathExists(path):
         i = 1 if getenv('XDG_CURRENT_DESKTOP') in ('Unity', 'Pantheon') else 0
         with open(path, 'rt') as f:
@@ -393,7 +392,7 @@ def checkAutoStart(path):
 
 
 def setProcName(newname):
-    """ Sets the executable name """
+    # Sets the executable name
     from ctypes import cdll, byref, create_string_buffer
     libc = cdll.LoadLibrary('libc.so.6')
     buff = create_string_buffer(len(newname) + 1)
@@ -402,7 +401,7 @@ def setProcName(newname):
 
 
 def argParse(ver):
-    """ Parse command line arguments """
+    # Parse command line arguments
     parser = ArgumentParser(description=_('Desktop indicator for yandex-disk daemon'), add_help=False)
     group = parser.add_argument_group(_('Options'))
     group.add_argument('-l', '--log', type=int, choices=range(10, 60, 10), dest='level', default=30,

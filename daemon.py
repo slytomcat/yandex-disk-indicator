@@ -9,52 +9,52 @@ from shutil import which
 from threading import Timer as thTimer, Lock, Thread
 from tempfile import gettempdir
 from subprocess import CalledProcessError
+from sys import exit
 
 
 # ################### Main daemon class ################### #
 
 class YDDaemon:                 # Yandex.Disk daemon interface
-    """This is the fully automated class that serves as daemon interface.
-    Public methods:
-    __init__ - Handles initialization of the object and as a part - auto-start daemon if it
-              is required by configuration settings.
-    output   - Provides daemon output (in user language) through the parameter of callback. Executed in separate thread
-    start    - Request to start daemon. Do nothing if it is alreday started. Executed in separate thread
-    stop     - Request to stop daemon. Do nothing if it is not started. Executed in separate thread
-    exit     - Handles 'Stop on exit' facility according to daemon configuration settings.
-    change   - Virtual method for handling daemon status changes. It have to be redefined by UI class.
-              The parameters of the call - status values dictionary with following keys:
-                'status' - current daemon status
-                'progress' - synchronization progress or ''
-                'laststatus' - previous daemon status
-                'statchg' - True indicates that status was changed
-                'total' - total Yandex disk space
-                'used' - currently used space
-                'free' - available space
-                'trash' - size of trash
-                'szchg' - True indicates that sizes were changed
-                'lastitems' - list of last synchronized items or []
-                'lastchg' - True indicates that lastitems was changed
-                'error' - error message
-                'path' - path of error
-    error    - Virtual method for error handling. It have to be redefined by UI class.
+    # This is the fully automated class that serves as daemon interface.
+    # Public methods:
+    # __init__ - Handles initialization of the object and as a part - auto-start daemon if it
+    #           is required by configuration settings.
+    # output   - Provides daemon output (in user language) through the parameter of callback. Executed in separate thread
+    # start    - Request to start daemon. Do nothing if it is alreday started. Executed in separate thread
+    # stop     - Request to stop daemon. Do nothing if it is not started. Executed in separate thread
+    # exit     - Handles 'Stop on exit' facility according to daemon configuration settings.
+    # change   - Virtual method for handling daemon status changes. It have to be redefined by UI class.
+    #           The parameters of the call - status values dictionary with following keys:
+    #             'status' - current daemon status
+    #             'progress' - synchronization progress or ''
+    #             'laststatus' - previous daemon status
+    #             'statchg' - True indicates that status was changed
+    #             'total' - total Yandex disk space
+    #             'used' - currently used space
+    #             'free' - available space
+    #             'trash' - size of trash
+    #             'szchg' - True indicates that sizes were changed
+    #             'lastitems' - list of last synchronized items or []
+    #             'lastchg' - True indicates that lastitems was changed
+    #             'error' - error message
+    #             'path' - path of error
+    # error    - Virtual method for error handling. It have to be redefined by UI class.
 
-    Class interface variables:
-    ID       - the daemon identity string (empty in single daemon configuration)
-    config   - The daemon configuration dictionary (object of _DConfig(Config) class)
-    """
+    # Class interface variables:
+    # ID       - the daemon identity string (empty in single daemon configuration)
+    # config   - The daemon configuration dictionary (object of _DConfig(Config) class)
 
     # ################### Virtual methods ################# #
     # they have to be implemented in GUI part of code
 
     def error(self, errStr, cfgPath):
-        """ Error handler """
+        # Error handler
         LOGGER.debug('%sError %s , path %s', self.ID, errStr, cfgPath)
         return 0
 
 
     def change(self, vals):
-        """ Updates handler """
+        # Updates handler
         LOGGER.debug('%sUpdate event: %s',  self.ID, str(vals))
 
 
@@ -62,7 +62,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
 
     class __Watcher:
 
-        """ File changes watcher implementation """
+        # File changes watcher implementation
         def __init__(self, path, handler, *args, **kwargs):
             self.path = path
             self.handler = handler
@@ -102,7 +102,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
 
 
     class __DConfig(Config):
-        """Redefined class for daemon config"""
+        # Redefined class for daemon config
 
 
         def save(self):  # Update daemon config file
@@ -140,9 +140,8 @@ class YDDaemon:                 # Yandex.Disk daemon interface
 
     # ################### Private methods ################### #
     def __init__(self, cfgFile, ID):         # Check that daemon installed and configured and initialize object
- 
-        """cfgFile  - full path to config file
-        ID       - identity string '#<n> ' in multi-instance environment or '' in single instance environment"""
+        # cfgFile  - full path to config file
+        # ID       - identity string '#<n> ' in multi-instance environment or '' in single instance environment
         self.ID = ID                                      # Remember daemon identity
         self.__YDC = which('yandex-disk')
         if self.__YDC is None:
@@ -176,8 +175,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
                 if ID != '':
                     self.config['dir'] = ""
                     break   # Exit from loop in multi-instance configuration
-                else:
-                    exit(1)
+                exit(1)
         self.tmpDir = gettempdir()
         # Set initial daemon status values
         self.__v = {'status': 'unknown', 'progress': '', 'laststatus': 'unknown', 'statchg': True,
@@ -188,11 +186,10 @@ class YDDaemon:                 # Yandex.Disk daemon interface
         self.__lock = Lock()                     # event handler lock
 
         def eventHandler(watch):
-            """
-            Handles watcher (when watch=False) and and timer (when watch=True) events.
-            After receiving and parsing the daemon output it raises outside change event if daemon changes
-            at least one of its status values.
-            """
+            # Handles watcher (when watch=False) and and timer (when watch=True) events.
+            # After receiving and parsing the daemon output it raises outside change event if daemon changes
+            # at least one of its status values.
+
             # Enter to critical section through acquiring of the lock as it can be called from two different threads
             self.__lock.acquire()
             # Parse fresh daemon output. Parsing returns true when something changed
@@ -240,18 +237,16 @@ class YDDaemon:                 # Yandex.Disk daemon interface
 
 
     def __parseOutput(self, out):            # Parse the daemon output
-        """
-        It parses the daemon output and check that something changed from last daemon status.
-        The self.__v dictionary is updated with new daemon statuses. It returns True is something changed
-        Daemon status is converted form daemon raw statuses into internal representation.
-        Internal status can be on of the following: 'busy', 'idle', 'paused', 'none', 'no_net', 'error'.
-        Conversion is done by following rules:
-        - empty status (daemon is not running) converted to 'none'
-        - statuses 'busy', 'idle', 'paused' are passed 'as is'
-        - 'index' is ignored (previous status is kept)
-        - 'no internet access' converted to 'no_net'
-        - 'error' covers all other errors, except 'no internet access'
-        """
+        # It parses the daemon output and check that something changed from last daemon status.
+        # The self.__v dictionary is updated with new daemon statuses. It returns True is something changed
+        # Daemon status is converted form daemon raw statuses into internal representation.
+        # Internal status can be on of the following: 'busy', 'idle', 'paused', 'none', 'no_net', 'error'.
+        # Conversion is done by following rules:
+        # - empty status (daemon is not running) converted to 'none'
+        # - statuses 'busy', 'idle', 'paused' are passed 'as is'
+        # - 'index' is ignored (previous status is kept)
+        # - 'no internet access' converted to 'no_net'
+        # - 'error' covers all other errors, except 'no internet access'
         self.__v['statchg'] = False
         self.__v['szchg'] = False
         self.__v['lastchg'] = False
@@ -312,11 +307,9 @@ class YDDaemon:                 # Yandex.Disk daemon interface
 
 
     def start(self, wait=False):             # Execute 'yandex-disk start' in separate thread
-        """
-        Execute 'yandex-disk start' in separate thread
-        Additionally it starts watcher in case of success start
-        """
-
+        # Execute 'yandex-disk start' in separate thread
+        # Additionally it starts watcher in case of success start
+        
         def do_start():
             if self.__getOutput() != "":
                 LOGGER.info('Daemon is already started')

@@ -44,11 +44,11 @@ along with this program.  If not, see http://www.gnu.org/licenses
 
 
 class Notification:
-    """ On-screen notification """
+    # On-screen notification
 
 
     def __init__(self, title):
-        """ Initialize notification engine """
+        # Initialize notification engine
         if not Notify.is_initted():
             Notify.init(APPNAME)
         self.title = title
@@ -74,12 +74,12 @@ class Notification:
 
 # ################### Indicatior class ################### #
 class Indicator(YDDaemon):
-    """ Yandex.Disk appIndicator class """
+    # Yandex.Disk appIndicator class
 
 
     # ###### YDDaemon virtual classes/methods implementations
     def error(self, errStr, cfgPath):
-        """ Error handler GUI implementation """
+        # Error handler GUI implementation
         # it must handle two types of error cases:
         # - yandex-disk is not installed (errStr=='' in that case) - just show error message and return
         # - yandex-disk is not configured (errStr!='' in that case) - suggest to configure it and run ya-setup if needed
@@ -109,20 +109,20 @@ class Indicator(YDDaemon):
 
 
     def change(self, vals):
-        """ Implementation of daemon class call-back function
+        # Implementation of daemon class call-back function
 
-        NOTE: it is called not from main thread, so it have to add action in main GUI loop queue
+        # NOTE: it is called not from main thread, so it have to add action in main GUI loop queue
 
-        It handles daemon status changes by updating icon, creating messages and also update
-        status information in menu (status, sizes and list of last synchronized items).
-        It is called when daemon detects any change of its status.
-        """
+        # It handles daemon status changes by updating icon, creating messages and also update
+        # status information in menu (status, sizes and list of last synchronized items).
+        # It is called when daemon detects any change of its status.
+
         LOGGER.info('%sChange event: %s', self.ID, ','.join(['stat' if vals['statchg'] else '',
                                                              'size' if vals['szchg'] else '',
                                                              'last' if vals['lastchg'] else '']))
 
         def do_change(vals, path):
-            """ Update information in menu """
+            # Update information in menu
             self.menu.update(vals, path)
             # Handle daemon status change by icon change
             if vals['status'] != vals['laststatus']:
@@ -151,7 +151,7 @@ class Indicator(YDDaemon):
         idle_add(do_change, vals, self.config['dir'])
 
 
-    """ Own classes/methods """
+    ### Own classes/methods ###
     def __init__(self, path, ID):
         # Create indicator notification engine
         self.notify = Notification(_('Yandex.Disk ') + ID)
@@ -193,7 +193,7 @@ class Indicator(YDDaemon):
 
 
     def setIconTheme(self, theme):
-        """ Determine paths to icons according to current theme """
+        # Determine paths to icons according to current theme
         # global APPINSTPATH, APPCONFPATH
         theme = 'light' if theme else 'dark'
         # Determine theme from application configuration settings
@@ -213,7 +213,7 @@ class Indicator(YDDaemon):
 
 
     def updateIcon(self, status):       # Change indicator icon according to just changed daemon status
-        """ Set icon according to the current daemon status """
+        # Set icon according to the current daemon status
         self.ind.set_icon_full(self.icon[status], '')
         # Handle animation
         if status == 'busy':        # Just entered into 'busy' status
@@ -410,17 +410,15 @@ class Indicator(YDDaemon):
 
 
     class Timer:                        # Timer implementation (GUI related)
-        """Timer class methods:
+        # Timer class methods:
 
-        __init__ - initialize the timer object with specified interval and handler. Start it if start value True.
-        start    - Start timer if it is not started yet.
-        stop     - Stop running timer or do nothing if it is not running.
+        # __init__ - initialize the timer object with specified interval and handler. Start it if start value True.
+        # start    - Start timer if it is not started yet.
+        # stop     - Stop running timer or do nothing if it is not running.
 
-        Interface variables:
+        # Interface variables:
 
-        active   - True when timer is currently running, otherwise - False
-
-        """
+        # active   - True when timer is currently running, otherwise - False
 
         def __init__(self, interval, handler, start=True):
             self.interval = interval          # Timer interval (ms)
@@ -446,11 +444,11 @@ class Indicator(YDDaemon):
 
 # ### Application functions and classes
 class Preferences(Gtk.Dialog):
-    """ Preferences window of application and daemons """
+    # Preferences window of application and daemons
 
 
     class excludeDirsList(Gtk.Dialog):
-        """ Excluded dirs dialogue """
+        # Excluded dirs dialogue 
 
 
         def __init__(self, widget, parent, dcofig):   # show current list
@@ -476,7 +474,7 @@ class Preferences(Gtk.Dialog):
             scroll.add_with_viewport(view)
             self.get_content_area().pack_start(scroll, True, True, 6)
             # Populate list with paths from "exclude-dirs" property of daemon configuration
-            self.dirset = [val for val in CVal(self.dconfig.get('exclude-dirs', None))]
+            self.dirset = list(CVal(self.dconfig.get('exclude-dirs', None)))
             for val in self.dirset:
                 self.exList.append([False, val])
             # LOGGER.debug(str(self.dirset))
@@ -611,7 +609,7 @@ class Preferences(Gtk.Dialog):
 
 
     def onButtonToggled(self, _, button, key, dconfig=None, ow=None):
-        """ Handle clicks on controls """
+        # Handle clicks on controls
         toggleState = button.get_active()
         LOGGER.debug('Togged: %s  val: %s', key, str(toggleState))
         # Update configurations
@@ -644,7 +642,7 @@ class Preferences(Gtk.Dialog):
 
 
 def appExit():
-    """ Exit from application (it closes all APPINDICATORS) """
+    # Exit from application (it closes all APPINDICATORS)
     # global APPINDICATORS
     LOGGER.debug("Quit is initialized")
     for i in APPINDICATORS:
@@ -682,26 +680,26 @@ if __name__ == '__main__':
     LOGGER.debug('Logging level: %s', str(args.level))
 
     # Application configuration
-    """
-    User configuration is stored in ~/.config/<APPHOME>/<APPNAME>.conf file.
-    This file can contain comments (line starts with '#') and config values in
-    form: key=value[,value[,value ...]] where keys and values can be quoted ("...") or not.
-    The following key words are reserved for configuration:
-      autostart, notifications, theme, fmextensions and daemons.
+    
+    # User configuration is stored in ~/.config/<APPHOME>/<APPNAME>.conf file.
+    # This file can contain comments (line starts with '#') and config values in
+    # form: key=value[,value[,value ...]] where keys and values can be quoted ("...") or not.
+    # The following key words are reserved for configuration:
+    #   autostart, notifications, theme, fmextensions and daemons.
 
-    The dictionary 'config' stores the config settings for usage in code. Its values are saved to
-    config file on exit from the Menu.Preferences dialogue or when there is no configuration file
-    when application starts.
+    # The dictionary 'config' stores the config settings for usage in code. Its values are saved to
+    # config file on exit from the Menu.Preferences dialogue or when there is no configuration file
+    # when application starts.
 
-    Note that daemon settings ('dir', 'read-only', 'overwrite' and 'exclude_dir') are stored
-    in ~/.config/yandex-disk/config.cfg file. They are read in YDDaemon.__init__() method
-    (in dictionary YDDaemon.config). Their values are saved to daemon config file also
-    on exit from Menu.Preferences dialogue.
+    # Note that daemon settings ('dir', 'read-only', 'overwrite' and 'exclude_dir') are stored
+    # in ~/.config/yandex-disk/config.cfg file. They are read in YDDaemon.__init__() method
+    # (in dictionary YDDaemon.config). Their values are saved to daemon config file also
+    # on exit from Menu.Preferences dialogue.
 
-    Additionally 'startonstartofindicator' and 'stoponexitfromindicator' values are added into daemon
-    configuration file to provide the functionality of obsolete 'startonstart' and 'stoponexit'
-    values for each daemon individually.
-    """
+    # Additionally 'startonstartofindicator' and 'stoponexitfromindicator' values are added into daemon
+    # configuration file to provide the functionality of obsolete 'startonstart' and 'stoponexit'
+    # values for each daemon individually.
+    
     APPCONF = Config(pathJoin(APPCONFPATH, APPNAME + '.conf'))
     # Read some settings to variables, set default values and update some values
     APPCONF['autostart'] = checkAutoStart(APPAUTOSTARTDST)
