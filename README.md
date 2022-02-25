@@ -31,7 +31,7 @@ build - everything that need to build the .deb package or source.changes file (o
 - install.sh - script to install the indicator
 - prepare.sh - creates the package build/instalation image in build/yd-tools/
 - clean.sh - clean build directory
-- bild_deb.sh - creates DEB package
+- build_deb.sh - creates DEB package
 - make_source.changes.sh - prepares sources for publication
 - publish_to_PPA.sh - prepares sources and publish it to my ppa
 
