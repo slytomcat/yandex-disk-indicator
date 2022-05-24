@@ -4,7 +4,11 @@
 [![wiki](https://img.shields.io/badge/wiki-available-green.svg)](https://github.com/slytomcat/yandex-disk-indicator/wiki)
 [![PPA](https://img.shields.io/badge/PPA-available-green.svg)](https://launchpad.net/~slytomcat/+archive/ubuntu/ppa)
 
-Desktop panel indicator for YandexDisk CLI client for Linux
+Desktop panel indicator for YandexDisk CLI client for Linux (GTK+)
+
+NOTE: 
+
+If You are looking for YandexDisk indicator for KDE or other non-GTK based DE take a look on [yd-go](https://github.com/slytomcat/yd-go). _yd-go_ is a little simpler indicator written in golang. It uses D-BUS to communicate with the desktop notification plugin, that's why yd-go is fully independent off Desktop Environment. 
 
 INSTALLATION:
 
