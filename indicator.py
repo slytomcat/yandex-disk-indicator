@@ -5,8 +5,12 @@
 from gi import require_version
 require_version('Gtk', '3.0')
 from gi.repository import Gtk
-require_version('AppIndicator3', '0.1')
-from gi.repository import AppIndicator3 as appIndicator
+try:
+    require_version('AppIndicator3', '0.1')
+    from gi.repository import AppIndicator3 as appIndicator
+except Exception:
+    require_version('AyatanaAppIndicator3', '0.1')
+    from gi.repository import AyatanaAppIndicator3 as appIndicator
 require_version('Notify', '0.7')
 from gi.repository import Notify
 require_version('GdkPixbuf', '2.0')
