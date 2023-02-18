@@ -668,14 +668,6 @@ if __name__ == '__main__':
     # Get command line arguments or their default values
     args = argParse(APPVER)
 
-    # Change the process name
-    setProcName(APPHOME)
-
-    # Check for already running instance of the indicator application
-    # Get PIDs of all runnig processes (of current user) with name 'yd-tools' and compare it with current process PID
-    if str(getpid()) != check_output(["pgrep", '-u', str(geteuid()), APPHOME], universal_newlines=True).strip():
-        sysExit(_('The indicator instance is already running.'))
-
     # Set user specified logging level
     LOGGER.setLevel(args.level)
 
