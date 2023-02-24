@@ -8,7 +8,11 @@ Desktop panel indicator for YandexDisk CLI client for Linux (GTK+)
 
 NOTE: 
 
-If You are looking for YandexDisk indicator for KDE or other non-GTK based DE take a look on [yd-go](https://github.com/slytomcat/yd-go). _yd-go_ is a little simpler indicator written in golang. It uses D-BUS to communicate with the desktop notification plugin, that's why yd-go is fully independent off Desktop Environment. 
+If You are looking for YandexDisk indicator for KDE or other non-GTK based DE take a look on [yd-go](https://github.com/slytomcat/yd-go). _yd-go_ is a little simpler indicator written in golang. It uses D-BUS to communicate with the desktop notification plugin, that's why yd-go is fully independent off Desktop Environment.
+
+IMPORTANT:
+
+Indicator responsible only for showing the synchronisation status in the desctop panel. All the synchronisation operations are perfomed by [yandex-disk utility from Yandex](https://yandex.ru/support/disk-desktop-linux/index.html).
 
 INSTALLATION:
 
