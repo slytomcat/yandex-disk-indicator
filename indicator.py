@@ -76,7 +76,7 @@ class Notification:
             LOGGER.error('Message engine failure')
 
 
-# ################### Indicatior class ################### #
+# ################### Indicator class ################### #
 class Indicator(YDDaemon):
     # Yandex.Disk appIndicator class
 
@@ -295,7 +295,7 @@ class Indicator(YDDaemon):
                 if 'none' in (vals['status'], vals['laststatus']) or vals['laststatus'] == 'unknown':
                     started = vals['status'] != 'none'
                     self.status.set_sensitive(started)
-                    # zero-space UTF symbols are used to detect requered action without need to compare translated strings
+                    # zero-space UTF symbols are used to detect required action without need to compare translated strings
                     self.daemon_ss.set_label(('\u2060' + _('Stop Yandex.Disk daemon')) if started else
                                              ('\u200B' + _('Start Yandex.Disk daemon')))
                     if self.ID != '':                             # Set daemon identity row in multidaemon mode

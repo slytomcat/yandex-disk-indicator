@@ -152,7 +152,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
         while True:
             # Check the daemon configuration and prepare error message according the detected problem
             if not self.config.load():
-                errorStr = "Error: the file %s is missing or has wrong structre" % cfgFile
+                errorStr = "Error: the file %s is missing or has wrong structure" % cfgFile
             else:
                 d = self.config.get('dir', "")
                 a = self.config.get('auth', "")
@@ -317,9 +317,15 @@ class YDDaemon:                 # Yandex.Disk daemon interface
                 return
             try:                        # Try to start
                 msg = check_output([self.__YDC, 'start', '-c', self.config.fileName], universal_newlines=True)
+                if msg.strip() != "Started":
+                    raise CalledProcessError(output=msg)
                 LOGGER.info('Daemon started, message: %s', msg)
             except CalledProcessError as e:
                 LOGGER.error('Daemon start failed: %s', e.output)
+                self.__v = {'status': 'error', 'progress': '', 'laststatus': self.__v['status'], 'statchg': True,
+                    'total': '...', 'used': '...', 'free': '...', 'trash': '...', 'szchg': True,
+                    'error': msg.split('\n')[0], 'path': '', 'lastitems': [], 'lastchg': True}
+                self.change(self.__v)
                 return
             self.__watcher.start()      # Activate file watcher
 
