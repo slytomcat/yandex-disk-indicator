@@ -1,8 +1,8 @@
-yd-tools (1.12.0) bionic; urgency=medium
+yd-tools (1.12.0) jammy; urgency=medium
   * Changes:
-    - Split program into 3 files to isolate daemon and GUI parts
+    - code splitted to 3 files to isolate daemon and GUI parts
     - PEP8 formatting
-    - automatic code checks through deepsource.io
     - destroy indicators on exit
+    - added support for Ayatana indicator library
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Tue, 13 Apr 2021 01:24:34 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Sat, 15 Jul 2023 11:02:22 +0300

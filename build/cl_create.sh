@@ -2,11 +2,7 @@
 
 # prepare changelog
 version=$(sed -n "/APPVER = '.*'/p" ../indicator.py | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+')
-#series='artful'
-series='bionic'
-#series='trusty'
-#series='xenial'
-#series='zesty'
+series='jammy'
 
 clear
 
