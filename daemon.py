@@ -316,12 +316,13 @@ class YDDaemon:                 # Yandex.Disk daemon interface
                 self.__watcher.start()    # Activate file watcher
                 return
             try:                        # Try to start
-                msg = check_output([self.__YDC, 'start', '-c', self.config.fileName], universal_newlines=True)
-                if msg.strip() != "Started":
-                    raise CalledProcessError(output=msg)
+                cmd = [self.__YDC, 'start', '-c', self.config.fileName]
+                msg = check_output(cmd, universal_newlines=True)
+                if msg.strip().find("Done") < 0:
+                    raise CalledProcessError(output=msg, returncode=0, cmd="")
                 LOGGER.info('Daemon started, message: %s', msg)
             except CalledProcessError as e:
-                LOGGER.error('Daemon start failed: %s', e.output)
+                LOGGER.error('Daemon start failed with code %d: %s', e.returncode, e.output)
                 self.__v = {'status': 'error', 'progress': '', 'laststatus': self.__v['status'], 'statchg': True,
                     'total': '...', 'used': '...', 'free': '...', 'trash': '...', 'szchg': True,
                     'error': msg.split('\n')[0], 'path': '', 'lastitems': [], 'lastchg': True}
