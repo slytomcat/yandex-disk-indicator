@@ -1,8 +1,5 @@
-yd-tools (1.12.0) jammy; urgency=medium
+yd-tools (1.12.1) jammy; urgency=medium
   * Changes:
-    - code splitted to 3 files to isolate daemon and GUI parts
-    - PEP8 formatting
-    - destroy indicators on exit
-    - added support for Ayatana indicator library
+    - Fix #238 wrong indicator title
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Sat, 15 Jul 2023 11:02:22 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Fri, 21 Jul 2023 23:17:53 +0300

@@ -1,8 +1,5 @@
 yd-tools (@version) @series; urgency=medium
   * Changes:
-    - code splitted to 3 files to isolate daemon and GUI parts
-    - PEP8 formatting
-    - destroy indicators on exit
-    - added support for Ayatana indicator library
+    - Fix #238 wrong indicator title
 
  -- Sly_tom_cat <slytomcat@mail.ru>  @date
