@@ -158,7 +158,7 @@ class Indicator(YDDaemon):
     ### Own classes/methods ###
     def __init__(self, path, ID):
         # Create indicator notification engine
-        self.notify = Notification(_('Yandex.Disk ') + ID)
+        self.notify = Notification(title=_('Yandex.Disk ') + ID)
         # Setup icons theme
         self.setIconTheme(APPCONF['theme'])
         # Create staff for icon animation support (don't start it here)
@@ -176,9 +176,10 @@ class Indicator(YDDaemon):
         self.iconTimer = self.Timer(777, iconAnimation, start=False)
         # Create App Indicator
         self.ind = appIndicator.Indicator.new(
-            "yandex-disk-%s" % ID[1: -1],
+            "yandex-disk%s" % ("-"+ID[1: -1] if ID != "" else ""),
             self.icon['paused'],
             appIndicator.IndicatorCategory.APPLICATION_STATUS)
+        self.ind.set_title(title=_("Yandex.Disk Indicator") + (" "+ID[:-1] if ID != "" else ""))
         self.ind.set_status(appIndicator.IndicatorStatus.ACTIVE)
         self.menu = self.Menu(self, ID)               # Create menu for daemon
         self.ind.set_menu(self.menu)                  # Attach menu to indicator
@@ -549,25 +550,25 @@ class Preferences(Gtk.Dialog):
                          ('notifications', _('Show on-screen notifications')),
                          ('theme', _('Prefer light icon theme')),
                          ('fmextensions', _('Activate file manager extensions'))]:
-            cb.append(Gtk.CheckButton(msg))
+            cb.append(Gtk.CheckButton(label=msg))
             cb[-1].set_active(APPCONF[key])
             cb[-1].connect("toggled", self.onButtonToggled, cb[-1], key)
             preferencesBox.add(cb[-1])
         # --- End of Indicator preferences tab --- add it to notebook
-        pref_notebook.append_page(preferencesBox, Gtk.Label(_('Indicator settings')))
+        pref_notebook.append_page(preferencesBox, Gtk.Label(label=_('Indicator settings')))
         # Add daemos tabs
         for i in APPINDICATORS:
             # --- Daemon start options tab ---
             optionsBox = Gtk.VBox(spacing=5)
             key = 'startonstartofindicator'           # Start daemon on indicator start
-            cbStOnStart = Gtk.CheckButton(_('Start Yandex.Disk daemon %swhen indicator is starting')
+            cbStOnStart = Gtk.CheckButton(label=_('Start Yandex.Disk daemon %swhen indicator is starting')
                                           % i.ID)
             cbStOnStart.set_tooltip_text(_("When daemon was not started before."))
             cbStOnStart.set_active(i.config[key])
             cbStOnStart.connect("toggled", self.onButtonToggled, cbStOnStart, key, i.config)
             optionsBox.add(cbStOnStart)
             key = 'stoponexitfromindicator'           # Stop daemon on exit
-            cbStoOnExit = Gtk.CheckButton(_('Stop Yandex.Disk daemon %son closing of indicator') % i.ID)
+            cbStoOnExit = Gtk.CheckButton(label=_('Stop Yandex.Disk daemon %son closing of indicator') % i.ID)
             cbStoOnExit.set_active(i.config[key])
             cbStoOnExit.connect("toggled", self.onButtonToggled, cbStoOnExit, key, i.config)
             optionsBox.add(cbStoOnExit)
@@ -578,12 +579,12 @@ class Preferences(Gtk.Dialog):
             framedBox = Gtk.VBox(homogeneous=True, spacing=5)
             frame.add(framedBox)
             key = 'read-only'                         # Option Read-Only    # daemon config
-            cbRO = Gtk.CheckButton(_('Read-Only: Do not upload locally changed files to Yandex.Disk'))
+            cbRO = Gtk.CheckButton(label=_('Read-Only: Do not upload locally changed files to Yandex.Disk'))
             cbRO.set_tooltip_text(_("Locally changed files will be renamed if a newer version of this " +
                                     "file appear in Yandex.Disk."))
             cbRO.set_active(i.config[key])
             key = 'overwrite'                         # Option Overwrite    # daemon config
-            overwrite = Gtk.CheckButton(_('Overwrite locally changed files by files' +
+            overwrite = Gtk.CheckButton(label=_('Overwrite locally changed files by files' +
                                           ' from Yandex.Disk (in read-only mode)'))
             overwrite.set_tooltip_text(_("Locally changed files will be overwritten if a newer " +
                                          "version of this file appear in Yandex.Disk."))
@@ -594,12 +595,12 @@ class Preferences(Gtk.Dialog):
             overwrite.connect("toggled", self.onButtonToggled, overwrite, key, i.config)
             framedBox.add(overwrite)
             # Excude folders list
-            exListButton = Gtk.Button(_('Excluded folders List'))
+            exListButton = Gtk.Button(label=_('Excluded folders List'))
             exListButton.set_tooltip_text(_("Folders in the list will not be synchronized."))
             exListButton.connect("clicked", self.excludeDirsList, self, i.config)
             framedBox.add(exListButton)
             # --- End of Daemon start options tab --- add it to notebook
-            pref_notebook.append_page(optionsBox, Gtk.Label(_('Daemon %soptions') % i.ID))
+            pref_notebook.append_page(optionsBox, Gtk.Label(label=_('Daemon %soptions') % i.ID))
         self.set_resizable(False)
         self.show_all()
         self.run()
