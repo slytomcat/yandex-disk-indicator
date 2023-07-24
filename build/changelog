@@ -1,5 +1,5 @@
 yd-tools (@version) @series; urgency=medium
   * Changes:
-    - Fix #238 wrong indicator title
+    - Fix flickering error during the daemon restart
 
  -- Sly_tom_cat <slytomcat@mail.ru>  @date

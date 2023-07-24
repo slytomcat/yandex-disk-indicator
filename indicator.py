@@ -27,7 +27,7 @@ from tools import setProcName, argParse, check_output, call, pathExists, LOGGER,
 from datetime import datetime
 
 APPNAME = 'yandex-disk-indicator'
-APPVER = '1.12.1'
+APPVER = '1.12.2'
 #
 COPYRIGHT = 'Copyright ' + '\u00a9' + ' 2013-' + str(datetime.today().year) + ' Sly_tom_cat'
 #

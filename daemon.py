@@ -318,8 +318,6 @@ class YDDaemon:                 # Yandex.Disk daemon interface
             try:                        # Try to start
                 cmd = [self.__YDC, 'start', '-c', self.config.fileName]
                 msg = check_output(cmd, universal_newlines=True)
-                if msg.strip().find("Done") < 0:
-                    raise CalledProcessError(output=msg, returncode=0, cmd="")
                 LOGGER.info('Daemon started, message: %s', msg)
             except CalledProcessError as e:
                 LOGGER.error('Daemon start failed with code %d: %s', e.returncode, e.output)
