@@ -1,5 +1,5 @@
-yd-tools (1.12.1) jammy; urgency=medium
+yd-tools (1.12.2) jammy; urgency=medium
   * Changes:
-    - Fix #238 wrong indicator title
+    - Fix flickering error during the daemon restart
 
- -- Sly_tom_cat <slytomcat@mail.ru>  Fri, 21 Jul 2023 23:17:53 +0300
+ -- Sly_tom_cat <slytomcat@mail.ru>  Tue, 25 Jul 2023 00:04:40 +0300
