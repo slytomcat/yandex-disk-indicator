@@ -2,19 +2,23 @@
 
 #### Author: Snow Dimon ####
 #### Website: snowdimon.ru ####
-#### modified by SlyTomCat: 
+#### modified by SlyTomCat:
 ####   - adoption to alternative configuration of Yandex Disk daemon
 ####   - addes quotes around config values
 #### modified by Ivan Burmin:
 ####   - multi-language support
+#### modified by s3r6:
+####   - exiting setup dialogs on wrong password fix
+####   - authorization error output without cutting text
+####   - successfull authorization shows notification
 
 ### Command line positional argument: $1 - configfile path
 
-if [ $# -eq 1 ];then
+if [ $# -eq 1 ]; then
   conf=$1
-else 
+else
   conf="/home/$USER/.config/yandex-disk/config.cfg"
-fi 
+fi
 
 ### Language
 
@@ -23,59 +27,73 @@ lang_home="/usr/share/yd-tools/translations"
 lang_file="$lang_home/ya-setup-$(echo $LANG | cut -c 1-2).lang"
 
 if [ ! -f $lang_file ]; then
-    lang_file="$lang_home/ya-setup-en.lang"
+  lang_file="$lang_home/ya-setup-en.lang"
 fi
 
 source $lang_file
 
 ###Proxy
-ans=$(zenity  --list --cancel-label="$_Exit" --ok-label="$_Next" --title "$_YD_setup_title" --text "$_Welcome1 $conf.$_Welcome2" --radiolist --hide-header --column "" --column "$_Options" TRUE "$_No"  FALSE "$_Yes" FALSE "$_System_set")
-if [ $? -eq "0" ];then
-	if [ "$ans" = "$_No" ]; then
-	echo "proxy=\"no\"" > $conf
+ans=$(zenity --list --cancel-label="$_Exit" --ok-label="$_Next" --title "$_YD_setup_title" --text "$_Welcome1 $conf.$_Welcome2" --radiolist --hide-header --column "" --column "$_Options" TRUE "$_No" FALSE "$_Yes" FALSE "$_System_set")
+if [ $? -eq "0" ]; then
+  if [ "$ans" = "$_No" ]; then
+    echo "proxy=\"no\"" >$conf
 
-	else
-		if [ "$ans" = "$_System_set" ]; then
-		echo "proxy=\"auto\"" > $conf
+  else
+    if [ "$ans" = "$_System_set" ]; then
+      echo "proxy=\"auto\"" >$conf
 
-		else
-			if [ "$ans" = "$_Yes" ]; then
-			echo "proxy=\"`zenity --entry --title="$_Proxy_title" --text="$_Proxy_body" \
-          --entry-text="https,127.0.0.1,443,login,password"`\"" > $conf
-			fi
-		fi
-	fi
+    else
+      if [ "$ans" = "$_Yes" ]; then
+        echo "proxy=\"$(zenity --entry --title="$_Proxy_title" --text="$_Proxy_body" \
+          --entry-text="https,127.0.0.1,443,login,password")\"" >$conf
+      fi
+    fi
+  fi
 else
-exit 1
+  exit 1
 fi
 
 ###Folder
-ans=$(zenity  --list --cancel-label="$_Exit" --ok-label="$_Next" --title "$_YD_setup_title" --text "$_Folder_body" --radiolist --hide-header --column "" --column "$_Options" TRUE "$_Default" FALSE "$_Existing")
-if [ $? -eq "0" ];then
-	if [ "$ans" = "$_Default" ]; then
-	mkdir /home/$USER/Yandex.Disk
-	echo "dir=\"/home/$USER/Yandex.Disk\"" >> $conf
+ans=$(zenity --list --cancel-label="$_Exit" --ok-label="$_Next" --title "$_YD_setup_title" --text "$_Folder_body" --radiolist --hide-header --column "" --column "$_Options" TRUE "$_Default" FALSE "$_Existing")
+if [ $? -eq "0" ]; then
+  if [ "$ans" = "$_Default" ]; then
+    mkdir /home/$USER/Yandex.Disk
+    echo "dir=\"/home/$USER/Yandex.Disk\"" >>$conf
 
-	else
-		if [ "$ans" = "$_Existing" ]; then
-		folder=`zenity --file-selection --directory --title="$_Select_folder"`
-		echo "dir=\"$folder\"" >> $conf
-		fi
-	fi
+  else
+    if [ "$ans" = "$_Existing" ]; then
+      folder=$(zenity --file-selection --directory --title="$_Select_folder")
+      echo "dir=\"$folder\"" >>$conf
+    fi
+  fi
 else
-exit 1
+  exit 1
 fi
 
 ###Token
 auth=$(zenity --entry --title="$_Token_title" --text="$_Token_body" --entry-text="/home/$USER/.config/yandex-disk/passwd")
-echo auth=\"$auth\" >> $conf 
+echo auth=\"$auth\" >>$conf
 
-ENTRY=`zenity --password --username --title="$_YD_setup_title"`
-if [ $? -eq "0" ];then
-echo $ENTRY | cut -d'|' -f2 | yandex-disk -a $auth token `echo $ENTRY | cut -d'|' -f1`  | cut -d':' -f2 | zenity --text-info --width=350 --height=200 --title="$_YD_auth_title"
-exit 0
-else
-exit 1
-fi
+function showAuthDialog() {
+  auth_form=$(zenity --password --username --title="$_YD_setup_title")
+  if [ $? -eq "0" ]; then
+    auth_username=$(echo "$auth_form" | cut -d'|' -f1)
+    auth_pass=$(echo "$auth_form" | cut -d'|' -f2)
 
+    auth_output=$(yandex-disk token -p "$auth_pass" -a $auth "$auth_username")
+
+    if [ $? -eq "0" ]; then
+      # auth ok
+      zenity --notification --text "$_YD_auth_success"
+    else
+      # auth failed
+      zenity --warning --title="$_YD_auth_title" --text "$auth_output" --no-wrap
+      showAuthDialog
+    fi
+  else
+    exit 1
+  fi
+}
+
+showAuthDialog
 ##############################
