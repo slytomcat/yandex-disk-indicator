@@ -41,6 +41,6 @@ NOTE: All action above can be done via running of `build/install.sh` script
 - `clean.sh` - clean build directory
 - `build_deb.sh` - creates DEB package
 - `make_source.changes.sh` - prepares sources for publication
-- `publish_to_PPA.sh` - prepares sources and publish it to [my PPA]https://launchpad.net/~slytomcat/+archive/ubuntu/ppa
+- `publish_to_PPA.sh` - tools for prepares sources and publish it to [my PPA](https://launchpad.net/~slytomcat/+archive/ubuntu/ppa)
 
 See the wiki page for details: https://github.com/slytomcat/yandex-disk-indicator/wiki.
