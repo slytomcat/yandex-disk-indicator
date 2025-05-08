@@ -69,13 +69,13 @@ class YDDaemon:                 # Yandex.Disk daemon interface
             self.args = args
             self.kwargs = kwargs
             # Don't start timer initially
-            self.status = False
+            self.started = False
             self.mark = None
             self.timer = None
 
 
         def start(self):                    # Activate iNotify watching
-            if self.status:
+            if self.started:
                 return
             if not pathExists(self.path):
                 LOGGER.info("Watcher was not started: path '%s' was not found.", self.path)
@@ -92,11 +92,11 @@ class YDDaemon:                 # Yandex.Disk daemon interface
 
             self.timer = thTimer(0.5, wHandler)
             self.timer.start()
-            self.status = True
+            self.started = True
 
 
         def stop(self):
-            if not self.status:
+            if not self.started:
                 return
             self.timer.cancel()
 
@@ -352,11 +352,11 @@ class YDDaemon:                 # Yandex.Disk daemon interface
             Thread(target=do_stop).start()
 
     def exit(self):                          # Handle daemon/indicator closing
-        LOGGER.debug("Daemon inerface %sexit started: ", self.ID)
+        LOGGER.debug("Daemon interface %sexit started: ", self.ID)
         self.__watcher.stop()
         self.__timer.cancel()  # stop event timer if it is running
         # Stop yandex-disk daemon if it is required by its configuration
         if self.config.get('stoponexitfromindicator', False):
             self.stop(wait=True)
             LOGGER.info('Demon %sstopped', self.ID)
-        LOGGER.debug('Daemon inerface %sexited', self.ID)
+        LOGGER.debug('Daemon interface %sexited', self.ID)

@@ -10,19 +10,19 @@ from re import findall as reFindall, search as reSearch, sub as reSub,  M as reM
 from logging import getLogger, basicConfig
 from gettext import translation
 
-APPNAME = 'yandex-disk-indicator'
+APP_NAME = 'yandex-disk-indicator'
 
 # Initialize logging
 basicConfig(format='%(asctime)-15s %(levelname)-8s %(message)s')
 LOGGER = getLogger('')
 
 # Setup localization
-_ = translation(APPNAME, fallback=True).gettext
+_ = translation(APP_NAME, fallback=True).gettext
 
 
 # ################### Common utility functions and classes ################### #
 def copyFile(src, dst):
-    # File copy functiion
+    # File copy function
     try:
         fileCopy(src, dst)
     except:
@@ -104,7 +104,7 @@ class CVal:                     # Multivalue helper
         return self.val
 
     def __bool__(self):
-        # returns False for empty cVal oterways returns True
+        # returns False for empty cVal or returns True
         return self.val is not None
 
 
@@ -112,17 +112,17 @@ class Config(dict):
     # Configuration is a class to represent stored on disk configuration values
 
     def __init__(self, fileName, load=True,
-                 bools=None, boolval=None,
-                 usequotes=True, delimiter='='):
+                 bools=None, bool_val=None,
+                 use_quotes=True, delimiter='='):
         bools = [['true', 'yes', 'y'], ['false', 'no', 'n']] if bools is None else bools
-        boolval = ['yes', 'no'] if boolval is None else boolval
+        bool_val = ['yes', 'no'] if bool_val is None else bool_val
         super().__init__()
         self.fileName = fileName
-        self.bools = bools             # Values to detect boolean in self.load
-        self.boolval = boolval         # Values to write boolean in self.save
-        self.usequotes = usequotes     # Use quotes for keys and values in self.save
-        self.delimiter = delimiter     # Use specified delimiter between key and value
-        self.changed = False           # Change flag (for use outside of the class)
+        self.bools = bools               # Values to detect boolean in self.load
+        self.bool_val = bool_val         # Values to write boolean in self.save
+        self.use_quotes = use_quotes     # Use quotes for keys and values in self.save
+        self.delimiter = delimiter       # Use specified delimiter between key and value
+        self.changed = False             # Change flag (for use outside of the class)
         if load:
             self.load()
 
@@ -151,7 +151,7 @@ class Config(dict):
             v.add(self.decode(vv))                      # Decode and store value
             st = st[end:].lstrip()                      # Remove value and following spaces from string
             if st == '':
-                return v.get()                          # EOF normaly reached (after last value in string)
+                return v.get()                          # EOF normally reached (after last value in string)
             if st.startswith(','):                      # String is continued with comma?
                 st = st[1:].lstrip()                    # Remove comma and following spaces
                 if st != '':                            # String is continued after comma?
@@ -176,36 +176,35 @@ class Config(dict):
                        for l in cf if l and self.delimiter in l and l.lstrip()[0] != '#']
             self.readSuccess = True
         except:
-            LOGGER.error('Config file read error: %s', self.fileName)
+            LOGGER.error(f'Config file read error: {self.fileName}')
             self.readSuccess = False
             return False
         for kv, vv in res:  # Parse each line
             # Check key
             key = reFindall(r'^"([^"]+)"$|^([\w-]+)$', kv)
             if key == []:
-                LOGGER.warning('Wrong key in line \'%s %s %s\'', kv, self.delimiter, vv)
+                LOGGER.warning(f'Wrong key in line \'{kv} {self.delimiter} {vv}\'')
             else:                           # Key is OK
                 key = key[0][0] + key[0][1]  # Join two possible keys variants (with and without quotes)
                 if vv.strip() == '':
-                    LOGGER.warning('No value specified in line \'%s %s %s\'', kv, self.delimiter, vv)
+                    LOGGER.warning(f'No value specified in line \'{kv} {self.delimiter} {vv}\'', )
                 else:                         # Value is not empty
                     value = self.getValue(vv)  # Parse values
                     if value is None:
-                        LOGGER.warning('Wrong value(s) in line \'%s %s %s\'', kv, self.delimiter, vv)
+                        LOGGER.warning(f'Wrong value(s) in line \'{kv} {self.delimiter} {vv}\'')
                     else:                       # Value is OK
                         if key in self.keys():    # Check double values
-                            LOGGER.warning('Double values for one key:\n%s = %s\nand\n%s = %s\nLast one is stored.',
-                                           key, self[key], key, value)
+                            LOGGER.warning(f'Double values for one key:\n{key} = {self[key]}\nand\n{key} = {value}\nLast one is stored.')
                         self[key] = value         # Store last value
-                        LOGGER.debug('Config value read as: %s = %s', key, str(value))
-        LOGGER.info('Config read: %s', self.fileName)
+                        LOGGER.debug(f'Config value read as: {key} = {str(value)}')
+        LOGGER.info(f'Config read: {self.fileName}')
         return True
 
     def encode(self, val):                # Convert value to string before save it
-        if isinstance(val, bool):       # Treat Boolean
-            val = self.boolval[0] if val else self.boolval[1]
-        if self.usequotes:
-            val = '"' + val + '"'         # Put value within quotes
+        if isinstance(val, bool):         # Treat Boolean
+            val = self.bool_val[0] if val else self.bool_val[1]
+        if self.use_quotes:
+            val = f'"{val}"'         # Put value within quotes
         return val
 
     def save(self):

@@ -20,14 +20,14 @@ from sys import exit as sysExit
 from webbrowser import open_new as openNewBrowser
 from signal import SIGTERM, SIGINT
 from os.path import exists as pathExists, join as pathJoin, relpath as relativePath, expanduser
-from os import getenv, getpid, geteuid
+from os import getenv
 from daemon import YDDaemon
 from tools import copyFile, deleteFile, makeDirs, shortPath, CVal, Config, activateActions, checkAutoStart
-from tools import setProcName, argParse, check_output, call, pathExists, LOGGER, _
+from tools import argParse, call, pathExists, LOGGER, _
 from datetime import datetime
 
-APPNAME = 'yandex-disk-indicator'
-APPVER = '1.12.2'
+APP_NAME = 'yandex-disk-indicator'
+APP_VER = '1.12.3'
 #
 COPYRIGHT = 'Copyright ' + '\u00a9' + ' 2013-' + str(datetime.today().year) + ' Sly_tom_cat'
 #
@@ -54,14 +54,14 @@ class Notification:
     def __init__(self, title):
         # Initialize notification engine
         if not Notify.is_initted():
-            Notify.init(APPNAME)
+            Notify.init(APP_NAME)
         self.title = title
         self.note = None
 
 
-    def send(self, messg):
-        # global APPLOGO
-        LOGGER.debug('Message: %s | %s', self.title, messg)
+    def send(self, message):
+        # global APP_LOGO
+        LOGGER.debug(f'Message: {self.title} | {message}')
         if self.note is not None:
             try:
                 self.note.close()
@@ -69,8 +69,8 @@ class Notification:
                 pass
             self.note = None
         try:                            # Create notification
-            self.note = Notify.Notification.new(self.title, messg)
-            self.note.set_image_from_pixbuf(APPLOGO)
+            self.note = Notify.Notification.new(self.title, message)
+            self.note.set_image_from_pixbuf(APP_LOGO)
             self.note.show()              # Display new notification
         except:
             LOGGER.error('Message engine failure')
@@ -84,9 +84,10 @@ class Indicator(YDDaemon):
     # ###### YDDaemon virtual classes/methods implementations
     def error(self, errStr, cfgPath):
         # Error handler GUI implementation
-        # it must handle two types of error cases:
-        # - yandex-disk is not installed (errStr=='' in that case) - just show error message and return
-        # - yandex-disk is not configured (errStr!='' in that case) - suggest to configure it and run ya-setup if needed
+        # it must handle error cases:
+        # - yandex-disk is not installed (errStr=='' in that case)
+        # - yandex-disk is not configured (errStr!='' in that case)
+        # in both cases it show error message and return
         if errStr == '':
             text1 = _('Yandex.Disk Indicator: daemon start failed')
             buttons = Gtk.ButtonsType.OK
@@ -98,14 +99,14 @@ class Indicator(YDDaemon):
             text2 = (_('Yandex.Disk daemon failed to start because it is not' +
                        ' configured properly\n\n' + errStr + '\n\n' +
                        '  To configure it up: press OK button.\n  Press Cancel to exit.'))
-        dialog = Gtk.MessageDialog(None, 0, Gtk.MessageType.INFO, buttons, text1)
+        dialog = Gtk.MessageDialog(parent=None, flags=0, message_type=Gtk.MessageType.INFO, buttons=buttons, text=text1)
         dialog.format_secondary_text(text2)
-        dialog.set_icon(APPLOGO)
+        dialog.set_icon(APP_LOGO)
         response = dialog.run()
 
         if errStr != '' and response == Gtk.ResponseType.OK:  # Launch Set-up utility
             LOGGER.debug('starting configuration utility')
-            retCode = call([pathJoin(APPINSTPATH, 'ya-setup'), cfgPath])
+            retCode = call([pathJoin(APP_INST_PATH, 'ya-setup'), cfgPath])
         else:
             retCode = 1
         dialog.destroy()
@@ -114,26 +115,22 @@ class Indicator(YDDaemon):
 
     def change(self, vals):
         # Implementation of daemon class call-back function
-
         # NOTE: it is called not from main thread, so it have to add action in main GUI loop queue
-
         # It handles daemon status changes by updating icon, creating messages and also update
         # status information in menu (status, sizes and list of last synchronized items).
         # It is called when daemon detects any change of its status.
-
         LOGGER.info('%sChange event: %s', self.ID, ','.join(['stat' if vals['statchg'] else '',
                                                              'size' if vals['szchg'] else '',
                                                              'last' if vals['lastchg'] else '']))
-
         def do_change(vals, path):
             # Update information in menu
             self.menu.update(vals, path)
             # Handle daemon status change by icon change
             if vals['status'] != vals['laststatus']:
                 LOGGER.info('Status: %s ->  %s', vals['laststatus'], vals['status'])
-                self.updateIcon(vals['status'])          # Update icon
+                self.icons.set(vals['status'])               # Update icon
                 # Create notifications for status change events
-                if APPCONF['notifications']:
+                if APP_CONF['notifications']:
                     if vals['laststatus'] == 'none':       # Daemon has been started
                         self.notify.send(_('Yandex.Disk daemon has been started'))
                     if vals['status'] == 'busy':           # Just entered into 'busy'
@@ -151,7 +148,6 @@ class Indicator(YDDaemon):
                         self.notify.send(_('Synchronization ERROR'))
             # Remember current status (required for Preferences dialog)
             self.currentStatus = vals['status']
-
         idle_add(do_change, vals, self.config['dir'])
 
 
@@ -159,73 +155,31 @@ class Indicator(YDDaemon):
     def __init__(self, path, ID):
         # Create indicator notification engine
         self.notify = Notification(title=_('Yandex.Disk ') + ID)
-        # Setup icons theme
-        self.setIconTheme(APPCONF['theme'])
-        # Create staff for icon animation support (don't start it here)
-
-        self._seqNum = 2  # Number current busy icon
-
-        def iconAnimation():          # Changes busy icon by loop (triggered by self.timer)
-            # As it called from timer (main GUI thread) there is no need to use idle_add here
-            # Set next animation icon
-            self.ind.set_icon_full(pathJoin(self.themePath, 'yd-busy' + str(self._seqNum) + '.png'), '')
-            # Calculate next icon number
-            self._seqNum = self._seqNum % 5 + 1   # 5 icon numbers in loop (1-2-3-4-5-1-2-3...)
-            return True                           # True required to continue triggering by timer
-
-        self.iconTimer = self.Timer(777, iconAnimation, start=False)
+        title = _("Yandex.Disk Indicator") + (" "+ID[:-1] if ID != "" else "")
         # Create App Indicator
-        self.ind = appIndicator.Indicator.new(
-            "yandex-disk%s" % ("-"+ID[1: -1] if ID != "" else ""),
-            self.icon['paused'],
-            appIndicator.IndicatorCategory.APPLICATION_STATUS)
-        self.ind.set_title(title=_("Yandex.Disk Indicator") + (" "+ID[:-1] if ID != "" else ""))
+        id = f'yandex-disk{"-"+ID[:-1] if ID != "" else ""}'
+        self.ind = appIndicator.Indicator.new(id, "", appIndicator.IndicatorCategory.APPLICATION_STATUS)
+        # Create staff for icons
+        self.icons = Icons(title, self.ind.set_icon_full)
+        # Setup icons theme
+        self.icons.set_theme(APP_CONF['theme'])
+        self.ind.set_title(title=title)
         self.ind.set_status(appIndicator.IndicatorStatus.ACTIVE)
         self.menu = self.Menu(self, ID)               # Create menu for daemon
         self.ind.set_menu(self.menu)                  # Attach menu to indicator
         # Initialize Yandex.Disk daemon connection object
         super().__init__(path, ID)
-        self.currentStatus = None                 # Current daemon status
+        self.currentStatus = None                     # Current daemon status
 
 
     def exit(self):
         def do_exit(self):
+            self.icons.close()
             self.menu.destroy()
             self.ind.set_status(appIndicator.IndicatorStatus.PASSIVE)
             LOGGER.debug("Indicator destroyed")
         idle_add(do_exit, self)
         super().exit()
-
-
-    def setIconTheme(self, theme):
-        # Determine paths to icons according to current theme
-        # global APPINSTPATH, APPCONFPATH
-        theme = 'light' if theme else 'dark'
-        # Determine theme from application configuration settings
-        defaultPath = pathJoin(APPINSTPATH, 'icons', theme)
-        userPath = pathJoin(APPCONFPATH, 'icons', theme)
-        # Set appropriate paths to all status icons
-        self.icon = {}
-        for status in ['idle', 'error', 'paused', 'none', 'no_net', 'busy']:
-            name = ('yd-ind-pause.png' if status in {'paused', 'none', 'no_net'} else
-                    'yd-busy1.png' if status == 'busy' else
-                    'yd-ind-' + status + '.png')
-            userIcon = pathJoin(userPath, name)
-            self.icon[status] = userIcon if pathExists(userIcon) else pathJoin(defaultPath, name)
-            # userIcon corresponds to busy icon on exit from this loop
-        # Set theme paths according to existence of first busy icon
-        self.themePath = userPath if pathExists(userIcon) else defaultPath
-
-
-    def updateIcon(self, status):       # Change indicator icon according to just changed daemon status
-        # Set icon according to the current daemon status
-        self.ind.set_icon_full(self.icon[status], '')
-        # Handle animation
-        if status == 'busy':        # Just entered into 'busy' status
-            self._seqNum = 2          # Next busy icon number for animation
-            self.iconTimer.start()    # Start animation timer
-        else:
-            self.iconTimer.stop()     # Stop animation timer when status is not busy
 
 
     class Menu(Gtk.Menu):               # Indicator menu
@@ -268,8 +222,7 @@ class Indicator(YDDaemon):
             help1.connect("activate", self.openInBrowser, _('https://yandex.com/support/disk/'))
             m_help.append(help1)
             help2 = Gtk.MenuItem(label=_('Yandex.Disk Indicator'))
-            help2.connect("activate", self.openInBrowser,
-                          _('https://github.com/slytomcat/yandex-disk-indicator/wiki/Yandex-disk-indicator'))
+            help2.connect("activate", self.openInBrowser, _('https://github.com/slytomcat/yandex-disk-indicator/wiki/Yandex-disk-indicator'))
             m_help.append(help2)
             open_help.set_submenu(m_help)
             self.append(open_help)
@@ -315,29 +268,28 @@ class Indicator(YDDaemon):
                     # Create menu label as file path (shorten it down to 50 symbols when path length > 50
                     # symbols), with replaced underscore (to disable menu acceleration feature of GTK menu).
                     widget = Gtk.MenuItem.new_with_label(shortPath(filePath))
-                    filePath = pathJoin(yddir, filePath)        # Make full path to file
+                    filePath = pathJoin(yddir, filePath)      # Make full path to file
                     if pathExists(filePath):
-                        widget.set_sensitive(True)                # If it exists then it can be opened
+                        widget.set_sensitive(True)            # If it exists then it can be opened
                         widget.connect("activate", self.openPath, filePath)
                     else:
-                        widget.set_sensitive(False)               # Don't allow to open non-existing path
+                        widget.set_sensitive(False)           # Don't allow to open non-existing path
                     self.lastItems.append(widget)
                 self.last.set_submenu(self.lastItems)
                 # Switch off last items menu sensitivity if no items in list
                 self.last.set_sensitive(vals['lastitems'])
                 LOGGER.debug("Sub-menu 'Last synchronized' has %s items", str(len(vals['lastitems'])))
-
-            self.show_all()                                 # Renew menu
+            self.show_all()                                   # Renew menu
 
 
         def openAbout(self, widget):            # Show About window
-            # global APPLOGO, APPINDICATORS
-            for i in APPINDICATORS:
-                i.menu.about.set_sensitive(False)           # Disable menu item
+            # global APP_LOGO, APP_INDICATORS
+            for i in APP_INDICATORS:
+                i.menu.about.set_sensitive(False)             # Disable menu item
             aboutWindow = Gtk.AboutDialog()
-            aboutWindow.set_logo(APPLOGO);   aboutWindow.set_icon(APPLOGO)
+            aboutWindow.set_logo(APP_LOGO);   aboutWindow.set_icon(APP_LOGO)
             aboutWindow.set_program_name(_('Yandex.Disk indicator'))
-            aboutWindow.set_version(_('Version ') + APPVER)
+            aboutWindow.set_version(_('Version ') + APP_VER)
             aboutWindow.set_copyright(COPYRIGHT)
             aboutWindow.set_license(LICENSE)
             aboutWindow.set_authors([_('Sly_tom_cat <slytomcat@mail.ru> '),
@@ -359,20 +311,20 @@ class Indicator(YDDaemon):
             aboutWindow.set_resizable(False)
             aboutWindow.run()
             aboutWindow.destroy()
-            for i in APPINDICATORS:
+            for i in APP_INDICATORS:
                 i.menu.about.set_sensitive(True)            # Enable menu item
 
 
         def showOutput(self, widget):           # Request for daemon output
-            widget.set_sensitive(False)                         # Disable menu item
+            widget.set_sensitive(False)                     # Disable menu item
 
 
             def displayOutput(outText, widget):
                 # # # NOTE: it is called not from main thread, so it have to add action in main loop queue
                 def do_display(outText, widget):
-                    # global APPLOGO
+                    # global APP_LOGO
                     statusWindow = Gtk.Dialog(_('Yandex.Disk daemon output message'))
-                    statusWindow.set_icon(APPLOGO)
+                    statusWindow.set_icon(APP_LOGO)
                     statusWindow.set_border_width(6)
                     statusWindow.add_button(_('Close'), Gtk.ResponseType.CLOSE)
                     textBox = Gtk.TextView()                            # Create text-box to display daemon output
@@ -384,7 +336,6 @@ class Indicator(YDDaemon):
                     statusWindow.show_all();  statusWindow.run();   statusWindow.destroy()
                     widget.set_sensitive(True)                          # Enable menu item
                 idle_add(do_display, outText, widget)
-
             self.daemon.output(lambda t: displayOutput(t, widget))
 
 
@@ -394,7 +345,7 @@ class Indicator(YDDaemon):
 
         def startStopDaemon(self, widget):      # Start/Stop daemon
             action = widget.get_label()[:1]
-            # zero-space UTF symbols are used to detect requered action without need to compare translated strings
+            # zero-space UTF symbols are used to detect required action without need to compare translated strings
             if action == '\u200B':    # Start
                 self.daemon.start()
             elif action == '\u2060':  # Stop
@@ -414,37 +365,98 @@ class Indicator(YDDaemon):
             appExit()
 
 
-    class Timer:                        # Timer implementation (GUI related)
-        # Timer class methods:
-
-        # __init__ - initialize the timer object with specified interval and handler. Start it if start value True.
-        # start    - Start timer if it is not started yet.
-        # stop     - Stop running timer or do nothing if it is not running.
-
-        # Interface variables:
-
-        # active   - True when timer is currently running, otherwise - False
-
-        def __init__(self, interval, handler, start=True):
-            self.interval = interval          # Timer interval (ms)
-            self.handler = handler            # Handler function
-            self.active = False               # Current activity status
-            if start:
-                self.start()                    # Start timer if required
+class Timer:                        # Timer implementation (GUI related)
+    # Timer class methods:
+    # __init__ - initialize the timer object with specified interval and handler. Start it if start value True.
+    # start    - Start timer if it is not started yet of do nothing if it is already started.
+    # stop     - Stop active timer or do nothing if it is not running.
+    # Interface variables:
+    # active   - True when timer is currently running, otherwise - False
 
 
-        def start(self):       # Start inactive timer or update if it is active
-            if not self.active:
-                self.timer = timeout_add(self.interval, self.handler)
-                self.active = True
-                # LOGGER.debug('timer started %s %s', self.timer, interval)
+    def __init__(self, interval, handler, start=True):
+        self.interval = interval          # Timer interval (ms)
+        self.handler = handler            # Handler function
+        self.active = False               # Current activity status
+        if start:
+            self.start()                    # Start timer if required
 
 
-        def stop(self):                     # Stop active timer
-            if self.active:
-                # LOGGER.debug('timer to stop %s', self.timer)
-                source_remove(self.timer)
-                self.active = False
+    def start(self):       # Start inactive timer or do nothing if it is already active
+        if not self.active:
+            self.timer = timeout_add(self.interval, self.handler)
+            self.active = True
+
+
+    def stop(self):                     # Stop active timer ar do nothing if it is already stopped
+        if self.active:
+            source_remove(self.timer)
+            self.active = False
+
+
+class Icons:                        # Icons class for icons handling
+
+    def __init__(self, title: str, set_func):
+        self.title = title
+        self.set_func = set_func
+        self.busy_id = 0
+        self.timer = Timer(777, self.animation, start=False)
+        self.icons = {}
+        self.status = 'none'
+        self.ext = "svg"
+        self.theme = ""
+
+
+    def animation(self):          # Changes busy icon by loop (triggered by self.timer)
+        # As it called from timer (main GUI thread) there is no need to use idle_add here
+        # Calculate next icon number
+        self.busy_id = (self.busy_id + 1) % 5   # 5 busy icons shown in endless loop (1-2-3-4-5-1-2-3...)
+        # Set next animation icon
+        self.set_func(self.icons['busy'][self.busy_id], self.title)
+        return True                             # True required to continue triggering by timer
+
+
+    def set(self, status: str):       # Change indicator icon according to just changed daemon status
+        # Set icon according to the current daemon status
+        if status == 'busy':            # Just entered into 'busy' status
+            self.set_func(self.icons[status][self.busy_id], self.title)
+            self.timer.start()     # Start animation timer
+        else:
+            self.timer.stop()      # Stop animation timer when status is not busy
+            self.set_func(self.icons[status], self.title)
+        self.status = status
+
+
+    def set_theme(self, theme: bool):
+        # Determine paths to icons according to current theme
+        # global APP_INST_PATH, APP_CONF_PATH
+        self.theme = 'light' if theme else 'dark'
+        # Determine theme from application configuration settings
+        default_path = pathJoin(APP_INST_PATH, 'icons', self.theme)
+        user_path = pathJoin(APP_CONF_PATH, 'icons', self.theme)
+        def set_icon (file_name: str):
+            user_icon = pathJoin(user_path, file_name)
+            return user_icon if pathExists(user_icon) else pathJoin(default_path, file_name)
+        # Set appropriate paths to all status icons
+        # Five busy icons are shown in endless loop
+        self.icons = {'busy': [set_icon(f"yd-busy{i}.{self.ext}") for i in range(1, 6)]}
+        # Other icons is set for all individual status
+        for status in ['idle', 'error', 'paused', 'none', 'no_net']:
+            self.icons[status] = set_icon(f'yd-pause.{self.ext}' if status in {'paused', 'none', 'no_net'} else f'yd-{status}.{self.ext}')
+        # renew icon according the selected theme
+        self.set(self.status)
+        global APP_LOGO
+        APP_LOGO = Pixbuf.new_from_file(set_icon(f"yd-logo.{self.ext}"))
+        LOGGER.debug(f"selected icons: {self.icons}")
+
+
+    def set_type(self, ext: bool):
+        self.ext = "png" if ext else "svg"
+        self.set_theme(self.theme=='light')
+
+
+    def close(self):
+        self.timer.stop()
 
 
 # ### Application functions and classes
@@ -456,12 +468,12 @@ class Preferences(Gtk.Dialog):
         # Excluded dirs dialogue
 
 
-        def __init__(self, widget, parent, dcofig):   # show current list
-            self.dconfig = dcofig
+        def __init__(self, widget, parent, d_config):   # show current list
+            self.d_config = d_config
             self.parent = parent
             Gtk.Dialog.__init__(self, title=_('Folders that are excluded from synchronization'),
                                 parent=parent, flags=1)
-            self.set_icon(APPLOGO)
+            self.set_icon(APP_LOGO)
             self.set_size_request(400, 300)
             self.add_button(_('Add catalogue'),
                             Gtk.ResponseType.APPLY).connect("clicked", self.addFolder, self)
@@ -469,95 +481,97 @@ class Preferences(Gtk.Dialog):
                             Gtk.ResponseType.REJECT).connect("clicked", self.deleteSelected)
             self.add_button(_('Close'),
                             Gtk.ResponseType.CLOSE).connect("clicked", self.exitFromDialog)
-            self.exList = Gtk.ListStore(bool, str)
-            view = Gtk.TreeView(model=self.exList)
+            self.ex_list = Gtk.ListStore(bool, str)
+            view = Gtk.TreeView(model=self.ex_list)
             render = Gtk.CellRendererToggle()
             render.connect("toggled", self.lineToggled)
             view.append_column(Gtk.TreeViewColumn(" ", render, active=0))
             view.append_column(Gtk.TreeViewColumn(_('Path'), Gtk.CellRendererText(), text=1))
             scroll = Gtk.ScrolledWindow()
-            scroll.add_with_viewport(view)
+            scroll.add(view)
             self.get_content_area().pack_start(scroll, True, True, 6)
             # Populate list with paths from "exclude-dirs" property of daemon configuration
-            self.dirset = list(CVal(self.dconfig.get('exclude-dirs', None)))
-            for val in self.dirset:
-                self.exList.append([False, val])
-            # LOGGER.debug(str(self.dirset))
+            self.dir_set = list(CVal(self.d_config.get('exclude-dirs', None)))
+            for val in self.dir_set:
+                self.ex_list.append([False, val])
+            # LOGGER.debug(str(self.dir_set))
             self.show_all()
 
 
         def exitFromDialog(self, widget):     # Save list from dialogue to "exclude-dirs" property
-            if self.dconfig.changed:
+            if self.d_config.changed:
                 eList = CVal()                                      # Store path value from dialogue rows
-                for i in self.dirset:
+                for i in self.dir_set:
                     eList.add(i)
-                self.dconfig['exclude-dirs'] = eList.get()          # Save collected value
-            # LOGGER.debug(str(self.dirset))
+                self.d_config['exclude-dirs'] = eList.get()          # Save collected value
+            # LOGGER.debug(str(self.dir_set))
             self.destroy()                                        # Close dialogue
 
 
         def lineToggled(self, _, path):  # Line click handler, it switch row selection
-            self.exList[path][0] = not self.exList[path][0]
+            self.ex_list[path][0] = not self.ex_list[path][0]
 
 
         def deleteSelected(self, _):     # Remove selected rows from list
-            listIiter = self.exList.get_iter_first()
-            while listIiter is not None and self.exList.iter_is_valid(listIiter):
-                if self.exList.get(listIiter, 0)[0]:
-                    self.dirset.remove(self.exList.get(listIiter, 1)[0])
-                    self.exList.remove(listIiter)
-                    self.dconfig.changed = True
+            list_iter = self.ex_list.get_iter_first()
+            while list_iter is not None and self.ex_list.iter_is_valid(list_iter):
+                if self.ex_list.get(list_iter, 0)[0]:
+                    self.dir_set.remove(self.ex_list.get(list_iter, 1)[0])
+                    self.ex_list.remove(list_iter)
+                    self.d_config.changed = True
                 else:
-                    listIiter = self.exList.iter_next(listIiter)
-            # LOGGER.debug(str(self.dirset))
+                    list_iter = self.ex_list.iter_next(list_iter)
+            # LOGGER.debug(str(self.dir_set))
 
 
         def addFolder(self, widget, parent):  # Add new path to list via FileChooserDialog
-            dialog = Gtk.FileChooserDialog(_('Select catalogue to add to list'), parent, Gtk.FileChooserAction.SELECT_FOLDER,
-                                           (_('Close'), Gtk.ResponseType.CANCEL, _('Select'), Gtk.ResponseType.ACCEPT))
+            dialog = Gtk.FileChooserDialog(title=_('Select catalogue to add to list'), parent=parent, action=Gtk.FileChooserAction.SELECT_FOLDER)
+            dialog.add_button(_('Close'), Gtk.ResponseType.CANCEL)
+            dialog.add_button(_('Select'), Gtk.ResponseType.ACCEPT)
             dialog.set_default_response(Gtk.ResponseType.CANCEL)
             dialog.set_select_multiple(True)
-            rootDir = self.dconfig['dir']
+            rootDir = self.d_config['dir']
             dialog.set_current_folder(rootDir)
             if dialog.run() == Gtk.ResponseType.ACCEPT:
                 for path in dialog.get_filenames():
                     if path.startswith(rootDir):
                         path = relativePath(path, start=rootDir)
-                        if path not in self.dirset:
-                            self.exList.append([False, path])
-                            self.dirset.append(path)
-                            self.dconfig.changed = True
+                        if path not in self.dir_set:
+                            self.ex_list.append([False, path])
+                            self.dir_set.append(path)
+                            self.d_config.changed = True
             dialog.destroy()
-            # LOGGER.debug(str(self.dirset))
+            # LOGGER.debug(str(self.dir_set))
 
 
     def __init__(self, widget):
-        # global config, APPINDICATORS, APPLOGO
+        # global config, APP_INDICATORS, APP_LOGO
         # Preferences Window routine
-        for i in APPINDICATORS:
+        for i in APP_INDICATORS:
             i.menu.preferences.set_sensitive(False)   # Disable menu items to avoid multi-dialogs creation
         # Create Preferences window
         super().__init__(_('Yandex.Disk-indicator and Yandex.Disks preferences'), flags=1)
-        self.set_icon(APPLOGO)
+        self.set_icon(APP_LOGO)
         self.set_border_width(6)
         self.add_button(_('Close'), Gtk.ResponseType.CLOSE)
         pref_notebook = Gtk.Notebook()              # Create notebook for indicator and daemon options
         self.get_content_area().add(pref_notebook)  # Put it inside the dialogue content area
         # --- Indicator preferences tab ---
-        preferencesBox = Gtk.VBox(spacing=5)
+        preferencesBox = Gtk.VBox(spacing=4)
         cb = []
         for key, msg in [('autostart', _('Start Yandex.Disk indicator when you start your computer')),
                          ('notifications', _('Show on-screen notifications')),
                          ('theme', _('Prefer light icon theme')),
+                         ('type', 'PNG-on/SVG-off'),
                          ('fmextensions', _('Activate file manager extensions'))]:
             cb.append(Gtk.CheckButton(label=msg))
-            cb[-1].set_active(APPCONF[key])
+            cb[-1].set_active(APP_CONF[key])
             cb[-1].connect("toggled", self.onButtonToggled, cb[-1], key)
             preferencesBox.add(cb[-1])
         # --- End of Indicator preferences tab --- add it to notebook
         pref_notebook.append_page(preferencesBox, Gtk.Label(label=_('Indicator settings')))
-        # Add daemos tabs
-        for i in APPINDICATORS:
+        # Add daemon tabs
+        for i in APP_INDICATORS:
             # --- Daemon start options tab ---
             optionsBox = Gtk.VBox(spacing=5)
             key = 'startonstartofindicator'           # Start daemon on indicator start
@@ -594,7 +608,7 @@ class Preferences(Gtk.Dialog):
             framedBox.add(cbRO)
             overwrite.connect("toggled", self.onButtonToggled, overwrite, key, i.config)
             framedBox.add(overwrite)
-            # Excude folders list
+            # Exclude folders list
             exListButton = Gtk.Button(label=_('Excluded folders List'))
             exListButton.set_tooltip_text(_("Folders in the list will not be synchronized."))
             exListButton.connect("clicked", self.excludeDirsList, self, i.config)
@@ -604,81 +618,83 @@ class Preferences(Gtk.Dialog):
         self.set_resizable(False)
         self.show_all()
         self.run()
-        if APPCONF.changed:
-            APPCONF.save()                              # Save app config
-        for i in APPINDICATORS:
+        if APP_CONF.changed:
+            APP_CONF.save()                             # Save app config
+        for i in APP_INDICATORS:
             if i.config.changed:
                 i.config.save()                         # Save daemon options in config file
             i.menu.preferences.set_sensitive(True)      # Enable menu items
         self.destroy()
 
 
-    def onButtonToggled(self, _, button, key, dconfig=None, ow=None):
+    def onButtonToggled(self, _, button, key, d_config=None, ow=None):
         # Handle clicks on controls
         toggleState = button.get_active()
         LOGGER.debug('Togged: %s  val: %s', key, str(toggleState))
         # Update configurations
         if key in ['read-only', 'overwrite', 'startonstartofindicator', 'stoponexitfromindicator']:
-            dconfig[key] = toggleState                # Update daemon config
-            dconfig.changed = True
+            d_config[key] = toggleState                # Update daemon config
+            d_config.changed = True
         else:
-            APPCONF.changed = True                     # Update application config
-            APPCONF[key] = toggleState
+            APP_CONF.changed = True                   # Update application config
+            APP_CONF[key] = toggleState
         if key == 'theme':
-            for i in APPINDICATORS:                    # Update all APPINDICATORS' icons
-                i.setIconTheme(toggleState)           # Update icon theme
-                i.updateIcon(i.currentStatus)         # Update current icon
+            for i in APP_INDICATORS:                  # Update all APP_INDICATORS' icons
+                i.icons.set_theme(toggleState)           # Update icon theme
+        elif key == 'type':
+            for i in APP_INDICATORS:
+                i.icons.set_type(toggleState)
         elif key == 'autostart':
             if toggleState:
-                copyFile(APPAUTOSTARTSRC, APPAUTOSTARTDST)
+                copyFile(APP_AUTOSTART_SRC, APP_AUTOSTART_DST)
             else:
-                deleteFile(APPAUTOSTARTDST)
+                deleteFile(APP_AUTOSTART_DST)
         elif key == 'fmextensions':
             if not button.get_inconsistent():         # It is a first call
-                if not activateActions(toggleState, APPINSTPATH):
+                if not activateActions(toggleState, APP_INST_PATH):
                     toggleState = not toggleState         # When activation/deactivation is not success: revert settings back
                     button.set_inconsistent(True)         # set inconsistent state to detect second call
                     button.set_active(toggleState)        # set check-button to reverted status
                     # set_active will raise again the 'toggled' event
             else:                                     # This is a second call
-                button.set_inconsistent(False)          # Just remove inconsistent status
+                button.set_inconsistent(False)        # Just remove inconsistent status
         elif key == 'read-only':
             ow.set_sensitive(toggleState)
 
 
 def appExit():
-    # Exit from application (it closes all APPINDICATORS)
-    # global APPINDICATORS
+    # Exit from application (it closes all APP_INDICATORS)
+    # global APP_INDICATORS
     LOGGER.debug("Quit is initialized")
-    for i in APPINDICATORS:
+    for i in APP_INDICATORS:
         i.exit()
     idle_add(Gtk.main_quit)
 
 # ##################### MAIN #########################
 if __name__ == '__main__':
     # Application constants
-    # See APPNAME and APPVER in the beginnig of the code
-    APPHOME = 'yd-tools'
-    APPINSTPATH = pathJoin('/usr/share', APPHOME)
-    APPLOGO = Pixbuf.new_from_file(pathJoin(APPINSTPATH, 'icons/yd-128.png'))
-    APPCONFPATH = pathJoin(getenv("HOME"), '.config', APPHOME)
+    # See APP_NAME and APP_VER in the beginning of the code
+    APP_HOME = 'yd-tools'
+    APP_CONF_PATH = pathJoin(getenv("HOME"), '.config', APP_HOME)
+    APP_INST_PATH = pathJoin('/usr/share', APP_HOME)
+    # APP_LOGO = Pixbuf.new_from_file(pathJoin(APP_CONF_PATH, "icons/yd-128.svg"))  # APP_INST_PATH, f'icons/yd-128.png'))
     # Define .desktop files locations for indicator auto-start facility
-    APPAUTOSTARTSRC = '/usr/share/applications/Yandex.Disk-indicator.desktop'
-    APPAUTOSTARTDST = expanduser('~/.config/autostart/Yandex.Disk-indicator.desktop')
+    APP_AUTOSTART_SRC = '/usr/share/applications/Yandex.Disk-indicator.desktop'
+    APP_AUTOSTART_DST = expanduser('~/.config/autostart/Yandex.Disk-indicator.desktop')
 
     # Get command line arguments or their default values
-    args = argParse(APPVER)
+    args = argParse(APP_VER)
 
     # Set user specified logging level
     LOGGER.setLevel(args.level)
 
     # Report app version and logging level
-    LOGGER.info('%s v.%s', APPNAME, APPVER)
+    LOGGER.info('%s v.%s', APP_NAME, APP_VER)
     LOGGER.debug('Logging level: %s', str(args.level))
 
     # Application configuration
 
-    # User configuration is stored in ~/.config/<APPHOME>/<APPNAME>.conf file.
+    # User configuration is stored in ~/.config/<APP_HOME>/<APP_NAME>.conf file.
     # This file can contain comments (line starts with '#') and config values in
     # form: key=value[,value[,value ...]] where keys and values can be quoted ("...") or not.
     # The following key words are reserved for configuration:
@@ -697,66 +713,67 @@ if __name__ == '__main__':
     # configuration file to provide the functionality of obsolete 'startonstart' and 'stoponexit'
     # values for each daemon individually.
 
-    APPCONF = Config(pathJoin(APPCONFPATH, APPNAME + '.conf'))
+    APP_CONF = Config(pathJoin(APP_CONF_PATH, APP_NAME + '.conf'))
     # Read some settings to variables, set default values and update some values
-    APPCONF['autostart'] = checkAutoStart(APPAUTOSTARTDST)
+    APP_CONF['autostart'] = checkAutoStart(APP_AUTOSTART_DST)
     # Setup on-screen notification settings from config value
-    APPCONF.setdefault('notifications', True)
-    APPCONF.setdefault('theme', False)
-    APPCONF.setdefault('fmextensions', True)
-    APPCONF.setdefault('daemons', '~/.config/yandex-disk/config.cfg')
+    APP_CONF.setdefault('notifications', True)
+    APP_CONF.setdefault('theme', False)
+    APP_CONF.setdefault('type', False)
+    APP_CONF.setdefault('fmextensions', True)
+    APP_CONF.setdefault('daemons', '~/.config/yandex-disk/config.cfg')
     # Is it a first run?
-    if not APPCONF.readSuccess:
+    if not APP_CONF.readSuccess:
         LOGGER.info('No config, probably it is a first run.')
         # Create application config folders in ~/.config
         try:
-            makeDirs(APPCONFPATH)
-            makeDirs(pathJoin(APPCONFPATH, 'icons/light'))
-            makeDirs(pathJoin(APPCONFPATH, 'icons/dark'))
+            makeDirs(APP_CONF_PATH)
+            makeDirs(pathJoin(APP_CONF_PATH, 'icons/light'))
+            makeDirs(pathJoin(APP_CONF_PATH, 'icons/dark'))
             # Copy icon themes readme to user config catalogue
-            copyFile(pathJoin(APPINSTPATH, 'icons/readme'), pathJoin(APPCONFPATH, 'icons/readme'))
+            copyFile(pathJoin(APP_INST_PATH, 'icons/readme'), pathJoin(APP_CONF_PATH, 'icons/readme'))
         except:
-            sysExit(_('Can\'t create configuration files in %s') % APPCONFPATH)
+            sysExit(_('Can\'t create configuration files in %s') % APP_CONF_PATH)
         # Activate indicator automatic start on system start-up
-        if not pathExists(APPAUTOSTARTDST):
+        if not pathExists(APP_AUTOSTART_DST):
             try:
                 makeDirs(expanduser('~/.config/autostart'))
-                copyFile(APPAUTOSTARTSRC, APPAUTOSTARTDST)
-                APPCONF['autostart'] = True
+                copyFile(APP_AUTOSTART_SRC, APP_AUTOSTART_DST)
+                APP_CONF['autostart'] = True
             except:
                 LOGGER.error('Can\'t activate indicator automatic start on system start-up')
 
         # Activate FM actions according to config (as it is first run)
-        activateActions(APPCONF['fmextensions'], APPINSTPATH)
+        activateActions(APP_CONF['fmextensions'], APP_INST_PATH)
         # Default settings should be saved (later)
-        APPCONF.changed = True
+        APP_CONF.changed = True
 
     # Add new daemon if it is not in current list
-    daemons = [expanduser(d) for d in CVal(APPCONF['daemons'])]
+    daemons = [expanduser(d) for d in CVal(APP_CONF['daemons'])]
     if args.cfg:
         args.cfg = expanduser(args.cfg)
         if args.cfg not in daemons:
             daemons.append(args.cfg)
-            APPCONF.changed = True
+            APP_CONF.changed = True
     # Remove daemon if it is in the current list
     if args.rcfg:
         args.rcfg = expanduser(args.rcfg)
         if args.rcfg in daemons:
             daemons.remove(args.rcfg)
-            APPCONF.changed = True
+            APP_CONF.changed = True
     # Check that at least one daemon is in the daemons list
     if not daemons:
         sysExit(_('No daemons specified.\nCheck correctness of -r and -c options.'))
     # Update config if daemons list has been changed
-    if APPCONF.changed:
-        APPCONF['daemons'] = CVal(daemons).get()
+    if APP_CONF.changed:
+        APP_CONF['daemons'] = CVal(daemons).get()
         # Update configuration file
-        APPCONF.save()
+        APP_CONF.save()
 
     # Make indicator objects for each daemon in daemons list
-    APPINDICATORS = []
+    APP_INDICATORS = []
     for dm in daemons:
-        APPINDICATORS.append(Indicator(dm, _('#%d ') % len(APPINDICATORS) if len(daemons) > 1 else ''))
+        APP_INDICATORS.append(Indicator(dm, _('#%d ') % len(APP_INDICATORS) if len(daemons) > 1 else ''))
 
     # Register the SIGINT/SIGTERM handler for graceful exit when indicator is killed
     unix_signal_add(PRIORITY_HIGH, SIGINT, appExit)

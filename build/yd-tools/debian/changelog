@@ -1,5 +1,9 @@
-yd-tools (1.12.2) jammy; urgency=medium
+yd-tools (1.12.3) jammy; urgency=medium
   * Changes:
-    - Fix flickering error during the daemon restart
+    - new icons
+    - support for PNG/SVG icons
+    - code update and optimization
+    - remove deprecated methods usage
+
 
  -- Sly_tom_cat <slytomcat@mail.ru>  Tue, 25 Jul 2023 00:04:40 +0300
