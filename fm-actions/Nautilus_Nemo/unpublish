@@ -13,6 +13,5 @@ fi
 
 source $lang_file
 
-zenity --info --window-icon=/usr/share/yd-tools/icons/yd-128_g.png --ok-label="$_Close" --title="Yandex.Disk" --text="$*
+zenity --info --window-icon=/usr/share/yd-tools/icons/light/yd-logo.png --ok-label="$_Close" --title="Yandex.Disk" --text="$*
  `yandex-disk unpublish "$*"`"
-

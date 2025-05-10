@@ -295,7 +295,7 @@ def activateActions(activate, appInstPath):
                                                            '<name>' + _("Publish via Yandex.Disk") +
                                                            '</name><command>yandex-disk publish %f | xclip -filter -selection' +
                                                            ' clipboard; zenity --info ' +
-                                                           '--window-icon=/usr/share/yd-tools/icons/yd-128.png ' +
+                                                           '--window-icon=/usr/share/yd-tools/icons/dark/yd-logo.png ' +
                                                            '--title="Yandex.Disk" --ok-label="' + _('Close') + '" --text="' +
                                                            _('URL to file: %f was copied into clipboard.') +
                                                            '"</command><description/><patterns>*</patterns>' +
@@ -305,7 +305,7 @@ def activateActions(activate, appInstPath):
                     nActs[_("Unpublish from Yandex.disk")] = ("<action><icon>folder</icon><name>" +
                                                               _("Unpublish from Yandex.disk") +
                                                               '</name><command>zenity --info ' +
-                                                              '--window-icon=/usr/share/yd-tools/icons/yd-128_g.png --ok-label="' +
+                                                              '--window-icon=/usr/share/yd-tools/icons/light/yd-logo.png --ok-label="' +
                                                               _('Close') + '" --title="Yandex.Disk" --text="' +
                                                               _("Unpublish from Yandex.disk") +
                                                               ': `yandex-disk unpublish %f`"</command>' +

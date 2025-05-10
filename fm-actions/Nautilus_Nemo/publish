@@ -14,7 +14,7 @@ fi
 source $lang_file
 
 f=`yandex-disk publish "$*" | xclip -filter -selection clipboard`
-zenity --info --window-icon /usr/share/yd-tools/icons/yd-128_g.png --title="Yandex.Disk" --ok-label="$_Close" --text="$_Symlink $*
+zenity --info --window-icon /usr/share/yd-tools/icons/light/yd-logo.png --title="Yandex.Disk" --ok-label="$_Close" --text="$_Symlink $*
 
 $f
 

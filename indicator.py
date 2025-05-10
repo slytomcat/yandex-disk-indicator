@@ -677,7 +677,6 @@ if __name__ == '__main__':
     APP_HOME = 'yd-tools'
     APP_CONF_PATH = pathJoin(getenv("HOME"), '.config', APP_HOME)
     APP_INST_PATH = pathJoin('/usr/share', APP_HOME)
-    # APP_LOGO = Pixbuf.new_from_file(pathJoin(APP_CONF_PATH, "icons/yd-128.svg"))  # APP_INST_PATH, f'icons/yd-128.png'))
     # Define .desktop files locations for indicator auto-start facility
     APP_AUTOSTART_SRC = '/usr/share/applications/Yandex.Disk-indicator.desktop'
     APP_AUTOSTART_DST = expanduser('~/.config/autostart/Yandex.Disk-indicator.desktop')

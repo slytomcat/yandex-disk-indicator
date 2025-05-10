@@ -1,4 +1,4 @@
-### **![yandex-disk-indicator](https://github.com/slytomcat/yandex-disk-indicator/blob/master/icons/yd-128.png)**
+### **![yandex-disk-indicator](https://github.com/slytomcat/yandex-disk-indicator/blob/master/icons/dark/yd-logo.png)**
 # yandex-disk-indicator
 [![license](https://img.shields.io/badge/license-GPL%20v.3-green.svg)](https://github.com/slytomcat/yandex-disk-indicator/blob/master/LICENSE)
 [![wiki](https://img.shields.io/badge/wiki-available-green.svg)](https://github.com/slytomcat/yandex-disk-indicator/wiki)
@@ -6,7 +6,7 @@
 
 Desktop panel indicator for YandexDisk CLI client for Linux (GTK+)
 
-NOTE: 
+NOTE:
 
 If You are looking for YandexDisk indicator for KDE or other non-GTK based DE take a look on [yd-go](https://github.com/slytomcat/yd-go). _yd-go_ is a little simpler indicator written in golang. It uses D-BUS to communicate with the desktop notification plugin, that's why yd-go is fully independent off Desktop Environment.
 
@@ -20,7 +20,7 @@ See installation instruction in [Wiki](https://github.com/slytomcat/yandex-disk-
 
 INTERFACE LANGUAGES
 
-English, Russian, Greek, Bulgarian, Belorussian.  
+English, Russian, Greek, Bulgarian, Belorussian.
 
 
 NOTES:
