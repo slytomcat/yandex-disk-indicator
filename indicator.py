@@ -119,15 +119,13 @@ class Indicator(YDDaemon):
         # It handles daemon status changes by updating icon, creating messages and also update
         # status information in menu (status, sizes and list of last synchronized items).
         # It is called when daemon detects any change of its status.
-        LOGGER.info('%sChange event: %s', self.ID, ','.join(['stat' if vals['statchg'] else '',
-                                                             'size' if vals['szchg'] else '',
-                                                             'last' if vals['lastchg'] else '']))
+        LOGGER.info(f"{self.ID}Change event: {','.join(['stat' if vals['statchg'] else '', 'size' if vals['szchg'] else '', 'last' if vals['lastchg'] else ''])}")
         def do_change(vals, path):
             # Update information in menu
             self.menu.update(vals, path)
             # Handle daemon status change by icon change
             if vals['status'] != vals['laststatus']:
-                LOGGER.info('Status: %s ->  %s', vals['laststatus'], vals['status'])
+                LOGGER.info(f"Status: {vals['laststatus']} -> {vals['status']}")
                 self.icons.set(vals['status'])               # Update icon
                 # Create notifications for status change events
                 if APP_CONF['notifications']:
@@ -262,23 +260,25 @@ class Indicator(YDDaemon):
             # Update last synchronized sub-menu on first run or when last data has changed
             if vals['lastchg'] or vals['laststatus'] == 'unknown':
                 # Update last synchronized sub-menu
-                self.lastItems.destroy()                      # Disable showing synchronized sub menu while updating it - temp fix for #197
+                self.lastItems.destroy()                      # Disable showing synchronized sub menu while updating it, fix for #197
+                self.last.set_sensitive(False)
                 self.lastItems = Gtk.Menu()                   # Create new/empty Sub-menu:
-                for filePath in vals['lastitems']:            # Create new sub-menu items
-                    # Create menu label as file path (shorten it down to 50 symbols when path length > 50
-                    # symbols), with replaced underscore (to disable menu acceleration feature of GTK menu).
-                    widget = Gtk.MenuItem.new_with_label(shortPath(filePath))
-                    filePath = pathJoin(yddir, filePath)      # Make full path to file
-                    if pathExists(filePath):
-                        widget.set_sensitive(True)            # If it exists then it can be opened
-                        widget.connect("activate", self.openPath, filePath)
-                    else:
-                        widget.set_sensitive(False)           # Don't allow to open non-existing path
-                    self.lastItems.append(widget)
                 self.last.set_submenu(self.lastItems)
-                # Switch off last items menu sensitivity if no items in list
-                self.last.set_sensitive(vals['lastitems'])
-                LOGGER.debug("Sub-menu 'Last synchronized' has %s items", str(len(vals['lastitems'])))
+                if len(vals['lastitems']) > 0:
+                    for filePath in vals['lastitems']:            # Create new sub-menu items
+                        # Create menu label as file path (shorten it down to 50 symbols when path length > 50
+                        # symbols), with replaced underscore (to disable menu acceleration feature of GTK menu).
+                        widget = Gtk.MenuItem(label=shortPath(filePath))
+                        filePath = pathJoin(yddir, filePath)      # Make full path to file
+                        if pathExists(filePath):
+                            widget.set_sensitive(True)            # If it exists then it can be opened
+                            widget.connect("activate", self.openPath, filePath)
+                        else:
+                            widget.set_sensitive(False)           # Don't allow to open non-existing path
+                        self.lastItems.append(widget)
+                    # Switch on last items menu sensitivity as lastItems menu has elements
+                    self.last.set_sensitive(True)
+                LOGGER.debug(f"Sub-menu 'Last synchronized' has {len(self.lastItems)}/{len(vals['lastitems'])} items")
             self.show_all()                                   # Renew menu
 
 
@@ -353,12 +353,12 @@ class Indicator(YDDaemon):
 
 
         def openPath(self, _, path):       # Open path
-            LOGGER.info("Opening '%s'", path)
+            LOGGER.info(f"Opening {path}")
             if pathExists(path):
                 try:
                     call(['xdg-open', path])
                 except:
-                    LOGGER.error("Start of '%s' failed", path)
+                    LOGGER.error("Opening of {path} failed")
 
 
         def close(self, _):                # Quit from indicator
@@ -630,7 +630,7 @@ class Preferences(Gtk.Dialog):
     def onButtonToggled(self, _, button, key, d_config=None, ow=None):
         # Handle clicks on controls
         toggleState = button.get_active()
-        LOGGER.debug('Togged: %s  val: %s', key, str(toggleState))
+        LOGGER.debug(f'Togged: {key} val: {str(toggleState)}')
         # Update configurations
         if key in ['read-only', 'overwrite', 'startonstartofindicator', 'stoponexitfromindicator']:
             d_config[key] = toggleState                # Update daemon config

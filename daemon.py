@@ -49,13 +49,13 @@ class YDDaemon:                 # Yandex.Disk daemon interface
 
     def error(self, errStr, cfgPath):
         # Error handler
-        LOGGER.debug('%sError %s , path %s', self.ID, errStr, cfgPath)
+        LOGGER.debug(f'{self.ID}Error {errStr}, path {cfgPath}')
         return 0
 
 
     def change(self, vals):
         # Updates handler
-        LOGGER.debug('%sUpdate event: %s',  self.ID, str(vals))
+        LOGGER.debug(f'{self.ID}Update event: {str(vals)}')
 
 
     # ################### Private classes ################### #
@@ -78,7 +78,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
             if self.started:
                 return
             if not pathExists(self.path):
-                LOGGER.info("Watcher was not started: path '%s' was not found.", self.path)
+                LOGGER.info(f"Watcher was not started: path {self.path} was not found.")
                 return
             self.mark = stat(self.path).st_ctime_ns
 
@@ -194,7 +194,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
             self.__lock.acquire()
             # Parse fresh daemon output. Parsing returns true when something changed
             if self.__parseOutput(self.__getOutput()):
-                LOGGER.debug('%sEvent raised by %s', self.ID, (' Watcher' if watch else ' Timer'))
+                LOGGER.debug(f'{self.ID}Event raised by {"Watcher" if watch else "Timer"}')
                 self.change(self.__v)                # Call the callback of update event handler
             # --- Handle timer delays ---
             self.__timer.cancel()                  # Cancel timer if it still active
@@ -318,9 +318,9 @@ class YDDaemon:                 # Yandex.Disk daemon interface
             try:                        # Try to start
                 cmd = [self.__YDC, 'start', '-c', self.config.fileName]
                 msg = check_output(cmd, universal_newlines=True)
-                LOGGER.info('Daemon started, message: %s', msg)
+                LOGGER.info(f'Daemon started, message: {msg}')
             except CalledProcessError as e:
-                LOGGER.error('Daemon start failed with code %d: %s', e.returncode, e.output)
+                LOGGER.error(f'Daemon start failed with code {e.returncode}: {e.output}')
                 self.__v = {'status': 'error', 'progress': '', 'laststatus': self.__v['status'], 'statchg': True,
                     'total': '...', 'used': '...', 'free': '...', 'trash': '...', 'szchg': True,
                     'error': msg.split('\n')[0], 'path': '', 'lastitems': [], 'lastchg': True}
@@ -342,7 +342,7 @@ class YDDaemon:                 # Yandex.Disk daemon interface
                 return
             try:
                 msg = check_output([self.__YDC, 'stop', '-c', self.config.fileName], universal_newlines=True)
-                LOGGER.info('Daemon stopped, message: %s', msg)
+                LOGGER.info(f'Daemon stopped, message: {msg}')
             except:
                 LOGGER.info('Daemon stop failed')
 
@@ -352,11 +352,11 @@ class YDDaemon:                 # Yandex.Disk daemon interface
             Thread(target=do_stop).start()
 
     def exit(self):                          # Handle daemon/indicator closing
-        LOGGER.debug("Daemon interface %sexit started: ", self.ID)
+        LOGGER.debug(f"Daemon interface {self.ID}exit started: ")
         self.__watcher.stop()
         self.__timer.cancel()  # stop event timer if it is running
         # Stop yandex-disk daemon if it is required by its configuration
         if self.config.get('stoponexitfromindicator', False):
             self.stop(wait=True)
-            LOGGER.info('Demon %sstopped', self.ID)
-        LOGGER.debug('Daemon interface %sexited', self.ID)
+            LOGGER.info(f'Demon { elf.ID}stopped')
+        LOGGER.debug(f'Daemon interface {self.ID}exited')
