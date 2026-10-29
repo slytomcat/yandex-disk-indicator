@@ -4,8 +4,7 @@
 #echo postinst started
 #sleep 3
 
-# Kill the indicator itself (the python process that owns the panel icon), not its shell wrapper:
-# a killed wrapper leaves the indicator alive and the restart below adds a second icon to the panel.
+# Kill the indicator itself (the python process that owns the panel icon), not its shell wrapper.
 for pid in $(pgrep -f 'python[0-9.]* (/usr/share/yd-tools/)?indicator\.py')
 do
   #echo $pid will be killed
