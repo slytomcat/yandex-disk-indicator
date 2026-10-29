@@ -1,11 +1,6 @@
 #!/bin/bash
 
-pname=$(ps -p $$ -o comm=)
-if [ $(pgrep $pname | wc -l) -gt 2 ]
-then
-  echo 'The indicator instance is already running.'
-  exit 1
-fi
-
+# Protection against a second start is implemented in indicator.py (an exclusive lock on the
+# ~/.config/yd-tools/yandex-disk-indicator.lock file).
 cd /usr/share/yd-tools
-python3 indicator.py "$@"
+exec python3 indicator.py "$@"

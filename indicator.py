@@ -19,6 +19,7 @@ from gi.repository.GLib import timeout_add, source_remove, idle_add, unix_signal
 from sys import exit as sysExit
 from webbrowser import open_new as openNewBrowser
 from signal import SIGTERM, SIGINT
+from fcntl import flock, LOCK_EX, LOCK_NB
 from os.path import exists as pathExists, join as pathJoin, relpath as relativePath, expanduser
 from os import getenv, getpid, geteuid
 from daemon import YDDaemon
@@ -665,6 +666,8 @@ if __name__ == '__main__':
     # Define .desktop files locations for indicator auto-start facility
     APPAUTOSTARTSRC = '/usr/share/applications/Yandex.Disk-indicator.desktop'
     APPAUTOSTARTDST = expanduser('~/.config/autostart/Yandex.Disk-indicator.desktop')
+    # Define the lock file that is used to detect an already running instance
+    APPLOCKPATH = pathJoin(APPCONFPATH, APPNAME + '.lock')
 
     # Get command line arguments or their default values
     args = argParse(APPVER)
@@ -675,6 +678,26 @@ if __name__ == '__main__':
     # Report app version and logging level
     LOGGER.info('%s v.%s', APPNAME, APPVER)
     LOGGER.debug('Logging level: %s', str(args.level))
+
+    # Check for an already running instance of the indicator application.
+    # The exclusive lock is held by the lock file descriptor for the whole life of the process and it is
+    # released by kernel when the process exits (even abnormally), so a left lock file can't block the next start.
+    makeDirs(APPCONFPATH)
+    try:
+        # 'a+' mode creates the file when it is missed and never truncates the existing one
+        APPLOCK = open(APPLOCKPATH, 'a+')     # the descriptor must stay referenced to keep the lock alive
+    except OSError as e:
+        sysExit(_('Can\'t create the lock file %s: %s') % (APPLOCKPATH, e))
+    try:
+        flock(APPLOCK, LOCK_EX | LOCK_NB)
+    except OSError:
+        APPLOCK.seek(0)
+        LOGGER.error('Another instance of the indicator is already running (PID %s)', APPLOCK.read().strip())
+        sysExit(_('The indicator instance is already running.'))
+    APPLOCK.seek(0);  APPLOCK.truncate()      # The lock is ours: store this process PID for troubleshooting
+    APPLOCK.write(str(getpid()) + '\n')
+    APPLOCK.flush()
+    LOGGER.debug('Single instance lock is acquired: %s', APPLOCKPATH)
 
     # Application configuration
 
