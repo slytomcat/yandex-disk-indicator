@@ -1,11 +1,11 @@
 #!/bin/bash
 
-pname=$(ps -p $$ -o comm=)
-if [ $(pgrep $pname | wc -l) -gt 2 ]
-then
-  echo 'The indicator instance is already running.'
-  exit 1
-fi
+# Protection against a second start is implemented in indicator.py (an exclusive lock on the
+# ~/.config/yd-tools/yandex-disk-indicator.lock file). Don't try to detect a running instance here:
+# the process name of this script depends on the way it is invoked ('bash', 'sh' or the truncated
+# script name) and it never matches the indicator process itself.
 
+# exec is used to avoid an extra shell process which takes signals (logout, package upgrade)
+# instead of the indicator and leaves it running as an orphan with an icon in the panel.
 cd /usr/share/yd-tools
-python3 indicator.py "$@"
+exec python3 indicator.py "$@"

@@ -4,7 +4,9 @@
 #echo postinst started
 #sleep 3
 
-for pid in $(pgrep -f /usr/bin/yandex-disk-indicator)
+# Kill the indicator itself (the python process that owns the panel icon), not its shell wrapper:
+# a killed wrapper leaves the indicator alive and the restart below adds a second icon to the panel.
+for pid in $(pgrep -f 'python[0-9.]* (/usr/share/yd-tools/)?indicator\.py')
 do
   #echo $pid will be killed
   USR=`grep -z ^USER= /proc/$pid/environ | sed 's/USER=//'`
