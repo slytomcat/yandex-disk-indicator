@@ -208,7 +208,8 @@ class Indicator(YDDaemon):
         # Set appropriate paths to all status icons
         self.icon = {}
         for status in ['idle', 'error', 'paused', 'none', 'no_net', 'busy']:
-            name = ('yd-ind-pause.png' if status in {'paused', 'none', 'no_net'} else
+            name = ('yd-ind-no_net.png' if status == 'no_net' else
+                    'yd-ind-pause.png' if status in {'paused', 'none'} else
                     'yd-busy1.png' if status == 'busy' else
                     'yd-ind-' + status + '.png')
             userIcon = pathJoin(userPath, name)
